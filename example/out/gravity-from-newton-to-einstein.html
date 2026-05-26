@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="en" data-palette="ember" >
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gravity: From Newton to Einstein</title>
+<meta name="description" content="A journey through the mechanics of the cosmos. Discover how our understanding of gravity evolved from an invisible tether to the curvature of spacetime.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.47/dist/katex.min.css">
+
+<style>
+
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,760&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --bg: #f7f3ec;
+  --paper: #fffdf8;
+  --panel: #f0eee8;
+  --panel-strong: #e7e1d6;
+  --ink: #17130f;
+  --muted: #695f53;
+  --faint: #958b7f;
+  --line: #ded5c8;
+  --line-strong: #b9ab99;
+  --code-bg: #171a1f;
+  --text-code: #f1f1f1;
+  --blue: #315f8c;
+  --teal: #246b61;
+  --amber: #9a6525;
+  --rose: #9a3f4d;
+  --violet: #69559f;
+  --accent: var(--blue);
+  --accent-soft: #e4eef6;
+  --correct-bg: #e5f3ed;
+  --correct-line: #2c7a57;
+  --wrong-bg: #f8e5e2;
+  --wrong-line: #b44a3e;
+  --shadow: 0 24px 70px rgba(32, 24, 15, 0.12);
+}
+
+html[data-palette="field"] {
+  --bg: #eff5ef;
+  --paper: #fbfff9;
+  --panel: #e8f0e6;
+  --panel-strong: #dbe7d8;
+  --ink: #111810;
+  --muted: #596a55;
+  --line: #cbd9c7;
+  --line-strong: #9db39a;
+  --blue: #2f6f5f;
+  --teal: #1e7a56;
+  --amber: #85712b;
+  --rose: #8f4852;
+  --violet: #566b9e;
+  --accent: var(--teal);
+  --accent-soft: #dceee3;
+}
+
+html[data-palette="ember"] {
+  --bg: #f5f0ec;
+  --paper: #fffdfa;
+  --panel: #f0e7df;
+  --panel-strong: #e5d5c8;
+  --ink: #1b1411;
+  --muted: #715d52;
+  --line: #dccbc0;
+  --line-strong: #b99e8c;
+  --blue: #255f89;
+  --teal: #2f665d;
+  --amber: #a25c25;
+  --rose: #9b3f3a;
+  --violet: #725798;
+  --accent: var(--rose);
+  --accent-soft: #f2dfdd;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11100f;
+    --paper: #191817;
+    --panel: #22201d;
+    --panel-strong: #2b2824;
+    --ink: #f4efe7;
+    --muted: #b8aa99;
+    --faint: #887b6d;
+    --line: #36312c;
+    --line-strong: #5b5046;
+    --code-bg: #0b0d10;
+    --text-code: #f1f1f1;
+    --accent-soft: #1a2a36;
+    --correct-bg: #173329;
+    --correct-line: #61b58d;
+    --wrong-bg: #351f20;
+    --wrong-line: #d56c60;
+    --shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #11100f;
+  --paper: #191817;
+  --panel: #22201d;
+  --panel-strong: #2b2824;
+  --ink: #f4efe7;
+  --muted: #b8aa99;
+  --faint: #887b6d;
+  --line: #36312c;
+  --line-strong: #5b5046;
+  --code-bg: #0b0d10;
+  --text-code: #f1f1f1;
+  --accent-soft: #1a2a36;
+  --correct-bg: #173329;
+  --correct-line: #61b58d;
+  --wrong-bg: #351f20;
+  --wrong-line: #d56c60;
+  --shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 7%, transparent), transparent 34%),
+    radial-gradient(circle at 88% 6%, color-mix(in srgb, var(--teal) 10%, transparent), transparent 30%),
+    var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  line-height: 1.85;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.bk-shell {
+  display: flex;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.bk-sidebar {
+  width: 288px;
+  flex-shrink: 0;
+  position: relative;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1px solid var(--line);
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  transition: margin-left 0.3s ease, opacity 0.3s ease;
+}
+.bk-shell[data-collapsed="true"] .bk-sidebar {
+  margin-left: -288px;
+  opacity: 0;
+}
+.bk-main {
+  flex-grow: 1;
+  position: relative;
+  height: 100vh;
+  overflow-y: auto;
+  min-width: 0;
+}
+.bk-sidebar-inner { padding: 28px 0; }
+.bk-sidebar-header { position: relative; padding: 0 22px 24px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+.bk-brand-mark {
+  width: 36px; height: 36px; display: grid; place-items: center;
+  border: 1px solid var(--line-strong); border-radius: 8px;
+  color: var(--accent); font-weight: 700; font-size: 12px; margin-bottom: 18px;
+}
+.bk-settings-button {
+  position: absolute;
+  top: 0;
+  right: 62px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--muted);
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+.bk-settings-button:hover,
+.bk-settings-button[aria-expanded="true"] {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.bk-settings-glyph {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+.bk-settings-glyph::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+.bk-sidebar-collapse {
+  position: absolute;
+  top: 0;
+  right: 18px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--muted);
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+.bk-sidebar-collapse:hover {
+  transform: translateY(-1px);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+.bk-sidebar-expand {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  width: 40px;
+  height: 40px;
+  display: none;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--muted);
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: var(--shadow);
+  transition: all 0.2s ease;
+}
+.bk-shell[data-collapsed="true"] .bk-sidebar-expand {
+  display: grid;
+}
+.bk-sidebar-expand:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.bk-settings-glyph::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: -5px;
+  width: 2px;
+  height: 26px;
+  background: currentColor;
+  box-shadow: 7px 7px 0 -1px currentColor, -7px 7px 0 -1px currentColor;
+}
+.bk-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.bk-sidebar-title { font-weight: 700; font-size: 15px; line-height: 1.35; color: var(--ink); }
+.bk-sidebar-author { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.bk-tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+.bk-tag-row span {
+  font-size: 11px; color: var(--muted); border: 1px solid var(--line);
+  border-radius: 999px; padding: 3px 8px; background: var(--panel);
+}
+.bk-theme-panel {
+  position: absolute;
+  z-index: 20;
+  right: 18px;
+  top: 44px;
+  width: min(240px, calc(100vw - 36px));
+  display: grid; gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+.bk-theme-panel[hidden] {
+  display: none;
+}
+.bk-theme-panel label { display: grid; grid-template-columns: 64px 1fr; align-items: center; gap: 8px; }
+.bk-theme-panel span { color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+.bk-theme-panel select {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  padding: 6px 8px;
+}
+
+.bk-nav { display: flex; flex-direction: column; gap: 4px; padding: 0 16px; }
+.bk-nav-item {
+  display: block; padding: 9px 10px 9px 14px;
+  font-size: 13px; line-height: 1.35;
+  color: var(--muted);
+  text-decoration: none;
+  border-radius: 8px;
+  border-left: 2px solid transparent;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.bk-nav-item:hover { color: var(--ink); background: var(--panel); }
+.bk-nav-item.active { color: var(--accent); background: var(--accent-soft); border-left-color: var(--accent); font-weight: 600; }
+.bk-nav-sub { padding-left: 24px; font-size: 13.5px; }
+.bk-nav-quiz { font-style: italic; opacity: 0.8; }
+
+.bk-main { min-width: 0; }
+.bk-content {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 56px 34px 128px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+.bk-content > * {
+  width: 100%;
+  max-width: 720px;
+}
+.bk-content > .bk-object,
+.bk-content > .bk-end-nav {
+  max-width: 100%;
+}
+.bk-density-compact .bk-content { gap: 22px; }
+
+.bk-hero {
+  border-bottom: 1px solid var(--line);
+  padding: 18px 0 44px;
+  margin-bottom: 4px;
+}
+.bk-eyebrow {
+  color: var(--accent); font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 18px;
+}
+.bk-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(38px, 6vw, 66px);
+  line-height: 1.02;
+  letter-spacing: 0;
+  max-width: 780px;
+  margin: 0;
+}
+.bk-deck {
+  max-width: 660px;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.65;
+  margin-top: 22px;
+}
+
+
+.bk-markdown h1, .bk-section h1, .bk-section h2 {
+  font-family: var(--font-display);
+  font-size: 34px; font-weight: 700; letter-spacing: 0;
+  margin: 16px 0 24px; line-height: 1.2;
+}
+.bk-section.bk-chapter { margin-top: 24px; }
+.bk-section.bk-subsection { margin-top: 16px; }
+.bk-markdown h2, .bk-section h3 { font-size: 23px; font-weight: 650; margin: 32px 0 16px; letter-spacing: 0; }
+.bk-markdown h3, .bk-section h4 { font-size: 18px; font-weight: 600; margin: 24px 0 12px; }
+
+p { margin-bottom: 16px; color: var(--ink); font-size: 18px; }
+ul, ol { padding-left: 24px; margin-bottom: 16px; color: var(--ink); }
+li { margin-bottom: 8px; }
+li > p { margin-bottom: 8px; }
+strong { font-weight: 600; }
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.2s; }
+a:hover { border-color: var(--accent); }
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  padding: 0.2em 0.4em;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--ink);
+}
+
+blockquote {
+  border-left: 4px solid var(--line-strong);
+  padding: 4px 0 4px 20px;
+  margin: 24px 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.bk-math-block { margin: 24px 0; overflow-x: auto; overflow-y: hidden; display: flex; justify-content: center; }
+hr.bk-divider {
+  border: none; border-top: 1px solid var(--line);
+  margin: 48px auto; width: 50%;
+}
+
+.bk-callout {
+  display: flex; gap: 16px;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid;
+  margin: 24px 0;
+  background: var(--panel);
+  border-color: var(--line);
+}
+.bk-callout-icon {
+  flex-shrink: 0; width: 24px; height: 24px;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-weight: bold; font-size: 14px; color: #fff;
+}
+.bk-callout-content { flex-grow: 1; }
+.bk-callout-label { font-weight: 600; font-size: 14px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+.bk-callout-body > *:last-child { margin-bottom: 0; }
+
+.bk-callout--note .bk-callout-icon { background: var(--muted); }
+.bk-callout--note .bk-callout-icon::after { content: "i"; }
+.bk-callout--note .bk-callout-label { color: var(--muted); }
+
+.bk-callout--tip { background: color-mix(in srgb, var(--teal) 12%, var(--paper)); border-color: color-mix(in srgb, var(--teal) 32%, var(--line)); }
+.bk-callout--tip .bk-callout-icon { background: var(--teal); }
+.bk-callout--tip .bk-callout-icon::after { content: "OK"; font-size: 9px; }
+.bk-callout--tip .bk-callout-label { color: var(--teal); }
+
+.bk-callout--important { background: color-mix(in srgb, var(--blue) 12%, var(--paper)); border-color: color-mix(in srgb, var(--blue) 32%, var(--line)); }
+.bk-callout--important .bk-callout-icon { background: var(--blue); }
+.bk-callout--important .bk-callout-icon::after { content: "!"; }
+.bk-callout--important .bk-callout-label { color: var(--blue); }
+
+.bk-callout--warning { background: color-mix(in srgb, var(--amber) 14%, var(--paper)); border-color: color-mix(in srgb, var(--amber) 36%, var(--line)); }
+.bk-callout--warning .bk-callout-icon { background: var(--amber); }
+.bk-callout--warning .bk-callout-icon::after { content: "!"; }
+.bk-callout--warning .bk-callout-label { color: var(--amber); }
+
+
+.bk-code-block {
+  margin: 24px 0;
+  border-radius: 8px;
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.bk-code-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 16px;
+  background: rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  font-family: var(--font-mono); font-size: 12px; color: #a1a1aa;
+}
+.bk-code-lang { text-transform: uppercase; }
+.bk-code-scroll { padding: 20px; overflow-x: auto; }
+.bk-code-block pre { margin: 0; background: transparent; border: none; padding: 0; }
+.bk-code-block code { background: transparent; border: none; padding: 0; color: var(--text-code); font-size: 14px; }
+
+
+.bk-object {
+  margin: 34px 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.bk-object:focus-within {
+  border-color: var(--object-accent, var(--accent));
+}
+.bk-object-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--object-accent, var(--accent)) 12%, var(--paper)), var(--paper));
+}
+.bk-object-kicker {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--object-accent, var(--accent));
+}
+.bk-object-title { font-size: 13px; color: var(--muted); font-weight: 600; }
+.bk-object-maximize {
+  margin-left: auto; width: 28px; height: 28px;
+  display: grid; place-items: center; border: none; background: transparent;
+  color: var(--muted); cursor: pointer; border-radius: 4px;
+}
+.bk-object-maximize:hover { background: rgba(0,0,0,0.05); color: var(--ink); }
+@media (prefers-color-scheme: dark) { .bk-object-maximize:hover { background: rgba(255,255,255,0.1); } }
+.bk-object--maximized {
+  position: fixed; inset: 0; width: 100vw; height: 100vh;
+  z-index: 1000; margin: 0; border: none; border-radius: 0;
+  display: flex; flex-direction: column;
+}
+.bk-object--maximized .bk-embed-frame,
+.bk-object--maximized .bk-media,
+.bk-object--maximized .bk-code-block {
+  flex-grow: 1; height: auto !important; max-height: none !important;
+}
+.bk-object--maximized .bk-caption { margin-top: auto; }
+.bk-object--maximized .bk-embed-interactive iframe { pointer-events: auto !important; }
+.bk-object--maximized .bk-embed-overlay { display: none !important; }
+.bk-object--blue { --object-accent: var(--blue); }
+.bk-object--teal { --object-accent: var(--teal); }
+.bk-object--amber { --object-accent: var(--amber); }
+.bk-object--rose { --object-accent: var(--rose); }
+.bk-object--violet { --object-accent: var(--violet); }
+.bk-embed-frame { background: #0d1116; position: relative; width: 100%; }
+.bk-embed-interactive iframe { pointer-events: none; transition: opacity 0.2s; }
+.bk-embed-interactive.is-interactive iframe { pointer-events: auto; }
+.bk-embed-overlay {
+  position: absolute; inset: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+  cursor: pointer; transition: opacity 0.2s, visibility 0.2s;
+}
+.bk-embed-overlay:hover, .bk-embed-overlay:focus { background: rgba(0, 0, 0, 0.3); outline: none; }
+.bk-embed-overlay-text {
+  padding: 8px 16px; background: rgba(0, 0, 0, 0.6); color: #fff;
+  border-radius: 99px; font-size: 13px; font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  transition: transform 0.2s;
+}
+.bk-embed-overlay:hover .bk-embed-overlay-text, .bk-embed-overlay:focus .bk-embed-overlay-text { transform: scale(1.05); }
+.bk-embed-interactive.is-interactive .bk-embed-overlay { opacity: 0; visibility: hidden; pointer-events: none; }
+.bk-sim-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+.bk-sim-toggle, .bk-sim-range {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+.bk-sim-toggle {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+}
+.bk-sim-range {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+.bk-sim-range input { grid-column: 1 / -1; width: 100%; accent-color: var(--accent); }
+.bk-sim-toggle input { accent-color: var(--accent); }
+.bk-sim-toggle input,
+.bk-sim-range input {
+  cursor: pointer;
+}
+.bk-sim-range output {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.bk-media { background: var(--panel); display: grid; place-items: center; }
+.bk-media img, .bk-media video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.bk-media--audio { padding: 24px; }
+.bk-media audio { width: 100%; }
+.bk-aspect-wide { aspect-ratio: 16 / 9; }
+.bk-aspect-standard { aspect-ratio: 4 / 3; }
+.bk-aspect-square { aspect-ratio: 1 / 1; }
+.bk-aspect-auto { min-height: 0; }
+.bk-caption {
+  padding: 12px 16px 14px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+  background: var(--panel);
+}
+.bk-caption * { font-size: inherit; margin: 0; }
+.bk-latex-block { display: flex; justify-content: center; overflow-x: auto; padding: 28px 18px; background: var(--paper); }
+.bk-latex-inline { padding: 16px; background: var(--paper); }
+.bk-columns {
+  display: grid;
+  gap: 18px;
+  padding: 18px;
+  background: var(--paper);
+}
+.bk-column {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+.bk-column > *:last-child { margin-bottom: 0; }
+
+.bk-quiz {
+  margin: 32px 0;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.bk-quiz-head {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 16px 22px;
+  font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--accent);
+  border-bottom: 1px solid var(--line);
+  background: var(--accent-soft);
+}
+.bk-quiz-head small { color: var(--muted); text-transform: none; letter-spacing: 0; font-weight: 500; }
+.bk-question { padding: 24px; border-bottom: 1px solid var(--line); }
+.bk-question:last-child { border-bottom: none; }
+.bk-q-text { font-size: 16px; font-weight: 500; margin-bottom: 20px; }
+.bk-q-text > *:last-child { margin-bottom: 0; }
+.bk-opts { display: flex; flex-direction: column; gap: 12px; }
+.bk-opt {
+  display: flex; align-items: center; gap: 16px;
+  width: 100%; text-align: left;
+  padding: 14px 16px;
+  border-radius: 8px; border: 1px solid var(--line);
+  background: var(--paper); color: var(--ink);
+  font-size: 15px; cursor: pointer; transition: all 0.2s;
+}
+.bk-opt:hover { border-color: var(--line-strong); background: var(--panel); }
+.bk-opt-dot {
+  width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--muted);
+  flex-shrink: 0; transition: all 0.2s;
+}
+
+.bk-opt.correct {
+  background: var(--correct-bg); border-color: var(--correct-line);
+  pointer-events: none;
+}
+.bk-opt.correct .bk-opt-dot { border-color: var(--correct-line); background: var(--correct-line); }
+
+.bk-opt.wrong {
+  background: var(--wrong-bg); border-color: var(--wrong-line);
+  pointer-events: none; opacity: 0.8;
+}
+.bk-opt.wrong .bk-opt-dot { border-color: var(--wrong-line); background: var(--wrong-line); }
+
+.bk-opt.disabled { opacity: 0.5; pointer-events: none; }
+
+.bk-explanation {
+  margin-top: 20px; padding: 16px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  font-size: 14px; color: var(--muted);
+}
+.bk-explanation > *:last-child { margin-bottom: 0; }
+
+.bk-end-nav {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 48px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.bk-end-link {
+  min-height: 100px;
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  text-decoration: none;
+}
+.bk-end-link:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.bk-end-link span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.bk-end-link strong {
+  line-height: 1.25;
+}
+.bk-end-link--next {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 36%, var(--line));
+}
+
+@media(max-width: 800px) {
+  .bk-shell { display: block; }
+  .bk-sidebar { width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--line); }
+  .bk-sidebar-inner { padding: 20px; }
+  .bk-sidebar-header { padding-left: 0; padding-right: 0; }
+  .bk-settings-button { right: 0; }
+  .bk-theme-panel { right: 0; }
+  .bk-nav { padding: 0; max-height: 190px; overflow-y: auto; }
+  .bk-content { padding: 32px 20px 80px; }
+  .bk-hero h1 { font-size: 38px; }
+  .bk-home { grid-template-columns: 1fr; }
+  .bk-home-grid { grid-template-columns: 1fr; }
+  .bk-end-nav { grid-template-columns: 1fr; }
+  .bk-object-header, .bk-quiz-head { padding-left: 14px; padding-right: 14px; }
+  .bk-columns { grid-template-columns: 1fr !important; }
+}
+
+</style>
+</head>
+<body class="bk-layout-lab bk-density-comfortable bk-tone-scholarly">
+<div class="bk-shell">
+  <aside class="bk-sidebar">
+    <div class="bk-sidebar-inner">
+      <div class="bk-sidebar-header">
+        <div class="bk-brand-mark">BK</div>
+        <button class="bk-settings-button" id="bk-settings-button" type="button" aria-expanded="false" aria-controls="bk-theme-panel" title="Display settings">
+          <span class="bk-settings-glyph" aria-hidden="true"></span>
+          <span class="bk-sr-only">Display settings</span>
+        </button>
+        <button class="bk-sidebar-collapse" id="bk-sidebar-collapse" type="button" aria-label="Collapse sidebar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="bk-sidebar-title">Gravity: From Newton to Einstein</div>
+        <div class="bk-sidebar-author">By Chirayu</div>
+        <div class="bk-tag-row"><span>physics</span><span>astrophysics</span><span>relativity</span></div>
+        <div class="bk-theme-panel" id="bk-theme-panel" aria-label="Display settings" hidden>
+          <label>
+            <span>Theme</span>
+            <select id="bk-theme-select">
+              <option value="auto" selected>System</option>
+              <option value="light" >Light</option>
+              <option value="dark" >Dark</option>
+            </select>
+          </label>
+          <label>
+            <span>Palette</span>
+            <select id="bk-palette-select">
+              <option value="ink" >Ink</option>
+              <option value="field" >Field</option>
+              <option value="ember" selected>Ember</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <nav class="bk-nav"><a href="#chapter-0" class="bk-nav-item bk-nav-chapter" data-id="chapter-0">The Invisible Tether</a>
+<a href="#quiz-4" class="bk-nav-item bk-nav-quiz" data-id="quiz-4">Checkpoint: Newtonian Physics</a>
+<a href="#section-6" class="bk-nav-item bk-nav-sub" data-id="section-6">The Fabric of Spacetime</a>
+<a href="#quiz-10" class="bk-nav-item bk-nav-quiz" data-id="quiz-10">Final Review</a></nav>
+    </div>
+  </aside>
+  <main class="bk-main">
+    <button class="bk-sidebar-expand" id="bk-sidebar-expand" type="button" aria-label="Expand sidebar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+    <article class="bk-content">
+      <header class="bk-hero">
+        <p class="bk-eyebrow">Interactive Lesson</p>
+        <h1>Gravity: From Newton to Einstein</h1>
+        <p class="bk-deck">A journey through the mechanics of the cosmos. Discover how our understanding of gravity evolved from an invisible tether to the curvature of spacetime.</p>
+      </header>
+      <section id="chapter-0" class="bk-section bk-chapter"><h1>The Invisible Tether</h1>
+<p>For most of human history, gravity wasn&#39;t considered a universal force. Aristotle believed that objects simply moved toward their &quot;natural place&quot;—heavy objects fell because they belonged to the earth, while smoke rose because it belonged to the air. The heavens, governed by entirely different laws, were thought to be perfect and unchanging.</p>
+<p>This paradigm shattered in 1687 when <strong>Isaac Newton</strong> published his <em>Principia</em>. Newton&#39;s great insight was unification: the very same force that pulls an apple to the ground is the force that keeps the moon in orbit around the Earth. Gravity is universal.</p>
+<p>Newton described this attractive force elegantly. It grows stronger as the masses increase, and it weakens dramatically as the distance between the objects grows (following an inverse-square law).</p>
+</section>
+<figure class="bk-object bk-object--neutral">
+    <div class="bk-object-header">
+      <span class="bk-object-kicker">Columns</span>
+      <span class="bk-object-title">The Universal Law</span>
+      <button type="button" class="bk-object-maximize" aria-label="Maximize" title="Maximize">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      </button>
+    </div>
+    <div class="bk-columns" style="grid-template-columns:minmax(0, 1fr) minmax(0, 1fr)">
+            <div class="bk-column"><p>Newton&#39;s Universal Law of Gravitation describes an attractive force between all masses.</p>
+</div><div class="bk-column"><div class="bk-latex-block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>F</mi><mo>=</mo><mi>G</mi><mfrac><mrow><msub><mi>m</mi><mn>1</mn></msub><msub><mi>m</mi><mn>2</mn></msub></mrow><msup><mi>r</mi><mn>2</mn></msup></mfrac></mrow><annotation encoding="application/x-tex">F = G\frac{m_1 m_2}{r^2}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.1389em;">F</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.7936em;vertical-align:-0.686em;"></span><span class="mord mathnormal">G</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.1076em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal" style="margin-right:0.0278em;">r</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7401em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">m</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal">m</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></div></div>
+          </div>
+    
+  </figure>
+<figure class="bk-object bk-object--blue">
+    <div class="bk-object-header">
+      <span class="bk-object-kicker">Interactive Lab</span>
+      <span class="bk-object-title">Orbital Mechanics Lab</span>
+      <button type="button" class="bk-object-maximize" aria-label="Maximize" title="Maximize">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      </button>
+    </div>
+    <div class="bk-sim-controls" aria-label="Simulation controls">
+    <label class="bk-sim-range">
+          <span>Star Mass</span>
+          <input type="range" data-bk-prop="starMass" min="500" max="2000" step="100" value="1000">
+          <output>1000</output>
+        </label><label class="bk-sim-range">
+          <span>Planet Velocity</span>
+          <input type="range" data-bk-prop="planetVel" min="2" max="7" step="0.5" value="4.5">
+          <output>4.5</output>
+        </label><label class="bk-sim-toggle">
+            <input type="checkbox" data-bk-prop="showTrails" checked>
+            <span>Show Orbit Trail</span>
+          </label>
+  </div>
+          <div class="bk-embed-frame bk-embed-interactive bk-aspect-wide" style="height:420px">
+            <div class="bk-embed-overlay" tabindex="0" role="button" aria-label="Activate interactive simulation">
+              <span class="bk-embed-overlay-text">Click to interact</span>
+            </div>
+            <iframe srcdoc="&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;
+&lt;style&gt;
+  html, body { height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; background: transparent; display: flex; align-items: center; justify-content: center; }
+  canvas { display: block; touch-action: none; transform-origin: center center; }
+  body { background: #ffffff; color: #111; font-family: sans-serif; }
+  @media (prefers-color-scheme: dark) { body { background: #0a0a0a; color: #eee; } }
+&lt;/style&gt;
+&lt;/head&gt;&lt;body&gt;
+&lt;canvas id=&quot;c&quot; width=&quot;800&quot; height=&quot;500&quot;&gt;&lt;/canvas&gt;
+&lt;script&gt;
+window.__simProps={&quot;starMass&quot;:1000,&quot;planetVel&quot;:4.5,&quot;showTrails&quot;:true};
+window.__loop=false;
+window.bkSetup = function(logicalW, logicalH, loopFn) {
+  const canvas = document.getElementById(&quot;c&quot;);
+  if (!canvas) return;
+  const ctx = canvas.getContext(&quot;2d&quot;);
+  
+  window.parent.postMessage({type:&quot;bk:aspect&quot;,aspect:logicalW/logicalH}, &quot;*&quot;);
+  
+  function loop() {
+    const bw = window.innerWidth;
+    const bh = window.innerHeight;
+    const cssScale = Math.max(bw / logicalW, bh / logicalH);
+    const dpr = window.devicePixelRatio || 1;
+    const bitmapScale = cssScale * dpr;
+    
+    const nextW = Math.floor(logicalW * bitmapScale);
+    const nextH = Math.floor(logicalH * bitmapScale);
+    
+    if (canvas.width !== nextW || canvas.height !== nextH) {
+      canvas.width = nextW;
+      canvas.height = nextH;
+      canvas.style.width = logicalW + &quot;px&quot;;
+      canvas.style.height = logicalH + &quot;px&quot;;
+      canvas.style.transform = &quot;scale(&quot; + cssScale + &quot;)&quot;;
+    }
+    
+    ctx.save();
+    ctx.scale(bitmapScale, bitmapScale);
+    
+    loopFn(ctx, logicalW, logicalH);
+    
+    ctx.restore();
+    requestAnimationFrame(loop);
+  }
+  loop();
+};
+
+window.addEventListener(&quot;message&quot;, (event) =&gt; {
+  if (!event.data || event.data.type !== &quot;bk:set-props&quot;) return;
+  window.__simProps = { ...window.__simProps, ...event.data.props };
+  window.dispatchEvent(new CustomEvent(&quot;bk:props&quot;, { detail: window.__simProps }));
+});
+try {
+  let props = window.__simProps || { starMass: 1000, planetVel: 4.5, showTrails: true };
+
+let planet = { x: 0, y: 0, vx: 0, vy: 0 };
+let trail = [];
+
+function resetPlanet(logicalW, logicalH) {
+  planet = {
+    x: logicalW / 2,
+    y: logicalH / 2 - 150,
+    vx: props.planetVel,
+    vy: 0
+  };
+  trail = [];
+}
+
+// We don&#39;t have access to logicalW and logicalH globally, but they are constant
+// It&#39;s cleaner to keep them here for initialisation
+const initW = 800;
+const initH = 450;
+resetPlanet(initW, initH);
+
+let camera = { x: initW / 2, y: initH / 2, zoom: 1 };
+let isPanning = false;
+let panStart = { x: 0, y: 0, camX: 0, camY: 0 };
+let dragging = null;
+
+// Match the iframe background to the canvas to hide letterboxing sidebars
+document.body.style.background = &quot;#0a0a0a&quot;;
+
+function updateProps(nextProps) {
+  const oldVel = props.planetVel;
+  props = { ...props, ...nextProps };
+  if (props.planetVel !== oldVel) {
+    resetPlanet(initW, initH);
+  }
+}
+
+window.addEventListener(&quot;bk:props&quot;, (e) =&gt; updateProps(e.detail || {}));
+
+function physics(logicalW, logicalH) {
+  const cx = logicalW / 2;
+  const cy = logicalH / 2;
+  const dx = cx - planet.x;
+  const dy = cy - planet.y;
+  const r2 = dx * dx + dy * dy;
+  const r = Math.sqrt(r2);
+  
+  // F = G * M / r^2 (simplified)
+  const f = props.starMass / r2;
+  const fx = f * (dx / r);
+  const fy = f * (dy / r);
+  
+  if (!dragging) {
+    planet.vx += fx;
+    planet.vy += fy;
+    planet.x += planet.vx;
+    planet.y += planet.vy;
+  }
+  
+  if (props.showTrails &amp;&amp; !dragging) {
+    trail.push({ x: planet.x, y: planet.y });
+    if (trail.length &gt; 300) trail.shift();
+  } else if (!props.showTrails) {
+    trail = [];
+  }
+}
+
+function draw(ctx, logicalW, logicalH) {
+  physics(logicalW, logicalH);
+  
+  ctx.fillStyle = &quot;#0a0a0a&quot;;
+  ctx.fillRect(0, 0, logicalW, logicalH);
+  
+  ctx.save();
+  ctx.translate(logicalW / 2, logicalH / 2);
+  ctx.scale(camera.zoom, camera.zoom);
+  ctx.translate(-camera.x, -camera.y);
+
+  const cx = logicalW / 2;
+  const cy = logicalH / 2;
+  
+  // Draw trail
+  if (trail.length &gt; 1) {
+    ctx.beginPath();
+    ctx.moveTo(trail[0].x, trail[0].y);
+    for (let i = 1; i &lt; trail.length; i++) {
+      ctx.lineTo(trail[i].x, trail[i].y);
+    }
+    ctx.strokeStyle = &quot;rgba(255, 255, 255, 0.3)&quot;;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+  
+  // Draw star
+  const starRadius = Math.max(10, props.starMass / 50);
+  ctx.beginPath();
+  ctx.arc(cx, cy, starRadius, 0, Math.PI * 2);
+  ctx.fillStyle = &quot;#fb923c&quot;; // Ember color
+  ctx.fill();
+  
+  // Draw planet
+  ctx.beginPath();
+  ctx.arc(planet.x, planet.y, 6, 0, Math.PI * 2);
+  ctx.fillStyle = &quot;#38bdf8&quot;;
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function toWorld(sx, sy) {
+  return {
+    x: (sx - initW / 2) / camera.zoom + camera.x,
+    y: (sy - initH / 2) / camera.zoom + camera.y
+  };
+}
+
+const canvas = document.getElementById(&quot;c&quot;);
+
+canvas.addEventListener(&quot;pointerdown&quot;, (e) =&gt; {
+  const worldPos = toWorld(e.offsetX, e.offsetY);
+  
+  if (Math.hypot(worldPos.x - planet.x, worldPos.y - planet.y) &lt; Math.max(15, 15 / camera.zoom)) {
+    dragging = planet;
+    planet.vx = 0;
+    planet.vy = 0;
+    trail = [];
+    canvas.setPointerCapture(e.pointerId);
+    return;
+  }
+  
+  isPanning = true;
+  panStart = { x: e.offsetX, y: e.offsetY, camX: camera.x, camY: camera.y };
+  canvas.setPointerCapture(e.pointerId);
+});
+
+canvas.addEventListener(&quot;pointermove&quot;, (e) =&gt; {
+  if (dragging) {
+    const worldPos = toWorld(e.offsetX, e.offsetY);
+    dragging.x = worldPos.x;
+    dragging.y = worldPos.y;
+  } else if (isPanning) {
+    camera.x = panStart.camX - (e.offsetX - panStart.x) / camera.zoom;
+    camera.y = panStart.camY - (e.offsetY - panStart.y) / camera.zoom;
+  }
+});
+
+canvas.addEventListener(&quot;pointerup&quot;, () =&gt; {
+  dragging = null;
+  isPanning = false;
+});
+canvas.addEventListener(&quot;pointercancel&quot;, () =&gt; {
+  dragging = null;
+  isPanning = false;
+});
+
+canvas.addEventListener(&quot;wheel&quot;, (e) =&gt; {
+  e.preventDefault();
+  const zoomFactor = Math.pow(0.999, e.deltaY);
+  const mx = e.offsetX;
+  const my = e.offsetY;
+  const worldPosBefore = toWorld(mx, my);
+  
+  camera.zoom *= zoomFactor;
+  camera.zoom = Math.max(0.05, Math.min(camera.zoom, 50));
+  
+  const worldPosAfter = toWorld(mx, my);
+  camera.x += worldPosBefore.x - worldPosAfter.x;
+  camera.y += worldPosBefore.y - worldPosAfter.y;
+});
+
+window.bkSetup(initW, initH, draw);
+
+} catch (e) {
+  console.error(&quot;Simulation Error:&quot;, e);
+  document.body.innerHTML = &#39;&lt;div style=&quot;padding:20px;color:red;font-family:monospace&quot;&gt;Error: &#39; + e.message + &#39;&lt;/div&gt;&#39;;
+}
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"
+              sandbox="allow-scripts"
+              style="width:100%;height:100%;border:none;display:block;">
+            </iframe>
+          </div>
+          <script type="application/json" class="bk-sim-config">{"js":"let props = window.__simProps || { starMass: 1000, planetVel: 4.5, showTrails: true };\n\nlet planet = { x: 0, y: 0, vx: 0, vy: 0 };\nlet trail = [];\n\nfunction resetPlanet(logicalW, logicalH) {\n  planet = {\n    x: logicalW / 2,\n    y: logicalH / 2 - 150,\n    vx: props.planetVel,\n    vy: 0\n  };\n  trail = [];\n}\n\n// We don't have access to logicalW and logicalH globally, but they are constant\n// It's cleaner to keep them here for initialisation\nconst initW = 800;\nconst initH = 450;\nresetPlanet(initW, initH);\n\nlet camera = { x: initW / 2, y: initH / 2, zoom: 1 };\nlet isPanning = false;\nlet panStart = { x: 0, y: 0, camX: 0, camY: 0 };\nlet dragging = null;\n\n// Match the iframe background to the canvas to hide letterboxing sidebars\ndocument.body.style.background = \"#0a0a0a\";\n\nfunction updateProps(nextProps) {\n  const oldVel = props.planetVel;\n  props = { ...props, ...nextProps };\n  if (props.planetVel !== oldVel) {\n    resetPlanet(initW, initH);\n  }\n}\n\nwindow.addEventListener(\"bk:props\", (e) =\u003e updateProps(e.detail || {}));\n\nfunction physics(logicalW, logicalH) {\n  const cx = logicalW / 2;\n  const cy = logicalH / 2;\n  const dx = cx - planet.x;\n  const dy = cy - planet.y;\n  const r2 = dx * dx + dy * dy;\n  const r = Math.sqrt(r2);\n  \n  // F = G * M / r^2 (simplified)\n  const f = props.starMass / r2;\n  const fx = f * (dx / r);\n  const fy = f * (dy / r);\n  \n  if (!dragging) {\n    planet.vx += fx;\n    planet.vy += fy;\n    planet.x += planet.vx;\n    planet.y += planet.vy;\n  }\n  \n  if (props.showTrails && !dragging) {\n    trail.push({ x: planet.x, y: planet.y });\n    if (trail.length \u003e 300) trail.shift();\n  } else if (!props.showTrails) {\n    trail = [];\n  }\n}\n\nfunction draw(ctx, logicalW, logicalH) {\n  physics(logicalW, logicalH);\n  \n  ctx.fillStyle = \"#0a0a0a\";\n  ctx.fillRect(0, 0, logicalW, logicalH);\n  \n  ctx.save();\n  ctx.translate(logicalW / 2, logicalH / 2);\n  ctx.scale(camera.zoom, camera.zoom);\n  ctx.translate(-camera.x, -camera.y);\n\n  const cx = logicalW / 2;\n  const cy = logicalH / 2;\n  \n  // Draw trail\n  if (trail.length \u003e 1) {\n    ctx.beginPath();\n    ctx.moveTo(trail[0].x, trail[0].y);\n    for (let i = 1; i \u003c trail.length; i++) {\n      ctx.lineTo(trail[i].x, trail[i].y);\n    }\n    ctx.strokeStyle = \"rgba(255, 255, 255, 0.3)\";\n    ctx.lineWidth = 1;\n    ctx.stroke();\n  }\n  \n  // Draw star\n  const starRadius = Math.max(10, props.starMass / 50);\n  ctx.beginPath();\n  ctx.arc(cx, cy, starRadius, 0, Math.PI * 2);\n  ctx.fillStyle = \"#fb923c\"; // Ember color\n  ctx.fill();\n  \n  // Draw planet\n  ctx.beginPath();\n  ctx.arc(planet.x, planet.y, 6, 0, Math.PI * 2);\n  ctx.fillStyle = \"#38bdf8\";\n  ctx.fill();\n\n  ctx.restore();\n}\n\nfunction toWorld(sx, sy) {\n  return {\n    x: (sx - initW / 2) / camera.zoom + camera.x,\n    y: (sy - initH / 2) / camera.zoom + camera.y\n  };\n}\n\nconst canvas = document.getElementById(\"c\");\n\ncanvas.addEventListener(\"pointerdown\", (e) =\u003e {\n  const worldPos = toWorld(e.offsetX, e.offsetY);\n  \n  if (Math.hypot(worldPos.x - planet.x, worldPos.y - planet.y) \u003c Math.max(15, 15 / camera.zoom)) {\n    dragging = planet;\n    planet.vx = 0;\n    planet.vy = 0;\n    trail = [];\n    canvas.setPointerCapture(e.pointerId);\n    return;\n  }\n  \n  isPanning = true;\n  panStart = { x: e.offsetX, y: e.offsetY, camX: camera.x, camY: camera.y };\n  canvas.setPointerCapture(e.pointerId);\n});\n\ncanvas.addEventListener(\"pointermove\", (e) =\u003e {\n  if (dragging) {\n    const worldPos = toWorld(e.offsetX, e.offsetY);\n    dragging.x = worldPos.x;\n    dragging.y = worldPos.y;\n  } else if (isPanning) {\n    camera.x = panStart.camX - (e.offsetX - panStart.x) / camera.zoom;\n    camera.y = panStart.camY - (e.offsetY - panStart.y) / camera.zoom;\n  }\n});\n\ncanvas.addEventListener(\"pointerup\", () =\u003e {\n  dragging = null;\n  isPanning = false;\n});\ncanvas.addEventListener(\"pointercancel\", () =\u003e {\n  dragging = null;\n  isPanning = false;\n});\n\ncanvas.addEventListener(\"wheel\", (e) =\u003e {\n  e.preventDefault();\n  const zoomFactor = Math.pow(0.999, e.deltaY);\n  const mx = e.offsetX;\n  const my = e.offsetY;\n  const worldPosBefore = toWorld(mx, my);\n  \n  camera.zoom *= zoomFactor;\n  camera.zoom = Math.max(0.05, Math.min(camera.zoom, 50));\n  \n  const worldPosAfter = toWorld(mx, my);\n  camera.x += worldPosBefore.x - worldPosAfter.x;\n  camera.y += worldPosBefore.y - worldPosAfter.y;\n});\n\nwindow.bkSetup(initW, initH, draw);\n","loop":false}</script>
+    <figcaption class="bk-caption">Adjust the mass of the central star and the velocity of the planet to see different orbital shapes.</figcaption>
+  </figure>
+<div class="bk-callout bk-callout--important">
+          <div class="bk-callout-icon"></div>
+          <div class="bk-callout-content">
+            <div class="bk-callout-label">Important</div>
+            <div class="bk-callout-body"><p>While Newton&#39;s math was incredibly precise, it had a glaring conceptual flaw: it assumed gravity acted instantaneously across vast distances, with no mechanism for <em>how</em> the force was transmitted.</p>
+</div>
+          </div>
+        </div>
+<div class="bk-quiz" id="quiz-4">
+          <div class="bk-quiz-head">
+            <span>Checkpoint: Newtonian Physics</span>
+            
+          </div>
+          <div class="bk-quiz-body">
+            
+    <div class="bk-question" id="quiz-4-q0">
+      <div class="bk-q-text"><p>If you double the distance between two planets, what happens to the gravitational force between them?</p>
+</div>
+      <div class="bk-opts">
+    <button class="bk-opt" data-correct="false" onclick="bkAnswer(this,'quiz-4-q0')">
+      <span class="bk-opt-dot"></span><span class="bk-opt-text">It halves</span>
+    </button>
+    <button class="bk-opt" data-correct="false" onclick="bkAnswer(this,'quiz-4-q0')">
+      <span class="bk-opt-dot"></span><span class="bk-opt-text">It doubles</span>
+    </button>
+    <button class="bk-opt" data-correct="true" onclick="bkAnswer(this,'quiz-4-q0')">
+      <span class="bk-opt-dot"></span><span class="bk-opt-text">It becomes one-quarter as strong</span>
+    </button>
+    <button class="bk-opt" data-correct="false" onclick="bkAnswer(this,'quiz-4-q0')">
+      <span class="bk-opt-dot"></span><span class="bk-opt-text">It stays the same</span>
+    </button></div>
+      <div class="bk-explanation" id="quiz-4-q0-exp" hidden><p>Newton&#39;s law is an inverse-square law (<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi mathvariant="normal">/</mi><msup><mi>r</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">1/r^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mord">1/</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0278em;">r</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span>). Doubling the distance (<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>2</mn></msup><mo>=</mo><mn>4</mn></mrow><annotation encoding="application/x-tex">2^2 = 4</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">4</span></span></span></span>) reduces the force to one-quarter.</p>
+</div>
+    </div>
+
+    <div class="bk-question" id="quiz-4-q1">
+      <div class="bk-q-text"><p>What was Newton&#39;s major conceptual breakthrough regarding gravity?</p>
+</div>
+      <div class="bk-opts">
+    <button class="bk-opt" data-correct="false" onclick="bkAnswer(this,'quiz-4-q1')">
+      <span class="bk-opt-dot"></span><span class="bk-opt-text">That gravity travels at the speed of light</span>
+    </button>
+    <button class="bk-opt" data-correct="true" onclick="bkAnswer(this,'quiz-4-q1')">
+      <span class="bk-opt-dot"></span><span class="bk-opt-text">That celestial and earthly gravity are the same force</span>
+    </button>
+    <button class="bk-opt" data-correct="false" onclick="bkAnswer(this,'quiz-4-q1')">
+      <span class="bk-opt-dot"></span><span class="bk-opt-text">That gravity is caused by curved spacetime</span>
+    </button></div>
+      <div class="bk-explanation" id="quiz-4-q1-exp" hidden><p>Newton unified the heavens and the earth, realizing the force pulling an apple is the same force pulling the moon.</p>
+</div>
+    </div>
+          </div>
+        </div>
+<hr class="bk-divider">
+<section id="section-6" class="bk-section bk-subsection"><h1>The Fabric of Spacetime</h1>
+<p>In 1915, Albert Einstein completely rewrote the rules of the universe with his <strong>General Theory of Relativity</strong>. He realized that space and time are not a static stage where events take place; they are a dynamic, interwoven fabric called spacetime.</p>
+<p>Massive objects—like stars and planets—warp this fabric. When an object moves through space, it simply travels along the straightest possible path in this curved geometry. </p>
+<p>Imagine placing a heavy bowling ball on a trampoline; it creates a deep depression. If you roll a marble across the trampoline, its path curves around the bowling ball, not because an invisible string is pulling it, but because the surface it&#39;s rolling on is curved.</p>
+</section>
+<figure class="bk-object bk-object--neutral">
+    <div class="bk-object-header">
+      <span class="bk-object-kicker">YouTube</span>
+      <span class="bk-object-title">Spacetime demonstration</span>
+      <button type="button" class="bk-object-maximize" aria-label="Maximize" title="Maximize">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      </button>
+    </div>
+    <div class="bk-embed-frame bk-aspect-wide">
+            <iframe src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?rel=0&origin=https://youtube.com"
+              title="Spacetime demonstration"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+              loading="lazy"
+              style="width:100%;height:100%;border:none;display:block;">
+            </iframe>
+          </div>
+    <figcaption class="bk-caption">A classic demonstration of gravity.</figcaption>
+  </figure>
+<figure class="bk-object bk-object--blue">
+    <div class="bk-object-header">
+      <span class="bk-object-kicker">Interactive Lab</span>
+      <span class="bk-object-title">The Chaotic 3-Body Problem</span>
+      <button type="button" class="bk-object-maximize" aria-label="Maximize" title="Maximize">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      </button>
+    </div>
+    <div class="bk-sim-controls" aria-label="Simulation controls">
+    <label class="bk-sim-range">
+          <span>Time Multiplier</span>
+          <input type="range" data-bk-prop="speed" min="0.1" max="3" step="0.1" value="1">
+          <output>1</output>
+        </label><label class="bk-sim-range">
+          <span>Initial Chaos Perturbation</span>
+          <input type="range" data-bk-prop="perturbation" min="-2" max="2" step="0.1" value="0">
+          <output>0</output>
+        </label><label class="bk-sim-toggle">
+            <input type="checkbox" data-bk-prop="reset" >
+            <span>Reset Simulation</span>
+          </label>
+  </div>
+          <div class="bk-embed-frame bk-embed-interactive bk-aspect-wide" style="height:420px">
+            <div class="bk-embed-overlay" tabindex="0" role="button" aria-label="Activate interactive simulation">
+              <span class="bk-embed-overlay-text">Click to interact</span>
+            </div>
+            <iframe srcdoc="&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;
+&lt;style&gt;
+  html, body { height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; background: transparent; display: flex; align-items: center; justify-content: center; }
+  canvas { display: block; touch-action: none; transform-origin: center center; }
+  body { background: #ffffff; color: #111; font-family: sans-serif; }
+  @media (prefers-color-scheme: dark) { body { background: #0a0a0a; color: #eee; } }
+&lt;/style&gt;
+&lt;/head&gt;&lt;body&gt;
+&lt;canvas id=&quot;c&quot; width=&quot;800&quot; height=&quot;500&quot;&gt;&lt;/canvas&gt;
+&lt;script&gt;
+window.__simProps={&quot;speed&quot;:1,&quot;perturbation&quot;:0,&quot;reset&quot;:false};
+window.__loop=false;
+window.bkSetup = function(logicalW, logicalH, loopFn) {
+  const canvas = document.getElementById(&quot;c&quot;);
+  if (!canvas) return;
+  const ctx = canvas.getContext(&quot;2d&quot;);
+  
+  window.parent.postMessage({type:&quot;bk:aspect&quot;,aspect:logicalW/logicalH}, &quot;*&quot;);
+  
+  function loop() {
+    const bw = window.innerWidth;
+    const bh = window.innerHeight;
+    const cssScale = Math.max(bw / logicalW, bh / logicalH);
+    const dpr = window.devicePixelRatio || 1;
+    const bitmapScale = cssScale * dpr;
+    
+    const nextW = Math.floor(logicalW * bitmapScale);
+    const nextH = Math.floor(logicalH * bitmapScale);
+    
+    if (canvas.width !== nextW || canvas.height !== nextH) {
+      canvas.width = nextW;
+      canvas.height = nextH;
+      canvas.style.width = logicalW + &quot;px&quot;;
+      canvas.style.height = logicalH + &quot;px&quot;;
+      canvas.style.transform = &quot;scale(&quot; + cssScale + &quot;)&quot;;
+    }
+    
+    ctx.save();
+    ctx.scale(bitmapScale, bitmapScale);
+    
+    loopFn(ctx, logicalW, logicalH);
+    
+    ctx.restore();
+    requestAnimationFrame(loop);
+  }
+  loop();
+};
+
+window.addEventListener(&quot;message&quot;, (event) =&gt; {
+  if (!event.data || event.data.type !== &quot;bk:set-props&quot;) return;
+  window.__simProps = { ...window.__simProps, ...event.data.props };
+  window.dispatchEvent(new CustomEvent(&quot;bk:props&quot;, { detail: window.__simProps }));
+});
+try {
+  let props = window.__simProps || { speed: 1.0, perturbation: 0, reset: false };
+
+const initW = 800;
+const initH = 450;
+
+let bodies = [];
+let trails = [];
+let prevPerturbation = props.perturbation;
+
+function resetSystem() {
+  const cx = initW / 2;
+  const cy = initH / 2;
+  // Famous figure-8 orbit initial conditions (approximate)
+  bodies = [
+    { m: 100, x: cx + 100, y: cy, vx: 0, vy: 1 + props.perturbation * 0.1, color: &quot;#f87171&quot; },
+    { m: 100, x: cx - 100, y: cy, vx: 0, vy: -1 - props.perturbation * 0.1, color: &quot;#38bdf8&quot; },
+    { m: 100, x: cx, y: cy, vx: 0, vy: 0, color: &quot;#facc15&quot; }
+  ];
+  trails = [[], [], []];
+}
+
+resetSystem();
+
+// Match the iframe background to the canvas to hide letterboxing sidebars
+document.body.style.background = &quot;#0a0a0a&quot;;
+
+let camera = { x: initW / 2, y: initH / 2, zoom: 1 };
+let isPanning = false;
+let panStart = { x: 0, y: 0, camX: 0, camY: 0 };
+let dragging = null;
+
+window.addEventListener(&quot;bk:props&quot;, (e) =&gt; {
+  const oldProps = { ...props };
+  props = { ...props, ...e.detail };
+  if (props.perturbation !== prevPerturbation || (props.reset &amp;&amp; !oldProps.reset)) {
+    prevPerturbation = props.perturbation;
+    resetSystem();
+    if (props.reset) setTimeout(() =&gt; {
+      props.reset = false;
+      window.dispatchEvent(new CustomEvent(&quot;bk:props&quot;, { detail: props }));
+    }, 50);
+  }
+});
+
+function physics() {
+  const G = 1;
+  const dt = 0.5 * props.speed;
+  
+  // Calculate forces
+  for (let i = 0; i &lt; bodies.length; i++) {
+    bodies[i].fx = 0; bodies[i].fy = 0;
+    for (let j = 0; j &lt; bodies.length; j++) {
+      if (i === j) continue;
+      const dx = bodies[j].x - bodies[i].x;
+      const dy = bodies[j].y - bodies[i].y;
+      const r2 = dx*dx + dy*dy;
+      const r = Math.sqrt(r2);
+      if (r &lt; 5) continue; // collision prevention
+      const f = (G * bodies[i].m * bodies[j].m) / r2;
+      bodies[i].fx += f * (dx/r);
+      bodies[i].fy += f * (dy/r);
+    }
+  }
+  
+  // Update velocity and position
+  for (let i = 0; i &lt; bodies.length; i++) {
+    const b = bodies[i];
+    if (b === dragging) {
+      b.vx = 0;
+      b.vy = 0;
+      trails[i] = [];
+      continue;
+    }
+    b.vx += (b.fx / b.m) * dt;
+    b.vy += (b.fy / b.m) * dt;
+    b.x += b.vx * dt;
+    b.y += b.vy * dt;
+    
+    trails[i].push({ x: b.x, y: b.y });
+    if (trails[i].length &gt; 400) trails[i].shift();
+  }
+}
+
+function draw(ctx, logicalW, logicalH) {
+  for(let i=0; i&lt;4; i++) physics();
+  
+  ctx.fillStyle = &quot;#0a0a0a&quot;;
+  ctx.fillRect(0, 0, logicalW, logicalH);
+  
+  ctx.save();
+  ctx.translate(logicalW / 2, logicalH / 2);
+  ctx.scale(camera.zoom, camera.zoom);
+  ctx.translate(-camera.x, -camera.y);
+
+  for (let i = 0; i &lt; bodies.length; i++) {
+    if (trails[i].length &gt; 1) {
+      ctx.beginPath();
+      ctx.moveTo(trails[i][0].x, trails[i][0].y);
+      for (let j = 1; j &lt; trails[i].length; j++) {
+        ctx.lineTo(trails[i][j].x, trails[i][j].y);
+      }
+      ctx.strokeStyle = bodies[i].color;
+      ctx.lineWidth = 1.5;
+      ctx.globalAlpha = 0.6;
+      ctx.stroke();
+      ctx.globalAlpha = 1.0;
+    }
+    
+    ctx.beginPath();
+    ctx.arc(bodies[i].x, bodies[i].y, 6, 0, Math.PI * 2);
+    ctx.fillStyle = bodies[i].color;
+    ctx.fill();
+  }
+  
+  ctx.restore();
+}
+
+function toWorld(sx, sy) {
+  return {
+    x: (sx - initW / 2) / camera.zoom + camera.x,
+    y: (sy - initH / 2) / camera.zoom + camera.y
+  };
+}
+
+const canvas = document.getElementById(&quot;c&quot;);
+
+canvas.addEventListener(&quot;pointerdown&quot;, (e) =&gt; {
+  const worldPos = toWorld(e.offsetX, e.offsetY);
+  
+  for (const b of bodies) {
+    if (Math.hypot(worldPos.x - b.x, worldPos.y - b.y) &lt; Math.max(15, 15 / camera.zoom)) {
+      dragging = b;
+      b.vx = 0;
+      b.vy = 0;
+      canvas.setPointerCapture(e.pointerId);
+      return;
+    }
+  }
+  
+  isPanning = true;
+  panStart = { x: e.offsetX, y: e.offsetY, camX: camera.x, camY: camera.y };
+  canvas.setPointerCapture(e.pointerId);
+});
+
+canvas.addEventListener(&quot;pointermove&quot;, (e) =&gt; {
+  if (dragging) {
+    const worldPos = toWorld(e.offsetX, e.offsetY);
+    dragging.x = worldPos.x;
+    dragging.y = worldPos.y;
+  } else if (isPanning) {
+    camera.x = panStart.camX - (e.offsetX - panStart.x) / camera.zoom;
+    camera.y = panStart.camY - (e.offsetY - panStart.y) / camera.zoom;
+  }
+});
+
+canvas.addEventListener(&quot;pointerup&quot;, () =&gt; {
+  dragging = null;
+  isPanning = false;
+});
+canvas.addEventListener(&quot;pointercancel&quot;, () =&gt; {
+  dragging = null;
+  isPanning = false;
+});
+
+canvas.addEventListener(&quot;wheel&quot;, (e) =&gt; {
+  e.preventDefault();
+  const zoomFactor = Math.pow(0.999, e.deltaY);
+  const mx = e.offsetX;
+  const my = e.offsetY;
+  const worldPosBefore = toWorld(mx, my);
+  
+  camera.zoom *= zoomFactor;
+  camera.zoom = Math.max(0.05, Math.min(camera.zoom, 50));
+  
+  const worldPosAfter = toWorld(mx, my);
+  camera.x += worldPosBefore.x - worldPosAfter.x;
+  camera.y += worldPosBefore.y - worldPosAfter.y;
+});
+
+window.bkSetup(initW, initH, draw);
+
+} catch (e) {
+  console.error(&quot;Simulation Error:&quot;, e);
+  document.body.innerHTML = &#39;&lt;div style=&quot;padding:20px;color:red;font-family:monospace&quot;&gt;Error: &#39; + e.message + &#39;&lt;/div&gt;&#39;;
+}
+&lt;/script&gt;
+&lt;/body&gt;&lt;/html&gt;"
+              sandbox="allow-scripts"
+              style="width:100%;height:100%;border:none;display:block;">
+            </iframe>
+          </div>
+          <script type="application/json" class="bk-sim-config">{"js":"let props = window.__simProps || { speed: 1.0, perturbation: 0, reset: false };\n\nconst initW = 800;\nconst initH = 450;\n\nlet bodies = [];\nlet trails = [];\nlet prevPerturbation = props.perturbation;\n\nfunction resetSystem() {\n  const cx = initW / 2;\n  const cy = initH / 2;\n  // Famous figure-8 orbit initial conditions (approximate)\n  bodies = [\n    { m: 100, x: cx + 100, y: cy, vx: 0, vy: 1 + props.perturbation * 0.1, color: \"#f87171\" },\n    { m: 100, x: cx - 100, y: cy, vx: 0, vy: -1 - props.perturbation * 0.1, color: \"#38bdf8\" },\n    { m: 100, x: cx, y: cy, vx: 0, vy: 0, color: \"#facc15\" }\n  ];\n  trails = [[], [], []];\n}\n\nresetSystem();\n\n// Match the iframe background to the canvas to hide letterboxing sidebars\ndocument.body.style.background = \"#0a0a0a\";\n\nlet camera = { x: initW / 2, y: initH / 2, zoom: 1 };\nlet isPanning = false;\nlet panStart = { x: 0, y: 0, camX: 0, camY: 0 };\nlet dragging = null;\n\nwindow.addEventListener(\"bk:props\", (e) =\u003e {\n  const oldProps = { ...props };\n  props = { ...props, ...e.detail };\n  if (props.perturbation !== prevPerturbation || (props.reset && !oldProps.reset)) {\n    prevPerturbation = props.perturbation;\n    resetSystem();\n    if (props.reset) setTimeout(() =\u003e {\n      props.reset = false;\n      window.dispatchEvent(new CustomEvent(\"bk:props\", { detail: props }));\n    }, 50);\n  }\n});\n\nfunction physics() {\n  const G = 1;\n  const dt = 0.5 * props.speed;\n  \n  // Calculate forces\n  for (let i = 0; i \u003c bodies.length; i++) {\n    bodies[i].fx = 0; bodies[i].fy = 0;\n    for (let j = 0; j \u003c bodies.length; j++) {\n      if (i === j) continue;\n      const dx = bodies[j].x - bodies[i].x;\n      const dy = bodies[j].y - bodies[i].y;\n      const r2 = dx*dx + dy*dy;\n      const r = Math.sqrt(r2);\n      if (r \u003c 5) continue; // collision prevention\n      const f = (G * bodies[i].m * bodies[j].m) / r2;\n      bodies[i].fx += f * (dx/r);\n      bodies[i].fy += f * (dy/r);\n    }\n  }\n  \n  // Update velocity and position\n  for (let i = 0; i \u003c bodies.length; i++) {\n    const b = bodies[i];\n    if (b === dragging) {\n      b.vx = 0;\n      b.vy = 0;\n      trails[i] = [];\n      continue;\n    }\n    b.vx += (b.fx / b.m) * dt;\n    b.vy += (b.fy / b.m) * dt;\n    b.x += b.vx * dt;\n    b.y += b.vy * dt;\n    \n    trails[i].push({ x: b.x, y: b.y });\n    if (trails[i].length \u003e 400) trails[i].shift();\n  }\n}\n\nfunction draw(ctx, logicalW, logicalH) {\n  for(let i=0; i\u003c4; i++) physics();\n  \n  ctx.fillStyle = \"#0a0a0a\";\n  ctx.fillRect(0, 0, logicalW, logicalH);\n  \n  ctx.save();\n  ctx.translate(logicalW / 2, logicalH / 2);\n  ctx.scale(camera.zoom, camera.zoom);\n  ctx.translate(-camera.x, -camera.y);\n\n  for (let i = 0; i \u003c bodies.length; i++) {\n    if (trails[i].length \u003e 1) {\n      ctx.beginPath();\n      ctx.moveTo(trails[i][0].x, trails[i][0].y);\n      for (let j = 1; j \u003c trails[i].length; j++) {\n        ctx.lineTo(trails[i][j].x, trails[i][j].y);\n      }\n      ctx.strokeStyle = bodies[i].color;\n      ctx.lineWidth = 1.5;\n      ctx.globalAlpha = 0.6;\n      ctx.stroke();\n      ctx.globalAlpha = 1.0;\n    }\n    \n    ctx.beginPath();\n    ctx.arc(bodies[i].x, bodies[i].y, 6, 0, Math.PI * 2);\n    ctx.fillStyle = bodies[i].color;\n    ctx.fill();\n  }\n  \n  ctx.restore();\n}\n\nfunction toWorld(sx, sy) {\n  return {\n    x: (sx - initW / 2) / camera.zoom + camera.x,\n    y: (sy - initH / 2) / camera.zoom + camera.y\n  };\n}\n\nconst canvas = document.getElementById(\"c\");\n\ncanvas.addEventListener(\"pointerdown\", (e) =\u003e {\n  const worldPos = toWorld(e.offsetX, e.offsetY);\n  \n  for (const b of bodies) {\n    if (Math.hypot(worldPos.x - b.x, worldPos.y - b.y) \u003c Math.max(15, 15 / camera.zoom)) {\n      dragging = b;\n      b.vx = 0;\n      b.vy = 0;\n      canvas.setPointerCapture(e.pointerId);\n      return;\n    }\n  }\n  \n  isPanning = true;\n  panStart = { x: e.offsetX, y: e.offsetY, camX: camera.x, camY: camera.y };\n  canvas.setPointerCapture(e.pointerId);\n});\n\ncanvas.addEventListener(\"pointermove\", (e) =\u003e {\n  if (dragging) {\n    const worldPos = toWorld(e.offsetX, e.offsetY);\n    dragging.x = worldPos.x;\n    dragging.y = worldPos.y;\n  } else if (isPanning) {\n    camera.x = panStart.camX - (e.offsetX - panStart.x) / camera.zoom;\n    camera.y = panStart.camY - (e.offsetY - panStart.y) / camera.zoom;\n  }\n});\n\ncanvas.addEventListener(\"pointerup\", () =\u003e {\n  dragging = null;\n  isPanning = false;\n});\ncanvas.addEventListener(\"pointercancel\", () =\u003e {\n  dragging = null;\n  isPanning = false;\n});\n\ncanvas.addEventListener(\"wheel\", (e) =\u003e {\n  e.preventDefault();\n  const zoomFactor = Math.pow(0.999, e.deltaY);\n  const mx = e.offsetX;\n  const my = e.offsetY;\n  const worldPosBefore = toWorld(mx, my);\n  \n  camera.zoom *= zoomFactor;\n  camera.zoom = Math.max(0.05, Math.min(camera.zoom, 50));\n  \n  const worldPosAfter = toWorld(mx, my);\n  camera.x += worldPosBefore.x - worldPosAfter.x;\n  camera.y += worldPosBefore.y - worldPosAfter.y;\n});\n\nwindow.bkSetup(initW, initH, draw);\n","loop":false}</script>
+    <figcaption class="bk-caption">Under Newton&#39;s laws, adding just one more body to an orbit creates unpredictable, chaotic motion. Drag the slider to perturb the starting conditions.</figcaption>
+  </figure>
+<div class="bk-callout bk-callout--note">
+          <div class="bk-callout-icon"></div>
+          <div class="bk-callout-content">
+            <div class="bk-callout-label">Note</div>
+            <div class="bk-callout-body"><p>Einstein&#39;s General Relativity didn&#39;t just fix the &#39;instantaneous&#39; problem—it predicted entirely new phenomena, like black holes and gravitational waves, which we now observe regularly.</p>
+</div>
+          </div>
+        </div>
+<div class="bk-quiz" id="quiz-10">
+          <div class="bk-quiz-head">
+            <span>Final Review</span>
+            
+          </div>
+          <div class="bk-quiz-body">
+            
+    <div class="bk-question" id="quiz-10-q0">
+      <div class="bk-q-text"><p>According to General Relativity, why does the Earth orbit the Sun?</p>
+</div>
+      <div class="bk-opts">
+    <button class="bk-opt" data-correct="false" onclick="bkAnswer(this,'quiz-10-q0')">
+      <span class="bk-opt-dot"></span><span class="bk-opt-text">The Sun exerts an invisible tethering force on the Earth.</span>
+    </button>
+    <button class="bk-opt" data-correct="true" onclick="bkAnswer(this,'quiz-10-q0')">
+      <span class="bk-opt-dot"></span><span class="bk-opt-text">The Earth is following a straight path through curved spacetime.</span>
+    </button>
+    <button class="bk-opt" data-correct="false" onclick="bkAnswer(this,'quiz-10-q0')">
+      <span class="bk-opt-dot"></span><span class="bk-opt-text">The Sun emits gravitons that pull the Earth inward.</span>
+    </button></div>
+      <div class="bk-explanation" id="quiz-10-q0-exp" hidden><p>In General Relativity, massive objects warp spacetime, and other objects simply follow the straightest path (geodesic) through that curved geometry.</p>
+</div>
+    </div>
+          </div>
+        </div>
+      <nav class="bk-end-nav" aria-label="Lesson navigation">
+    <a class="bk-end-link bk-end-link--prev" href="#chapter-0">
+      <span>Previous</span>
+      <strong>The Invisible Tether</strong>
+    </a>
+    <a class="bk-end-link bk-end-link--next" href="#quiz-4">
+      <span>Next</span>
+      <strong>Checkpoint: Newtonian Physics</strong>
+    </a>
+    <a class="bk-end-link" href="#quiz-10">
+      <span>Jump to end</span>
+      <strong>Final Review</strong>
+    </a>
+  </nav>
+    </article>
+  </main>
+</div>
+<script>
+
+function bkSimDoc(js, props, loop) {
+  return '<!DOCTYPE html><html><head><style>' +
+    'html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:transparent;display:flex;align-items:center;justify-content:center}' +
+    'canvas{display:block;touch-action:none;transform-origin:center center}' +
+    'body{background:#fff;color:#111;font-family:sans-serif}' +
+    '@media (prefers-color-scheme: dark){body{background:#0a0a0a;color:#eee}}' +
+    '</style></head><body><canvas id="c" width="800" height="500"></canvas><script>' +
+    'window.__simProps=' + JSON.stringify(props) + ';window.__loop=' + JSON.stringify(Boolean(loop)) + ';' +
+    'window.bkSetup=function(w,h,f){const c=document.getElementById("c");if(!c)return;const ctx=c.getContext("2d");window.parent.postMessage({type:"bk:aspect",aspect:w/h},"*");function l(){const s=Math.max(window.innerWidth/w,window.innerHeight/h),d=window.devicePixelRatio||1,b=s*d,nw=Math.floor(w*b),nh=Math.floor(h*b);if(c.width!==nw||c.height!==nh){c.width=nw;c.height=nh;c.style.width=w+"px";c.style.height=h+"px";c.style.transform="scale("+s+")"}ctx.save();ctx.scale(b,b);f(ctx,w,h);ctx.restore();requestAnimationFrame(l)}l()};' +
+    'window.addEventListener("message",function(event){if(!event.data||event.data.type!=="bk:set-props")return;window.__simProps=Object.assign({},window.__simProps,event.data.props);window.dispatchEvent(new CustomEvent("bk:props",{detail:window.__simProps}));});' +
+    'try{' + js + '}catch(e){console.error("Simulation Error:",e);document.body.innerHTML="<div style=\'padding:20px;color:red;font-family:monospace\'>Error: "+e.message+"</div>"}' +
+    '<\/script></body></html>'
+}
+
+function bkReadSimProps(figure) {
+  const props = {}
+  figure.querySelectorAll('[data-bk-prop]').forEach(input => {
+    if (input.type === 'checkbox') {
+      props[input.dataset.bkProp] = input.checked
+    } else if (input.type === 'range' || input.type === 'number') {
+      props[input.dataset.bkProp] = Number(input.value)
+      const output = input.parentElement && input.parentElement.querySelector('output')
+      if (output) output.textContent = input.value
+    } else {
+      props[input.dataset.bkProp] = input.value
+    }
+  })
+  return props
+}
+
+function bkRestartSim(iframe, config, props) {
+  iframe.srcdoc = bkSimDoc(config.js, props, config.loop)
+}
+
+function bkWireSimControls() {
+  document.querySelectorAll('.bk-object').forEach(figure => {
+    const configEl = figure.querySelector('.bk-sim-config')
+    const iframe = figure.querySelector('iframe')
+    if (!configEl || !iframe) return
+
+    let config
+    try { config = JSON.parse(configEl.textContent || '{}') } catch { return }
+
+    let timer = null
+    figure.querySelectorAll('[data-bk-prop]').forEach(input => {
+      input.addEventListener('input', () => {
+        const props = bkReadSimProps(figure)
+        iframe.contentWindow && iframe.contentWindow.postMessage({ type: 'bk:set-props', props }, '*')
+        clearTimeout(timer)
+        timer = setTimeout(() => bkRestartSim(iframe, config, props), 90)
+      })
+      input.addEventListener('change', () => {
+        const props = bkReadSimProps(figure)
+        clearTimeout(timer)
+        bkRestartSim(iframe, config, props)
+      })
+    })
+  })
+
+  window.addEventListener("message", function(event) {
+    if (event.data && event.data.type === "bk:aspect") {
+      document.querySelectorAll("iframe").forEach(iframe => {
+        if (iframe.contentWindow === event.source) {
+          if (iframe.parentElement && iframe.parentElement.classList.contains("bk-embed-frame")) {
+            iframe.parentElement.style.aspectRatio = event.data.aspect;
+          }
+        }
+      });
+    }
+  });
+}
+
+function bkWireMaximizeControls() {
+  document.querySelectorAll('.bk-object-maximize').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const obj = btn.closest('.bk-object');
+      if (!obj) return;
+      const isMax = obj.classList.toggle('bk-object--maximized');
+      if (isMax) {
+        document.body.style.overflow = 'hidden';
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>';
+      } else {
+        document.body.style.overflow = '';
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
+      }
+    });
+  });
+}
+
+function bkWireInteractiveFrames() {
+  document.querySelectorAll('.bk-object').forEach(obj => {
+    const activate = () => {
+      const frame = obj.querySelector('.bk-embed-interactive');
+      if (frame) frame.classList.add('is-interactive');
+    };
+    obj.addEventListener('pointerdown', activate, { passive: true });
+    obj.addEventListener('focusin', activate, { passive: true });
+  });
+
+  const exitInteractive = (e) => {
+    document.querySelectorAll('.bk-embed-interactive.is-interactive').forEach(frame => {
+      const container = frame.closest('.bk-object') || frame;
+      if (!container.contains(e.target)) {
+        frame.classList.remove('is-interactive');
+      }
+    });
+  };
+  document.addEventListener('pointerdown', exitInteractive, { passive: true });
+  document.addEventListener('focusin', exitInteractive, { passive: true });
+}
+
+function bkWireSidebarToggle() {
+  const shell = document.querySelector('.bk-shell')
+  const collapseBtn = document.getElementById('bk-sidebar-collapse')
+  const expandBtn = document.getElementById('bk-sidebar-expand')
+  if (collapseBtn) collapseBtn.addEventListener('click', () => shell.setAttribute('data-collapsed', 'true'))
+  if (expandBtn) expandBtn.addEventListener('click', () => shell.removeAttribute('data-collapsed'))
+}
+
+function bkWireThemeControls() {
+  const root = document.documentElement
+  const button = document.getElementById('bk-settings-button')
+  const panel = document.getElementById('bk-theme-panel')
+  const theme = document.getElementById('bk-theme-select')
+  const palette = document.getElementById('bk-palette-select')
+  const savedTheme = localStorage.getItem('bk-theme')
+  const savedPalette = localStorage.getItem('bk-palette')
+
+  if (savedTheme && theme) {
+    theme.value = savedTheme
+    savedTheme === 'auto' ? root.removeAttribute('data-theme') : root.setAttribute('data-theme', savedTheme)
+  }
+  if (savedPalette && palette) {
+    const normalizedPalette = savedPalette === 'green' ? 'field' : savedPalette
+    palette.value = normalizedPalette
+    root.setAttribute('data-palette', normalizedPalette)
+  }
+
+  button && panel && button.addEventListener('click', event => {
+    event.stopPropagation()
+    const open = panel.hasAttribute('hidden')
+    panel.hidden = !open
+    button.setAttribute('aria-expanded', String(open))
+  })
+
+  panel && panel.addEventListener('click', event => event.stopPropagation())
+  document.addEventListener('click', () => {
+    if (!button || !panel || panel.hidden) return
+    panel.hidden = true
+    button.setAttribute('aria-expanded', 'false')
+  })
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || !button || !panel || panel.hidden) return
+    panel.hidden = true
+    button.setAttribute('aria-expanded', 'false')
+    button.focus()
+  })
+
+  theme && theme.addEventListener('change', () => {
+    localStorage.setItem('bk-theme', theme.value)
+    theme.value === 'auto' ? root.removeAttribute('data-theme') : root.setAttribute('data-theme', theme.value)
+  })
+  palette && palette.addEventListener('change', () => {
+    localStorage.setItem('bk-palette', palette.value)
+    root.setAttribute('data-palette', palette.value)
+  })
+}
+
+// Quiz interaction
+function bkAnswer(btn, qid) {
+  const isCorrect = btn.dataset.correct === 'true'
+  const question = document.getElementById(qid)
+  question.querySelectorAll('.bk-opt').forEach(b => {
+    if (b.dataset.correct === 'true') {
+      b.classList.add('correct')
+    } else if (b === btn) {
+      b.classList.add('wrong')
+    } else {
+      b.classList.add('disabled')
+    }
+  })
+  const exp = document.getElementById(qid + '-exp')
+  if (exp) exp.hidden = false
+}
+
+// Active sidebar link on scroll
+document.addEventListener('DOMContentLoaded', () => {
+  bkWireMaximizeControls()
+  bkWireSidebarToggle()
+  bkWireThemeControls()
+  bkWireSimControls()
+  bkWireInteractiveFrames()
+
+  const sections = document.querySelectorAll('[id^="chapter-"], [id^="section-"], [id^="quiz-"]')
+  const navLinks = document.querySelectorAll('.bk-nav-item')
+
+  if (!sections.length || !navLinks.length) return
+
+  const obs = new IntersectionObserver(entries => {
+    let activeId = null
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        activeId = e.target.id
+      }
+    })
+
+    if (activeId) {
+      navLinks.forEach(l => {
+        if (l.dataset.id === activeId) {
+          l.classList.add('active')
+        } else {
+          l.classList.remove('active')
+        }
+      })
+    }
+  }, { rootMargin: '-20% 0px -60% 0px', threshold: 0 })
+
+  sections.forEach(s => obs.observe(s))
+})
+
+</script>
+</body>
+</html>

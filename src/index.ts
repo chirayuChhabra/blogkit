@@ -1,9 +1,34 @@
-export { lesson, LessonBuilder } from './builder'
-export { render } from './renderer'
+export { lesson, LessonBuilder } from "./builder";
+export { render } from "./renderer";
 export type {
-  Lesson, LessonMeta, Block, BuildOptions,
-  HeadBlock, AddBlock, SubheadBlock,
-  ImpBlock, NoteBlock, CodeBlock,
-  SimBlock, AnimBlock, QuizBlock,
-  QuizFile, QuizQuestion, BlockType
-} from './types'
+  Lesson,
+  LessonMeta,
+  Block,
+  BuildOptions,
+  ChapterBlock,
+  MarkdownBlock,
+  SectionBlock,
+  CalloutBlock,
+  CodeBlock,
+  SimulationBlock,
+  AnimationBlock,
+  MediaBlock,
+  YouTubeBlock,
+  LatexBlock,
+  ColumnsBlock,
+  ColumnItem,
+  QuizBlock,
+  QuizFile,
+  QuizQuestion,
+  BlockType,
+  BlockAccent,
+  MediaKind,
+  SimulationOptions,
+  AnimationOptions,
+  MediaOptions,
+  YouTubeOptions,
+  LatexOptions,
+  ColumnsOptions,
+  LessonPreset,
+  SimulationControl,
+} from "./types";

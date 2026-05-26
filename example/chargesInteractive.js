@@ -1,31 +1,31 @@
 // Simple electric field line simulator
 // window.__simProps = { initialParticles: 2, showFieldLines: true }
 
-const canvas = document.getElementById("c");
-const ctx = canvas.getContext("2d");
-const props = window.__simProps || {};
+let props = window.__simProps || {};
 
-canvas.width = canvas.offsetWidth || 640;
-canvas.height = canvas.offsetHeight || 400;
+const initW = 800;
+const initH = 450;
 
-const W = canvas.width,
-  H = canvas.height;
 let charges = [];
 let dragging = null;
+let lastParticleCount = props.initialParticles ?? 2;
 
 function initCharges(n) {
   charges = [];
   for (let i = 0; i < n; i++) {
     charges.push({
-      x: W * (0.3 + (i * 0.4) / Math.max(n - 1, 1)),
-      y: H / 2,
+      x: initW * (0.3 + (i * 0.4) / Math.max(n - 1, 1)),
+      y: initH / 2,
       q: i % 2 === 0 ? 1 : -1,
       r: 18,
     });
   }
 }
 
-initCharges(props.initialParticles ?? 2);
+initCharges(lastParticleCount);
+
+// Match the iframe background to the canvas to hide letterboxing sidebars
+document.body.style.background = "#0f0f13";
 
 function fieldAt(px, py) {
   let fx = 0,
@@ -42,7 +42,7 @@ function fieldAt(px, py) {
   return { fx, fy };
 }
 
-function drawFieldLines() {
+function drawFieldLines(ctx) {
   ctx.lineWidth = 0.8;
   for (const c of charges) {
     if (c.q < 0) continue;
@@ -60,7 +60,7 @@ function drawFieldLines() {
         x += (fx / mag) * 4;
         y += (fy / mag) * 4;
         ctx.lineTo(x, y);
-        if (x < 0 || x > W || y < 0 || y > H) break;
+        if (x < 0 || x > initW || y < 0 || y > initH) break;
         // stop near a negative charge
         let nearNeg = false;
         for (const nc of charges) {
@@ -81,14 +81,14 @@ function drawFieldLines() {
   }
 }
 
-function draw() {
-  ctx.clearRect(0, 0, W, H);
+function draw(ctx, logicalW, logicalH) {
+  ctx.clearRect(0, 0, logicalW, logicalH);
 
   // Dark background
   ctx.fillStyle = "#0f0f13";
-  ctx.fillRect(0, 0, W, H);
+  ctx.fillRect(0, 0, logicalW, logicalH);
 
-  if (props.showFieldLines !== false) drawFieldLines();
+  if (props.showFieldLines !== false) drawFieldLines(ctx);
 
   // Draw charges
   for (const c of charges) {
@@ -112,30 +112,49 @@ function draw() {
   ctx.fillStyle = "rgba(255,255,255,0.35)";
   ctx.font = "11px sans-serif";
   ctx.textAlign = "left";
-  ctx.fillText("Drag charges to explore the field", 12, H - 12);
+  ctx.fillText("Drag charges to explore the field", 12, logicalH - 12);
 }
 
-// Mouse interaction
-canvas.addEventListener("mousedown", (e) => {
-  const rect = canvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left,
-    my = e.clientY - rect.top;
+function updateProps(nextProps) {
+  props = { ...props, ...nextProps };
+  const nextParticleCount = props.initialParticles ?? 2;
+  if (nextParticleCount !== lastParticleCount) {
+    lastParticleCount = nextParticleCount;
+    initCharges(nextParticleCount);
+  }
+}
+
+window.addEventListener("bk:props", (event) => updateProps(event.detail || {}));
+
+// Because the canvas is not available immediately, we wait until bkSetup gives us 
+// access to it, or we just listen on document and check target.
+// But window.bkSetup creates the canvas context wrapper and runs right away,
+// the canvas element id "c" exists before bkSetup is called.
+const canvas = document.getElementById("c");
+
+canvas.addEventListener("pointerdown", (e) => {
+  const mx = e.offsetX;
+  const my = e.offsetY;
   for (const c of charges) {
     if (Math.hypot(mx - c.x, my - c.y) < c.r + 6) {
       dragging = c;
+      canvas.setPointerCapture(e.pointerId);
       break;
     }
   }
 });
-canvas.addEventListener("mousemove", (e) => {
+
+canvas.addEventListener("pointermove", (e) => {
   if (!dragging) return;
-  const rect = canvas.getBoundingClientRect();
-  dragging.x = e.clientX - rect.left;
-  dragging.y = e.clientY - rect.top;
-  draw();
+  dragging.x = e.offsetX;
+  dragging.y = e.offsetY;
 });
-canvas.addEventListener("mouseup", () => {
+
+canvas.addEventListener("pointerup", () => {
+  dragging = null;
+});
+canvas.addEventListener("pointercancel", () => {
   dragging = null;
 });
 
-draw();
+window.bkSetup(initW, initH, draw);

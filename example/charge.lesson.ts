@@ -1,11 +1,13 @@
 import { lesson } from "../src/index";
+import * as path from "path";
 
-const contentBase = __dirname + "/content";
+const contentBase = path.join(__dirname, "content");
 
 export default lesson("Charge is a Mystery", {
-  outDir: __dirname + "/out",
+  outDir: path.join(__dirname, "out"),
   contentBase,
   theme: "auto",
+  preset: { layout: "lab", tone: "scholarly" },
 })
   .description(
     "Why does electric charge exist? A deep dive from everyday physics to quantum field theory.",
@@ -13,23 +15,36 @@ export default lesson("Charge is a Mystery", {
   .tags("physics", "electromagnetism", "quantum")
   .author("Chirayu")
 
-  .head("./chargeIsAMystery.md")
+  .chapter("chargeIsAMystery.md")
 
-  .sim("../chargesInteractive.js", { initialParticles: 3, showFieldLines: true })
+  .lab("../chargesInteractive.js", {
+    label: "Electric field explorer",
+    caption: "Drag the charges to see how the field changes in real time.",
+  })
 
-  .add("./chargeInQFT.md")
+  .content("chargeInQFT.md")
 
   .divider()
 
-  .subhead("./chargeAsWeKnowIt.md")
+  .section("chargeAsWeKnowIt.md")
 
-  .imp({
-    inline:
-      "Conservation of charge is one of the most precisely tested laws in physics — verified to 1 part in 10²¹.",
+  .columns(
+    [
+      { markdown: "Force grows with charge and weakens with distance." },
+      { latex: "F = k\\frac{q_1 q_2}{r^2}" },
+    ],
+    { label: "Law and intuition" },
+  )
+
+  .important(
+    "Conservation of charge is one of the most precisely tested laws in physics — verified to 1 part in 10²¹.",
+  )
+
+  .note("conservationOfCharge.md")
+
+  .quiz("chargeQuestions.json", {
+    label: "Review questions",
+    caption: "Immediate feedback keeps the lesson self-checking.",
   })
-
-  .note("./conservationOfCharge.md", "info")
-
-  .quiz("./chargeQuestions.json")
 
   .build();
