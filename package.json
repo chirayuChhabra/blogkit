@@ -1,28 +1,29 @@
 {
-  "name": "blogkit",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "directories": {
-    "example": "example"
-  },
-  "scripts": {
-    "build:example": "bun example/charge.lesson.ts && bun example/gravity.lesson.ts",
-    "typecheck": "bunx tsc --noEmit",
-    "test": "bun test && bun run typecheck"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@types/katex": "^0.16.8",
-    "@types/node": "^25.8.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^6.0.3"
-  },
-  "dependencies": {
-    "@types/marked": "^5.0.2",
-    "katex": "^0.16.47",
-    "marked": "^18.0.4"
-  }
+	"name": "blogkit",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"directories": {
+		"example": "example"
+	},
+	"scripts": {
+		"build:example": "bun example/charge.lesson.ts && bun example/gravity.lesson.ts",
+		"typecheck": "bunx tsc --noEmit",
+		"test": "bun test && bun run typecheck"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"@types/katex": "^0.16.8",
+		"@types/node": "^25.8.0",
+		"biome": "^0.3.3",
+		"ts-node": "^10.9.2",
+		"typescript": "^6.0.3"
+	},
+	"dependencies": {
+		"@types/marked": "^5.0.2",
+		"katex": "^0.16.47",
+		"marked": "^18.0.4"
+	}
 }

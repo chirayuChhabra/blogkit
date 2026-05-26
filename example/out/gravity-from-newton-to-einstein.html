@@ -1468,7 +1468,7 @@ function bkSimDoc(js, props, loop) {
     'window.bkSetup=function(w,h,f){const c=document.getElementById("c");if(!c)return;const ctx=c.getContext("2d");window.parent.postMessage({type:"bk:aspect",aspect:w/h},"*");function l(){const s=Math.max(window.innerWidth/w,window.innerHeight/h),d=window.devicePixelRatio||1,b=s*d,nw=Math.floor(w*b),nh=Math.floor(h*b);if(c.width!==nw||c.height!==nh){c.width=nw;c.height=nh;c.style.width=w+"px";c.style.height=h+"px";c.style.transform="scale("+s+")"}ctx.save();ctx.scale(b,b);f(ctx,w,h);ctx.restore();requestAnimationFrame(l)}l()};' +
     'window.addEventListener("message",function(event){if(!event.data||event.data.type!=="bk:set-props")return;window.__simProps=Object.assign({},window.__simProps,event.data.props);window.dispatchEvent(new CustomEvent("bk:props",{detail:window.__simProps}));});' +
     'try{' + js + '}catch(e){console.error("Simulation Error:",e);document.body.innerHTML="<div style=\'padding:20px;color:red;font-family:monospace\'>Error: "+e.message+"</div>"}' +
-    '<\/script></body></html>'
+    '</script></body></html>'
 }
 
 function bkReadSimProps(figure) {
@@ -1516,7 +1516,7 @@ function bkWireSimControls() {
     })
   })
 
-  window.addEventListener("message", function(event) {
+  window.addEventListener("message", (event) => {
     if (event.data && event.data.type === "bk:aspect") {
       document.querySelectorAll("iframe").forEach(iframe => {
         if (iframe.contentWindow === event.source) {

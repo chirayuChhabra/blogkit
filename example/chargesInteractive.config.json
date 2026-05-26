@@ -1,8 +1,8 @@
 {
-  "aspect": "wide",
-  "props": { "initialParticles": 3, "showFieldLines": true },
-  "tunables": {
-    "initialParticles": { "label": "Particles", "min": 1, "max": 6, "step": 1 },
-    "showFieldLines": { "label": "Field lines" }
-  }
+	"aspect": "wide",
+	"props": { "initialParticles": 3, "showFieldLines": true },
+	"tunables": {
+		"initialParticles": { "label": "Particles", "min": 1, "max": 6, "step": 1 },
+		"showFieldLines": { "label": "Field lines" }
+	}
 }

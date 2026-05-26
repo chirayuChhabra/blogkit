@@ -1,166 +1,186 @@
 import * as fs from "fs";
-import * as path from "path";
-import { marked } from "marked";
 import katex from "katex";
-import { Lesson, Block, BuildOptions, QuizFile, QuizQuestion } from "./types";
+import { marked } from "marked";
+import * as path from "path";
+import type {
+	Block,
+	BuildOptions,
+	Lesson,
+	QuizFile,
+	QuizQuestion,
+} from "./types";
 
 // ─── Smart Content Resolution ────────────────────────────────────────────────
 
 interface NavItem {
-  id: string;
-  label: string;
-  kind: "chapter" | "section" | "quiz";
+	id: string;
+	label: string;
+	kind: "chapter" | "section" | "quiz";
 }
 
 function resolveContent(
-  src: string,
-  options: BuildOptions,
-  expectedType: "md" | "js" | "json" | "text" = "text",
+	src: string,
+	options: BuildOptions,
+	expectedType: "md" | "js" | "json" | "text" = "text",
 ): string {
-  if (src.includes("\n")) return src;
+	if (src.includes("\n")) return src;
 
-  const isLikelyFilePath =
-    (expectedType !== "text" && src.endsWith(`.${expectedType}`)) ||
-    src.startsWith("/") ||
-    src.startsWith("./") ||
-    src.startsWith("../");
+	const isLikelyFilePath =
+		(expectedType !== "text" && src.endsWith(`.${expectedType}`)) ||
+		src.startsWith("/") ||
+		src.startsWith("./") ||
+		src.startsWith("../");
 
-  const filePath = path.isAbsolute(src) ? src : path.resolve(options.contentBase ?? ".", src);
-  
-  if (fs.existsSync(filePath)) {
-    const stat = fs.statSync(filePath);
-    if (stat.isFile()) {
-      return fs.readFileSync(filePath, "utf-8");
-    }
-  }
+	const filePath = path.isAbsolute(src)
+		? src
+		: path.resolve(options.contentBase ?? ".", src);
 
-  if (isLikelyFilePath && options.strict !== false) {
-    throw new Error(`Missing ${expectedType.toUpperCase()} content: ${filePath}`);
-  }
+	if (fs.existsSync(filePath)) {
+		const stat = fs.statSync(filePath);
+		if (stat.isFile()) {
+			return fs.readFileSync(filePath, "utf-8");
+		}
+	}
 
-  // If it's not a valid file path, or the file doesn't exist, treat it as raw text
-  return src;
+	if (isLikelyFilePath && options.strict !== false) {
+		throw new Error(
+			`Missing ${expectedType.toUpperCase()} content: ${filePath}`,
+		);
+	}
+
+	// If it's not a valid file path, or the file doesn't exist, treat it as raw text
+	return src;
 }
 
 function resolveAssetSrc(src: string, options: BuildOptions): string {
-  if (/^(https?:|data:|\/)/.test(src)) return src;
+	if (/^(https?:|data:|\/)/.test(src)) return src;
 
-  const filePath = path.resolve(options.contentBase ?? ".", src);
-  if (!fs.existsSync(filePath)) {
-    if (options.strict !== false) throw new Error(`Missing media asset: ${filePath}`);
-    return src;
-  }
+	const filePath = path.resolve(options.contentBase ?? ".", src);
+	if (!fs.existsSync(filePath)) {
+		if (options.strict !== false)
+			throw new Error(`Missing media asset: ${filePath}`);
+		return src;
+	}
 
-  const ext = path.extname(filePath).toLowerCase();
-  const mime =
-    ext === ".svg"
-      ? "image/svg+xml"
-      : ext === ".png"
-        ? "image/png"
-        : ext === ".jpg" || ext === ".jpeg"
-          ? "image/jpeg"
-          : ext === ".webp"
-            ? "image/webp"
-            : ext === ".gif"
-              ? "image/gif"
-              : ext === ".avif"
-                ? "image/avif"
-                : ext === ".mp4"
-              ? "video/mp4"
-              : ext === ".webm"
-                ? "video/webm"
-                : ext === ".mp3"
-                  ? "audio/mpeg"
-                  : ext === ".wav"
-                    ? "audio/wav"
-                    : "application/octet-stream";
+	const ext = path.extname(filePath).toLowerCase();
+	const mime =
+		ext === ".svg"
+			? "image/svg+xml"
+			: ext === ".png"
+				? "image/png"
+				: ext === ".jpg" || ext === ".jpeg"
+					? "image/jpeg"
+					: ext === ".webp"
+						? "image/webp"
+						: ext === ".gif"
+							? "image/gif"
+							: ext === ".avif"
+								? "image/avif"
+								: ext === ".mp4"
+									? "video/mp4"
+									: ext === ".webm"
+										? "video/webm"
+										: ext === ".mp3"
+											? "audio/mpeg"
+											: ext === ".wav"
+												? "audio/wav"
+												: "application/octet-stream";
 
-  return `data:${mime};base64,${fs.readFileSync(filePath).toString("base64")}`;
+	return `data:${mime};base64,${fs.readFileSync(filePath).toString("base64")}`;
 }
 
 // ─── Markdown Rendering (using Marked + KaTeX) ───────────────────────────────
 
 function mdToHtml(md: string): { html: string; title: string } {
-  let title = "";
+	let title = "";
 
-  // Extract first H1 or H2 as title
-  const titleMatch = md.match(/^(?:#|##)\s+(.+)$/m);
-  if (titleMatch) {
-    title = titleMatch[1].trim();
-  }
+	// Extract first H1 or H2 as title
+	const titleMatch = md.match(/^(?:#|##)\s+(.+)$/m);
+	if (titleMatch) {
+		title = titleMatch[1].trim();
+	}
 
-  const mathBlocks: string[] = [];
-  const mathInlines: string[] = [];
+	const mathBlocks: string[] = [];
+	const mathInlines: string[] = [];
 
-  // Temporarily mask code blocks so we don't extract math from them
-  const codeBlocks: string[] = [];
-  let processedMd = md.replace(/```[\s\S]+?```|`[^`\n]+`/g, (match) => {
-    const id = codeBlocks.length;
-    codeBlocks.push(match);
-    return `@@BK_CODE_${id}@@`;
-  });
+	// Temporarily mask code blocks so we don't extract math from them
+	const codeBlocks: string[] = [];
+	let processedMd = md.replace(/```[\s\S]+?```|`[^`\n]+`/g, (match) => {
+		const id = codeBlocks.length;
+		codeBlocks.push(match);
+		return `@@BK_CODE_${id}@@`;
+	});
 
-  // Extract math and replace with placeholders
-  processedMd = processedMd.replace(/\$\$([\s\S]+?)\$\$/g, (_, tex) => {
-    const id = mathBlocks.length;
-    mathBlocks.push(tex);
-    return `@@BK_MATH_BLOCK_${id}@@`;
-  });
+	// Extract math and replace with placeholders
+	processedMd = processedMd.replace(/\$\$([\s\S]+?)\$\$/g, (_, tex) => {
+		const id = mathBlocks.length;
+		mathBlocks.push(tex);
+		return `@@BK_MATH_BLOCK_${id}@@`;
+	});
 
-  processedMd = processedMd.replace(/\$([^$\n]+?)\$/g, (_, tex) => {
-    const id = mathInlines.length;
-    mathInlines.push(tex);
-    return `@@BK_MATH_INLINE_${id}@@`;
-  });
+	processedMd = processedMd.replace(/\$([^$\n]+?)\$/g, (_, tex) => {
+		const id = mathInlines.length;
+		mathInlines.push(tex);
+		return `@@BK_MATH_INLINE_${id}@@`;
+	});
 
-  // Restore code blocks
-  codeBlocks.forEach((match, id) => {
-    processedMd = processedMd.replace(`@@BK_CODE_${id}@@`, match);
-  });
+	// Restore code blocks
+	codeBlocks.forEach((match, id) => {
+		processedMd = processedMd.replace(`@@BK_CODE_${id}@@`, match);
+	});
 
-  let html = marked.parse(processedMd) as string;
+	let html = marked.parse(processedMd) as string;
 
-  // Restore math
-  mathBlocks.forEach((tex, id) => {
-    const rendered = katex.renderToString(tex, { throwOnError: false, displayMode: true });
-    // marked might wrap block placeholders in <p>
-    html = html.replace(
-      `<p>@@BK_MATH_BLOCK_${id}@@</p>`,
-      `<div class="bk-math-block">${rendered}</div>`,
-    );
-    // Fallback if not wrapped in <p>
-    html = html.replace(`@@BK_MATH_BLOCK_${id}@@`, `<div class="bk-math-block">${rendered}</div>`);
-  });
+	// Restore math
+	mathBlocks.forEach((tex, id) => {
+		const rendered = katex.renderToString(tex, {
+			throwOnError: false,
+			displayMode: true,
+		});
+		// marked might wrap block placeholders in <p>
+		html = html.replace(
+			`<p>@@BK_MATH_BLOCK_${id}@@</p>`,
+			`<div class="bk-math-block">${rendered}</div>`,
+		);
+		// Fallback if not wrapped in <p>
+		html = html.replace(
+			`@@BK_MATH_BLOCK_${id}@@`,
+			`<div class="bk-math-block">${rendered}</div>`,
+		);
+	});
 
-  mathInlines.forEach((tex, id) => {
-    const rendered = katex.renderToString(tex, { throwOnError: false, displayMode: false });
-    html = html.replace(`@@BK_MATH_INLINE_${id}@@`, rendered);
-  });
+	mathInlines.forEach((tex, id) => {
+		const rendered = katex.renderToString(tex, {
+			throwOnError: false,
+			displayMode: false,
+		});
+		html = html.replace(`@@BK_MATH_INLINE_${id}@@`, rendered);
+	});
 
-  return { html, title };
+	return { html, title };
 }
 
 function escHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+	return s
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
 }
 
 function escAttr(s: string): string {
-  return escHtml(s);
+	return escHtml(s);
 }
 
 function blockChrome(
-  kind: string,
-  label: string | undefined,
-  caption: string | undefined,
-  body: string,
-  accent = "neutral",
+	kind: string,
+	label: string | undefined,
+	caption: string | undefined,
+	body: string,
+	accent = "neutral",
 ): string {
-  return `<figure class="bk-object bk-object--${escAttr(accent)}">
+	return `<figure class="bk-object bk-object--${escAttr(accent)}">
     <div class="bk-object-header">
       <span class="bk-object-kicker">${escHtml(kind)}</span>
       ${label ? `<span class="bk-object-title">${escHtml(label)}</span>` : ""}
@@ -174,144 +194,156 @@ function blockChrome(
 }
 
 function mdInline(text: string): string {
-  const mathInlines: string[] = [];
-  let processedMd = text.replace(/\$([^$\n]+?)\$/g, (_, tex) => {
-    const id = mathInlines.length;
-    mathInlines.push(tex);
-    return `@@BK_MATH_INLINE_${id}@@`;
-  });
+	const mathInlines: string[] = [];
+	const processedMd = text.replace(/\$([^$\n]+?)\$/g, (_, tex) => {
+		const id = mathInlines.length;
+		mathInlines.push(tex);
+		return `@@BK_MATH_INLINE_${id}@@`;
+	});
 
-  let html = marked.parseInline(processedMd) as string;
+	let html = marked.parseInline(processedMd) as string;
 
-  mathInlines.forEach((tex, id) => {
-    const rendered = katex.renderToString(tex, { throwOnError: false, displayMode: false });
-    html = html.replace(`@@BK_MATH_INLINE_${id}@@`, rendered);
-  });
+	mathInlines.forEach((tex, id) => {
+		const rendered = katex.renderToString(tex, {
+			throwOnError: false,
+			displayMode: false,
+		});
+		html = html.replace(`@@BK_MATH_INLINE_${id}@@`, rendered);
+	});
 
-  return html;
+	return html;
 }
 
-function renderSimulationControls(block: Extract<Block, { type: "simulation" }>): string {
-  const props = block.props ?? {};
-  const keys = Object.keys(block.tunables ?? props).filter((key) => {
-    const value = props[key];
-    return typeof value === "number" || typeof value === "boolean";
-  });
+function renderSimulationControls(
+	block: Extract<Block, { type: "simulation" }>,
+): string {
+	const props = block.props ?? {};
+	const keys = Object.keys(block.tunables ?? props).filter((key) => {
+		const value = props[key];
+		return typeof value === "number" || typeof value === "boolean";
+	});
 
-  if (!keys.length || block.controls === "observe") return "";
+	if (!keys.length || block.controls === "observe") return "";
 
-  return `<div class="bk-sim-controls" aria-label="Simulation controls">
+	return `<div class="bk-sim-controls" aria-label="Simulation controls">
     ${keys
-      .map((key) => {
-        const value = props[key];
-        const control = block.tunables?.[key] ?? {};
-        const label = escHtml(control.label ?? key.replace(/([A-Z])/g, " $1"));
-        if (typeof value === "boolean") {
-          return `<label class="bk-sim-toggle">
+			.map((key) => {
+				const value = props[key];
+				const control = block.tunables?.[key] ?? {};
+				const label = escHtml(control.label ?? key.replace(/([A-Z])/g, " $1"));
+				if (typeof value === "boolean") {
+					return `<label class="bk-sim-toggle">
             <input type="checkbox" data-bk-prop="${escAttr(key)}" ${value ? "checked" : ""}>
             <span>${label}</span>
           </label>`;
-        }
+				}
 
-        const min = control.min ?? Math.min(0, Number(value));
-        const max = control.max ?? Math.max(10, Number(value) * 2);
-        const step = control.step ?? 1;
-        return `<label class="bk-sim-range">
+				const min = control.min ?? Math.min(0, Number(value));
+				const max = control.max ?? Math.max(10, Number(value) * 2);
+				const step = control.step ?? 1;
+				return `<label class="bk-sim-range">
           <span>${label}</span>
           <input type="range" data-bk-prop="${escAttr(key)}" min="${min}" max="${max}" step="${step}" value="${value}">
           <output>${value}</output>
         </label>`;
-      })
-      .join("")}
+			})
+			.join("")}
   </div>`;
 }
 
 function escapeScriptJson(value: unknown): string {
-  return JSON.stringify(value).replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
+	return JSON.stringify(value)
+		.replace(/</g, "\\u003c")
+		.replace(/>/g, "\\u003e");
 }
 
 // ─── Block renderers ──────────────────────────────────────────────────────────
 
 function renderBlock(
-  block: Block,
-  idx: number,
-  options: BuildOptions,
+	block: Block,
+	idx: number,
+	options: BuildOptions,
 ): { html: string; navItem?: NavItem } {
-  switch (block.type) {
-    case "chapter": {
-      const md = resolveContent(block.src, options, "md");
-      const { html, title } = mdToHtml(md);
-      const label = block.title ?? title ?? "Chapter";
-      const id = `chapter-${idx}`;
-      return {
-        html: `<section id="${id}" class="bk-section bk-chapter">${html}</section>`,
-        navItem: { id, label, kind: "chapter" },
-      };
-    }
+	switch (block.type) {
+		case "chapter": {
+			const md = resolveContent(block.src, options, "md");
+			const { html, title } = mdToHtml(md);
+			const label = block.title ?? title ?? "Chapter";
+			const id = `chapter-${idx}`;
+			return {
+				html: `<section id="${id}" class="bk-section bk-chapter">${html}</section>`,
+				navItem: { id, label, kind: "chapter" },
+			};
+		}
 
-    case "markdown": {
-      const md = resolveContent(block.src, options, "md");
-      const { html } = mdToHtml(md);
-      return { html: `<div class="bk-markdown">${html}</div>` };
-    }
+		case "markdown": {
+			const md = resolveContent(block.src, options, "md");
+			const { html } = mdToHtml(md);
+			return { html: `<div class="bk-markdown">${html}</div>` };
+		}
 
-    case "section": {
-      const md = resolveContent(block.src, options, "md");
-      const { html, title } = mdToHtml(md);
-      const label = block.label ?? title ?? "Section";
-      const id = `section-${idx}`;
-      return {
-        html: `<section id="${id}" class="bk-section bk-subsection">${html}</section>`,
-        navItem: { id, label, kind: "section" },
-      };
-    }
+		case "section": {
+			const md = resolveContent(block.src, options, "md");
+			const { html, title } = mdToHtml(md);
+			const label = block.label ?? title ?? "Section";
+			const id = `section-${idx}`;
+			return {
+				html: `<section id="${id}" class="bk-section bk-subsection">${html}</section>`,
+				navItem: { id, label, kind: "section" },
+			};
+		}
 
-    case "important":
-    case "warning":
-    case "tip":
-    case "note": {
-      const variantMap = { important: "Important", warning: "Warning", tip: "Tip", note: "Note" };
-      const label = variantMap[block.type];
-      const md = resolveContent(block.src, options, "md");
-      const { html } = mdToHtml(md);
-      return {
-        html: `<div class="bk-callout bk-callout--${block.type}">
+		case "important":
+		case "warning":
+		case "tip":
+		case "note": {
+			const variantMap = {
+				important: "Important",
+				warning: "Warning",
+				tip: "Tip",
+				note: "Note",
+			};
+			const label = variantMap[block.type];
+			const md = resolveContent(block.src, options, "md");
+			const { html } = mdToHtml(md);
+			return {
+				html: `<div class="bk-callout bk-callout--${block.type}">
           <div class="bk-callout-icon"></div>
           <div class="bk-callout-content">
             <div class="bk-callout-label">${label}</div>
             <div class="bk-callout-body">${html}</div>
           </div>
         </div>`,
-      };
-    }
+			};
+		}
 
-    case "code": {
-      const raw = resolveContent(block.src, options, "text"); // Could be file or inline
-      const lang =
-        block.lang ??
-        (typeof block.src === "string" && block.src.includes(".")
-          ? (block.src.split(".").pop() ?? "")
-          : "");
-      return {
-        html: `<div class="bk-code-block">
+		case "code": {
+			const raw = resolveContent(block.src, options, "text"); // Could be file or inline
+			const lang =
+				block.lang ??
+				(typeof block.src === "string" && block.src.includes(".")
+					? (block.src.split(".").pop() ?? "")
+					: "");
+			return {
+				html: `<div class="bk-code-block">
           ${block.label ? `<div class="bk-code-header"><span class="bk-code-label">${escHtml(block.label)}</span><span class="bk-code-lang">${lang}</span></div>` : ""}
           <div class="bk-code-scroll">
             <pre><code class="language-${lang}">${escHtml(raw)}</code></pre>
           </div>
         </div>`,
-      };
-    }
+			};
+		}
 
-    case "simulation": {
-      const propsJson = JSON.stringify(block.props ?? {});
-      const simSrc = resolveContent(block.src, options, "js");
-      const simConfig = { js: simSrc, loop: false };
-      return {
-        html: blockChrome(
-          block.controls === "observe" ? "Simulation" : "Interactive Lab",
-          block.label,
-          block.caption,
-          `${renderSimulationControls(block)}
+		case "simulation": {
+			const propsJson = JSON.stringify(block.props ?? {});
+			const simSrc = resolveContent(block.src, options, "js");
+			const simConfig = { js: simSrc, loop: false };
+			return {
+				html: blockChrome(
+					block.controls === "observe" ? "Simulation" : "Interactive Lab",
+					block.label,
+					block.caption,
+					`${renderSimulationControls(block)}
           <div class="bk-embed-frame bk-embed-interactive bk-aspect-${block.aspect ?? "wide"}" ${block.height ? `style="height:${block.height}px"` : ""}>
             <div class="bk-embed-overlay" tabindex="0" role="button" aria-label="Activate interactive simulation">
               <span class="bk-embed-overlay-text">Click to interact</span>
@@ -322,19 +354,19 @@ function renderBlock(
             </iframe>
           </div>
           <script type="application/json" class="bk-sim-config">${escapeScriptJson(simConfig)}</script>`,
-          block.accent ?? "blue",
-        ),
-      };
-    }
+					block.accent ?? "blue",
+				),
+			};
+		}
 
-    case "animation": {
-      const animSrc = resolveContent(block.src, options, "js");
-      return {
-        html: blockChrome(
-          "Animation",
-          block.label,
-          block.caption,
-          `<div class="bk-embed-frame bk-embed-interactive bk-aspect-${block.aspect ?? "wide"}" ${block.height ? `style="height:${block.height}px"` : ""}>
+		case "animation": {
+			const animSrc = resolveContent(block.src, options, "js");
+			return {
+				html: blockChrome(
+					"Animation",
+					block.label,
+					block.caption,
+					`<div class="bk-embed-frame bk-embed-interactive bk-aspect-${block.aspect ?? "wide"}" ${block.height ? `style="height:${block.height}px"` : ""}>
             <div class="bk-embed-overlay" tabindex="0" role="button" aria-label="Activate interactive animation">
               <span class="bk-embed-overlay-text">Click to interact</span>
             </div>
@@ -343,42 +375,44 @@ function renderBlock(
               style="width:100%;height:100%;border:none;display:block;">
             </iframe>
           </div>`,
-          block.accent ?? "neutral",
-        ),
-      };
-    }
+					block.accent ?? "neutral",
+				),
+			};
+		}
 
-    case "media": {
-      const src = resolveAssetSrc(block.src, options);
-      const aspectClass = `bk-aspect-${block.aspect ?? "auto"}`;
-      const media =
-        block.kind === "image"
-          ? `<img src="${escAttr(src)}" alt="${escAttr(block.alt ?? "")}" loading="lazy">`
-          : block.kind === "video"
-            ? `<video src="${escAttr(src)}" ${block.poster ? `poster="${escAttr(resolveAssetSrc(block.poster, options))}"` : ""} ${block.controls !== false ? "controls" : ""} playsinline></video>`
-            : `<audio src="${escAttr(src)}" ${block.controls !== false ? "controls" : ""}></audio>`;
+		case "media": {
+			const src = resolveAssetSrc(block.src, options);
+			const aspectClass = `bk-aspect-${block.aspect ?? "auto"}`;
+			const media =
+				block.kind === "image"
+					? `<img src="${escAttr(src)}" alt="${escAttr(block.alt ?? "")}" loading="lazy">`
+					: block.kind === "video"
+						? `<video src="${escAttr(src)}" ${block.poster ? `poster="${escAttr(resolveAssetSrc(block.poster, options))}"` : ""} ${block.controls !== false ? "controls" : ""} playsinline></video>`
+						: `<audio src="${escAttr(src)}" ${block.controls !== false ? "controls" : ""}></audio>`;
 
-      return {
-        html: blockChrome(
-          block.kind,
-          block.label,
-          [block.caption, block.credit ? `Credit: ${block.credit}` : ""].filter(Boolean).join(" "),
-          `<div class="bk-media bk-media--${block.kind} ${aspectClass}">${media}</div>`,
-          "neutral",
-        ),
-      };
-    }
+			return {
+				html: blockChrome(
+					block.kind,
+					block.label,
+					[block.caption, block.credit ? `Credit: ${block.credit}` : ""]
+						.filter(Boolean)
+						.join(" "),
+					`<div class="bk-media bk-media--${block.kind} ${aspectClass}">${media}</div>`,
+					"neutral",
+				),
+			};
+		}
 
-    case "youtube": {
-      const params = new URLSearchParams();
-      params.set("rel", "0");
-      if (block.start) params.set("start", String(block.start));
-      return {
-        html: blockChrome(
-          "YouTube",
-          block.label,
-          block.caption,
-          `<div class="bk-embed-frame bk-aspect-${block.aspect ?? "wide"}">
+		case "youtube": {
+			const params = new URLSearchParams();
+			params.set("rel", "0");
+			if (block.start) params.set("start", String(block.start));
+			return {
+				html: blockChrome(
+					"YouTube",
+					block.label,
+					block.caption,
+					`<div class="bk-embed-frame bk-aspect-${block.aspect ?? "wide"}">
             <iframe src="https://www.youtube-nocookie.com/embed/${escAttr(block.id)}?${params.toString()}&origin=https://youtube.com"
               title="${escAttr(block.label ?? "YouTube video")}"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -387,65 +421,72 @@ function renderBlock(
               style="width:100%;height:100%;border:none;display:block;">
             </iframe>
           </div>`,
-          "neutral",
-        ),
-      };
-    }
+					"neutral",
+				),
+			};
+		}
 
-    case "latex": {
-      const rendered = katex.renderToString(block.tex, {
-        throwOnError: false,
-        displayMode: block.display ?? true,
-      });
-      return {
-        html: blockChrome(
-          "LaTeX",
-          block.label,
-          block.caption,
-          `<div class="${block.display === false ? "bk-latex-inline" : "bk-latex-block"}">${rendered}</div>`,
-          "violet",
-        ),
-      };
-    }
+		case "latex": {
+			const rendered = katex.renderToString(block.tex, {
+				throwOnError: false,
+				displayMode: block.display ?? true,
+			});
+			return {
+				html: blockChrome(
+					"LaTeX",
+					block.label,
+					block.caption,
+					`<div class="${block.display === false ? "bk-latex-inline" : "bk-latex-block"}">${rendered}</div>`,
+					"violet",
+				),
+			};
+		}
 
-    case "columns": {
-      return {
-        html: blockChrome(
-          "Columns",
-          block.label,
-          block.caption,
-          `<div class="bk-columns" style="grid-template-columns:${block.columns
-            .map((column) => column.width ?? "minmax(0, 1fr)")
-            .join(" ")}">
+		case "columns": {
+			return {
+				html: blockChrome(
+					"Columns",
+					block.label,
+					block.caption,
+					`<div class="bk-columns" style="grid-template-columns:${block.columns
+						.map((column) => column.width ?? "minmax(0, 1fr)")
+						.join(" ")}">
             ${block.columns
-              .map((column) => {
-                const content =
-                  column.latex != null
-                    ? `<div class="bk-latex-block">${katex.renderToString(column.latex, { throwOnError: false, displayMode: true })}</div>`
-                    : mdToHtml(column.markdown ?? (column.src ? resolveContent(column.src, options, "md") : "")).html;
-                return `<div class="bk-column">${content}</div>`;
-              })
-              .join("")}
+							.map((column) => {
+								const content =
+									column.latex != null
+										? `<div class="bk-latex-block">${katex.renderToString(column.latex, { throwOnError: false, displayMode: true })}</div>`
+										: mdToHtml(
+												column.markdown ??
+													(column.src
+														? resolveContent(column.src, options, "md")
+														: ""),
+											).html;
+								return `<div class="bk-column">${content}</div>`;
+							})
+							.join("")}
           </div>`,
-          "neutral",
-        ),
-      };
-    }
+					"neutral",
+				),
+			};
+		}
 
-    case "quiz": {
-      let quiz: QuizFile = { questions: [] };
-      const rawJson = resolveContent(block.src, options, "json");
-      try {
-        quiz = JSON.parse(rawJson);
-      } catch (e) {
-        if (options.strict !== false) {
-          throw new Error(`Invalid Quiz JSON for block ${idx}: ${e instanceof Error ? e.message : String(e)}`);
-        }
-        console.warn(`  ⚠ Invalid Quiz JSON for block ${idx}:`, e);
-      }
+		case "quiz": {
+			let quiz: QuizFile = { questions: [] };
+			const rawJson = resolveContent(block.src, options, "json");
+			try {
+				quiz = JSON.parse(rawJson);
+			} catch (e) {
+				if (options.strict !== false) {
+					throw new Error(
+						`Invalid Quiz JSON for block ${idx}: ${e instanceof Error ? e.message : String(e)}`,
+					);
+				}
+				console.warn(`  ⚠ Invalid Quiz JSON for block ${idx}:`, e);
+			}
 
-      return {
-        html: `<div class="bk-quiz" id="quiz-${idx}">
+			return {
+				html: `<div class="bk-quiz" id="quiz-${idx}">
           <div class="bk-quiz-head">
             <span>${escHtml(block.label ?? "Check your understanding")}</span>
             ${block.caption ? `<small>${mdInline(block.caption)}</small>` : ""}
@@ -454,34 +495,38 @@ function renderBlock(
             ${quiz.questions.map((q, qi) => renderQuestion(q, `quiz-${idx}`, qi)).join("\n")}
           </div>
         </div>`,
-        navItem: { id: `quiz-${idx}`, label: block.label ?? "Questions", kind: "quiz" },
-      };
-    }
+				navItem: {
+					id: `quiz-${idx}`,
+					label: block.label ?? "Questions",
+					kind: "quiz",
+				},
+			};
+		}
 
-    case "divider":
-      return { html: '<hr class="bk-divider">' };
+		case "divider":
+			return { html: '<hr class="bk-divider">' };
 
-    default:
-      return { html: "" };
-  }
+		default:
+			return { html: "" };
+	}
 }
 
 function renderQuestion(q: QuizQuestion, quizId: string, qi: number): string {
-  const qid = `${quizId}-q${qi}`;
-  const options = q.options
-    .map(
-      (opt, oi) => `
+	const qid = `${quizId}-q${qi}`;
+	const options = q.options
+		.map(
+			(opt, oi) => `
     <button class="bk-opt" data-correct="${oi === q.answer}" onclick="bkAnswer(this,'${qid}')">
       <span class="bk-opt-dot"></span><span class="bk-opt-text">${mdInline(opt)}</span>
     </button>`,
-    )
-    .join("");
+		)
+		.join("");
 
-  const expHtml = q.explanation
-    ? `<div class="bk-explanation" id="${qid}-exp" hidden>${mdToHtml(q.explanation).html}</div>`
-    : "";
+	const expHtml = q.explanation
+		? `<div class="bk-explanation" id="${qid}-exp" hidden>${mdToHtml(q.explanation).html}</div>`
+		: "";
 
-  return `
+	return `
     <div class="bk-question" id="${qid}">
       <div class="bk-q-text">${mdToHtml(q.q).html}</div>
       <div class="bk-opts">${options}</div>
@@ -491,7 +536,7 @@ function renderQuestion(q: QuizQuestion, quizId: string, qi: number): string {
 
 // Wraps a JS string in a minimal iframe document
 function iframeDoc(js: string, props: string, loop?: boolean): string {
-  const doc = `<!DOCTYPE html><html><head>
+	const doc = `<!DOCTYPE html><html><head>
 <style>
   html, body { height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; background: transparent; display: flex; align-items: center; justify-content: center; }
   canvas { display: block; touch-action: none; transform-origin: center center; }
@@ -550,32 +595,35 @@ try {
   console.error("Simulation Error:", e);
   document.body.innerHTML = '<div style="padding:20px;color:red;font-family:monospace">Error: ' + e.message + '</div>';
 }
-<\/script>
+</script>
 </body></html>`;
-  // We use double quotes for the srcdoc attribute, so we must escape them.
-  return doc
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+	// We use double quotes for the srcdoc attribute, so we must escape them.
+	return doc
+		.replace(/&/g, "&amp;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;");
 }
 
 // ─── Page shell ───────────────────────────────────────────────────────────────
 
 function renderNavItem(item: NavItem): string {
-  const kindClass =
-    item.kind === "chapter" ? "bk-nav-chapter" : item.kind === "quiz" ? "bk-nav-quiz" : "bk-nav-sub";
-  return `<a href="#${item.id}" class="bk-nav-item ${kindClass}" data-id="${item.id}">${escHtml(item.label)}</a>`;
+	const kindClass =
+		item.kind === "chapter"
+			? "bk-nav-chapter"
+			: item.kind === "quiz"
+				? "bk-nav-quiz"
+				: "bk-nav-sub";
+	return `<a href="#${item.id}" class="bk-nav-item ${kindClass}" data-id="${item.id}">${escHtml(item.label)}</a>`;
 }
 
-
 function renderEndNav(navItems: NavItem[]): string {
-  if (navItems.length < 2) return "";
-  const first = navItems[0];
-  const next = navItems[1] ?? first;
-  const last = navItems[navItems.length - 1];
-  return `<nav class="bk-end-nav" aria-label="Lesson navigation">
+	if (navItems.length < 2) return "";
+	const first = navItems[0];
+	const next = navItems[1] ?? first;
+	const last = navItems[navItems.length - 1];
+	return `<nav class="bk-end-nav" aria-label="Lesson navigation">
     <a class="bk-end-link bk-end-link--prev" href="#${first.id}">
       <span>Previous</span>
       <strong>${escHtml(first.label)}</strong>
@@ -591,18 +639,23 @@ function renderEndNav(navItems: NavItem[]): string {
   </nav>`;
 }
 
-function renderPage(lesson: Lesson, navItems: NavItem[], bodyHtml: string, opts: BuildOptions): string {
-  const theme = opts.theme ?? "auto";
-  const schemeAttr = theme === "auto" ? "" : `data-theme="${theme}"`;
-  const preset = opts.preset ?? {};
-  const layout = preset.layout ?? "lesson";
-  const density = preset.density ?? "comfortable";
-  const tone = preset.tone ?? "scholarly";
-  const palette = opts.palette ?? "ink";
-  const navHtml = navItems.map(renderNavItem).join("\n");
-  const endNavHtml = renderEndNav(navItems);
+function renderPage(
+	lesson: Lesson,
+	navItems: NavItem[],
+	bodyHtml: string,
+	opts: BuildOptions,
+): string {
+	const theme = opts.theme ?? "auto";
+	const schemeAttr = theme === "auto" ? "" : `data-theme="${theme}"`;
+	const preset = opts.preset ?? {};
+	const layout = preset.layout ?? "lesson";
+	const density = preset.density ?? "comfortable";
+	const tone = preset.tone ?? "scholarly";
+	const palette = opts.palette ?? "ink";
+	const navHtml = navItems.map(renderNavItem).join("\n");
+	const endNavHtml = renderEndNav(navItems);
 
-  return `<!DOCTYPE html>
+	return `<!DOCTYPE html>
 <html lang="en" data-palette="${palette}" ${schemeAttr}>
 <head>
 <meta charset="UTF-8">
@@ -679,7 +732,7 @@ ${clientScript()}
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 
 function pageCSS(): string {
-  return `
+	return `
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,760&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
 :root {
@@ -1391,7 +1444,7 @@ hr.bk-divider {
 // ─── Client-side script ───────────────────────────────────────────────────────
 
 function clientScript(): string {
-  return `
+	return `
 function bkSimDoc(js, props, loop) {
   return '<!DOCTYPE html><html><head><style>' +
     'html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:transparent;display:flex;align-items:center;justify-content:center}' +
@@ -1617,16 +1670,16 @@ document.addEventListener('DOMContentLoaded', () => {
 // ─── Main render function ─────────────────────────────────────────────────────
 
 export function render(lesson: Lesson, opts: BuildOptions = {}): string {
-  const bodyItems: string[] = [];
-  const structuredNavItems: NavItem[] = [];
+	const bodyItems: string[] = [];
+	const structuredNavItems: NavItem[] = [];
 
-  lesson.blocks.forEach((block, idx) => {
-    const { html, navItem } = renderBlock(block, idx, opts);
-    bodyItems.push(html);
-    if (navItem) {
-      structuredNavItems.push(navItem);
-    }
-  });
+	lesson.blocks.forEach((block, idx) => {
+		const { html, navItem } = renderBlock(block, idx, opts);
+		bodyItems.push(html);
+		if (navItem) {
+			structuredNavItems.push(navItem);
+		}
+	});
 
-  return renderPage(lesson, structuredNavItems, bodyItems.join("\n"), opts);
+	return renderPage(lesson, structuredNavItems, bodyItems.join("\n"), opts);
 }
