@@ -694,13 +694,7 @@ ${pageCSS()}
   <aside class="bk-sidebar">
     <div class="bk-sidebar-inner">
       <div class="bk-sidebar-header">
-        <div class="bk-sidebar-header-top">
-          ${lesson.meta.parentSlug ? `<a href="${lesson.meta.parentSlug}.html" class="bk-back-link" aria-label="Back to Chapter" style="margin-bottom: 0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>Back to Chapter</a>` : ""}
-          <div style="flex-grow: 1;"></div>
-          <button class="bk-icon-btn bk-sidebar-collapse" id="bk-sidebar-collapse" type="button" aria-label="Collapse sidebar">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M9 3v18"/><path d="M14 15l-3-3 3-3"/></svg>
-          </button>
-        </div>
+        ${lesson.meta.parentSlug ? `<div style="margin-top: 8px;"><a href="${lesson.meta.parentSlug}.html" class="bk-back-link" aria-label="Back to Chapter" style="margin-bottom: 12px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>Back to Chapter</a></div>` : `<div style="margin-top: 8px;"></div>`}
         <div class="bk-sidebar-title">${escHtml(lesson.meta.title)}</div>
         ${lesson.meta.author ? `<div class="bk-sidebar-author">By ${escHtml(lesson.meta.author)}</div>` : ""}
         ${lesson.meta.tags?.length ? `<div class="bk-tag-row">${lesson.meta.tags.map((tag) => `<span>${escHtml(tag)}</span>`).join("")}</div>` : ""}
@@ -732,6 +726,9 @@ ${pageCSS()}
       </div>
     </div>
   </aside>
+  <button class="bk-sidebar-collapse-floating" id="bk-sidebar-collapse" aria-label="Collapse sidebar">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
   <main class="bk-main">
     <button class="bk-sidebar-expand" id="bk-sidebar-expand" type="button" aria-label="Expand sidebar">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
@@ -886,6 +883,35 @@ body {
   display: flex;
   min-height: 100vh;
   overflow: hidden;
+  position: relative;
+}
+
+.bk-sidebar-collapse-floating {
+  position: absolute;
+  top: 32px;
+  left: 274px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 40;
+  transition: opacity 0.3s ease, left 0.3s ease, background 0.2s, color 0.2s, border-color 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.bk-shell[data-collapsed="true"] .bk-sidebar-collapse-floating {
+  left: -28px;
+  opacity: 0;
+  pointer-events: none;
+}
+.bk-sidebar-collapse-floating:hover {
+  background: var(--paper-hover, #f5f5f5);
+  color: var(--ink);
+  border-color: var(--ink);
 }
 
 .bk-sidebar {
@@ -1430,6 +1456,7 @@ hr.bk-divider {
 
 @media(max-width: 800px) {
   .bk-shell { display: block; }
+  .bk-sidebar-collapse-floating { display: none; }
   .bk-sidebar { width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--line); }
   .bk-sidebar-inner { padding: 20px; }
   .bk-sidebar-header { padding-left: 0; padding-right: 0; }
@@ -1958,13 +1985,7 @@ ${chapterStyles}
   <aside class="bk-sidebar">
     <div class="bk-sidebar-inner">
       <div class="bk-sidebar-header">
-        <div class="bk-sidebar-header-top">
-          <div style="flex-grow: 1;"></div>
-          <button class="bk-icon-btn bk-sidebar-collapse" id="bk-sidebar-collapse" type="button" aria-label="Collapse sidebar">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M9 3v18"/><path d="M14 15l-3-3 3-3"/></svg>
-          </button>
-        </div>
-        <div class="bk-sidebar-title">${escHtml(chapter.meta.title)}</div>
+        <div class="bk-sidebar-title" style="margin-top: 8px;">${escHtml(chapter.meta.title)}</div>
       </div>
       <nav class="bk-nav">${navHtml}</nav>
       <div class="bk-sidebar-footer">
@@ -1993,6 +2014,9 @@ ${chapterStyles}
       </div>
     </div>
   </aside>
+  <button class="bk-sidebar-collapse-floating" id="bk-sidebar-collapse" aria-label="Collapse sidebar">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
   <main class="bk-main">
     <button class="bk-sidebar-expand" id="bk-sidebar-expand" type="button" aria-label="Expand sidebar">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
