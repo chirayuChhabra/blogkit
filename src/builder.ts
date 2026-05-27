@@ -1,13 +1,15 @@
 import * as fs from "fs";
 import * as path from "path";
-import { render } from "./renderer";
+import { render, renderChapter } from "./renderer";
 import type {
 	AnimationBlock,
 	AnimationOptions,
 	Block,
 	BuildOptions,
 	CalloutBlock,
-	ChapterBlock,
+	Chapter,
+	HeadingBlock,
+	ChapterMeta,
 	CodeBlock,
 	ColumnItem,
 	ColumnsBlock,
@@ -34,8 +36,10 @@ export class LessonBuilder {
 	private meta: LessonMeta;
 	private blocks: Block[] = [];
 	private options: BuildOptions;
+	private _rawOptions: BuildOptions;
 
 	constructor(title: string, options: BuildOptions = {}) {
+		this._rawOptions = options;
 		this.meta = {
 			title,
 			slug: title
@@ -81,6 +85,11 @@ export class LessonBuilder {
 		return this;
 	}
 
+	status(status: "read" | "unread" | "locked"): this {
+		this.meta.status = status;
+		return this;
+	}
+
 	/** Curated production defaults for the generated lesson shell. */
 	preset(preset: NonNullable<BuildOptions["preset"]>): this {
 		this.options.preset = {
@@ -91,15 +100,64 @@ export class LessonBuilder {
 		return this;
 	}
 
+	/** @internal Used by ChapterBuilder to push down shared config */
+	_inheritOptions(parentOpts: BuildOptions) {
+		this.options = {
+			outDir: this._rawOptions.outDir ?? parentOpts.outDir ?? this.options.outDir,
+			contentBase: this._rawOptions.contentBase ?? parentOpts.contentBase ?? this.options.contentBase,
+			theme: this._rawOptions.theme ?? parentOpts.theme ?? this.options.theme,
+			palette: this._rawOptions.palette ?? parentOpts.palette ?? this.options.palette,
+			strict: this._rawOptions.strict ?? parentOpts.strict ?? this.options.strict,
+			preset: { ...parentOpts.preset, ...this._rawOptions.preset, ...this.options.preset },
+		};
+	}
+
+	/** @internal Used by ChapterBuilder */
+	_setParentSlug(slug: string) {
+		this.meta.parentSlug = slug;
+	}
+
 	// ── Content blocks ───────────────────────────────────────────────────────────
 
-	/** Main heading section — becomes a sidebar entry with H2 */
-	chapter(src: string, title?: string): this {
-		this.blocks.push({ type: "chapter", src, title } as ChapterBlock);
+	/**
+	 * Smart helper that automatically infers the correct block type from the file extension or URL.
+	 * Allows authors to quickly sequence a lesson without memorizing specific block methods.
+	 */
+	add(src: `${string}.md` | `${string}.mdx`): this;
+	add(src: `${string}.json`, opts?: Pick<QuizBlock, "label" | "caption">): this;
+	add(src: `${string}.js` | `${string}.ts`, opts?: SimulationOptions): this;
+	add(src: `${string}.mp4` | `${string}.webm` | `${string}.mov`, opts?: Omit<MediaOptions, "kind">): this;
+	add(src: `${string}.mp3` | `${string}.wav` | `${string}.ogg` | `${string}.m4a`, opts?: Omit<MediaOptions, "kind" | "aspect">): this;
+	add(src: `${string}.png` | `${string}.jpg` | `${string}.jpeg` | `${string}.gif` | `${string}.svg` | `${string}.webp` | `${string}.avif`, opts?: Omit<MediaOptions, "kind">): this;
+	add(src: string, opts?: any): this;
+	add(src: string, opts: any = {}): this {
+		const lower = src.toLowerCase();
+		if (lower.endsWith(".md") || lower.endsWith(".mdx")) return this.markdown(src);
+		if (lower.endsWith(".json")) return this.quiz(src, opts);
+		if (lower.endsWith(".js") || lower.endsWith(".ts")) return this.lab(src, opts);
+		if (lower.match(/\.(png|jpg|jpeg|gif|webp|avif|svg)$/)) return this.image(src, opts);
+		if (lower.match(/\.(mp4|webm|mov)$/)) return this.video(src, opts);
+		if (lower.match(/\.(mp3|wav|ogg|m4a)$/)) return this.audio(src, opts);
+		if (lower.includes("youtube.com") || lower.includes("youtu.be")) return this.youtube(src, opts);
+		
+		// Fallback to text/markdown if unknown
+		return this.markdown(src);
+	}
+
+	/**
+	 * Creates a major chapter heading (H2) and a top-level sidebar navigation entry.
+	 * @param src Path to a markdown file or raw markdown string.
+	 * @param title Optional title override for the sidebar and heading.
+	 */
+	heading(src: string, title?: string): this {
+		this.blocks.push({ type: "heading", src, title } as HeadingBlock);
 		return this;
 	}
 
-	/** Continue prose in the SAME section — no new sidebar entry */
+	/**
+	 * Adds standard markdown prose into the current section.
+	 * @param src Path to a markdown file or raw markdown string.
+	 */
 	markdown(src: string): this {
 		this.blocks.push({ type: "markdown", src } as MarkdownBlock);
 		return this;
@@ -110,7 +168,11 @@ export class LessonBuilder {
 		return this.markdown(src);
 	}
 
-	/** New subsection — H3 + new sidebar entry */
+	/**
+	 * Creates a new subsection heading (H3) and a sub-entry in the sidebar.
+	 * @param src Path to a markdown file or raw markdown string.
+	 * @param label Optional title override for the sidebar label.
+	 */
 	section(src: string, label?: string): this {
 		this.blocks.push({ type: "section", src, label } as SectionBlock);
 		return this;
@@ -142,7 +204,12 @@ export class LessonBuilder {
 		return this;
 	}
 
-	/** Syntax-highlighted code block */
+	/**
+	 * Adds a syntax-highlighted code block.
+	 * @param src Path to a code file or raw code string.
+	 * @param lang Explicit language for highlighting (e.g. "ts", "python").
+	 * @param label Optional file name or label to display above the code block.
+	 */
 	code(src: string, lang?: string, label?: string): this {
 		this.blocks.push({ type: "code", src, lang, label } as CodeBlock);
 		return this;
@@ -181,7 +248,12 @@ export class LessonBuilder {
 		return null;
 	}
 
-	/** Sandboxed interactive simulation */
+	/**
+	 * Mounts a sandboxed JavaScript simulation or interactive applet.
+	 * @param src Path to the JavaScript simulation code.
+	 * @param opts Configuration options including tunables, height, and aspect ratio.
+	 * @param height Optional fixed iframe height in pixels.
+	 */
 	simulation(
 		src: string,
 		opts: SimulationOptions | Record<string, unknown> = {},
@@ -197,7 +269,12 @@ export class LessonBuilder {
 		return this;
 	}
 
-	/** Opinionated alias for interactive experiments. */
+	/**
+	 * Opinionated alias for `simulation()`, configured specifically for interactive physics/math labs.
+	 * Sets the default interaction mode to fully interactive.
+	 * @param src Path to the JavaScript simulation code.
+	 * @param opts Configuration options.
+	 */
 	lab(src: string, opts: SimulationOptions = {}): this {
 		return this.simulation(src, { controls: "interactive", ...opts });
 	}
@@ -257,7 +334,11 @@ export class LessonBuilder {
 		return this.media(src, { ...opts, kind: "audio", aspect: "auto" });
 	}
 
-	/** Quiz block from .json */
+	/**
+	 * Injects an interactive multiple-choice quiz block.
+	 * @param src Path to a .json file conforming to the `QuizFile` schema.
+	 * @param opts Optional label and caption for the quiz block wrapper.
+	 */
 	quiz(src: string, opts: Pick<QuizBlock, "label" | "caption"> = {}): this {
 		this.blocks.push({ type: "quiz", src, ...opts } as QuizBlock);
 		return this;
@@ -289,7 +370,8 @@ export class LessonBuilder {
 		const outPath = path.join(outDir, `${this.meta.slug}.html`);
 		fs.writeFileSync(outPath, html, "utf-8");
 
-		console.log(`✓ Built → ${outPath}`);
+		const relPath = path.relative(process.cwd(), outPath);
+		console.log(`  ✓ Built lesson (${this.blocks.length} blocks) → ${relPath}`);
 		return outPath;
 	}
 }
@@ -319,7 +401,7 @@ function normalizeSimulationOptions(
 		"controls",
 		"accent",
 	];
-	const looksLikeOptions = Object.keys(opts).some((key) =>
+	const looksLikeOptions = Object.keys(opts).every((key) =>
 		optionKeys.includes(key),
 	);
 
@@ -412,4 +494,81 @@ function validateLesson(
 			`Blogkit production checks failed:\n- ${errors.join("\n- ")}`,
 		);
 	}
+}
+
+// ─── ChapterBuilder ──────────────────────────────────────────────────────────
+
+export class ChapterBuilder {
+	private meta: ChapterMeta;
+	private lessonBuilders: LessonBuilder[] = [];
+	private options: BuildOptions;
+
+	constructor(title: string, options: BuildOptions = {}) {
+		this.meta = {
+			title,
+			slug: title
+				.toLowerCase()
+				.replace(/[^a-z0-9]+/g, "-")
+				.replace(/(^-|-$)/g, ""),
+		};
+		this.options = {
+			outDir: options.outDir ?? "./out",
+			contentBase: options.contentBase ?? ".",
+			theme: options.theme ?? "auto",
+			palette: options.palette ?? "ink",
+			strict: options.strict ?? true,
+			preset: {
+				layout: "lesson",
+				density: "comfortable",
+				tone: "scholarly",
+				...options.preset,
+			},
+			...options,
+		};
+	}
+
+	slug(slug: string): this {
+		this.meta.slug = slug;
+		return this;
+	}
+
+	description(text: string): this {
+		this.meta.description = text;
+		return this;
+	}
+
+	lesson(lessonBuilder: LessonBuilder): this {
+		lessonBuilder._inheritOptions(this.options);
+		lessonBuilder._setParentSlug(this.meta.slug);
+		this.lessonBuilders.push(lessonBuilder);
+		return this;
+	}
+
+	build(): string {
+		// Build all nested lessons first
+		const lessons: Lesson[] = [];
+		for (const lb of this.lessonBuilders) {
+			// We build it to write out the HTML file
+			lb.build();
+			// We also collect the JSON data to render the chapter index
+			lessons.push(lb.toJSON());
+		}
+
+		const chapterData: Chapter = { meta: this.meta, lessons };
+		const html = renderChapter(chapterData, this.options);
+
+		const outDir = path.resolve(this.options.outDir!);
+		if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+
+		const outPath = path.join(outDir, `${this.meta.slug}.html`);
+		fs.writeFileSync(outPath, html, "utf-8");
+
+		const relPath = path.relative(process.cwd(), outPath);
+		console.log(`✓ Built Chapter (${this.lessonBuilders.length} lessons) → ${relPath}`);
+		return outPath;
+	}
+}
+
+export function chapter(title: string, options: BuildOptions = {}): ChapterBuilder {
+	return new ChapterBuilder(title, options);
 }

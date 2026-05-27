@@ -5,6 +5,7 @@ import * as path from "path";
 import type {
 	Block,
 	BuildOptions,
+	Chapter,
 	Lesson,
 	QuizFile,
 	QuizQuestion,
@@ -15,7 +16,7 @@ import type {
 interface NavItem {
 	id: string;
 	label: string;
-	kind: "chapter" | "section" | "quiz";
+	kind: "heading" | "section" | "quiz";
 }
 
 function resolveContent(
@@ -118,7 +119,7 @@ function mdToHtml(md: string): { html: string; title: string } {
 		return `@@BK_MATH_BLOCK_${id}@@`;
 	});
 
-	processedMd = processedMd.replace(/\$([^$\n]+?)\$/g, (_, tex) => {
+	processedMd = processedMd.replace(/\$(?!\s)([^$\n]+?)(?<!\s)\$/g, (_, tex) => {
 		const id = mathInlines.length;
 		mathInlines.push(tex);
 		return `@@BK_MATH_INLINE_${id}@@`;
@@ -126,7 +127,7 @@ function mdToHtml(md: string): { html: string; title: string } {
 
 	// Restore code blocks
 	codeBlocks.forEach((match, id) => {
-		processedMd = processedMd.replace(`@@BK_CODE_${id}@@`, match);
+		processedMd = processedMd.replace(`@@BK_CODE_${id}@@`, () => match);
 	});
 
 	let html = marked.parse(processedMd) as string;
@@ -140,12 +141,12 @@ function mdToHtml(md: string): { html: string; title: string } {
 		// marked might wrap block placeholders in <p>
 		html = html.replace(
 			`<p>@@BK_MATH_BLOCK_${id}@@</p>`,
-			`<div class="bk-math-block">${rendered}</div>`,
+			() => `<div class="bk-math-block">${rendered}</div>`,
 		);
 		// Fallback if not wrapped in <p>
 		html = html.replace(
 			`@@BK_MATH_BLOCK_${id}@@`,
-			`<div class="bk-math-block">${rendered}</div>`,
+			() => `<div class="bk-math-block">${rendered}</div>`,
 		);
 	});
 
@@ -154,7 +155,7 @@ function mdToHtml(md: string): { html: string; title: string } {
 			throwOnError: false,
 			displayMode: false,
 		});
-		html = html.replace(`@@BK_MATH_INLINE_${id}@@`, rendered);
+		html = html.replace(`@@BK_MATH_INLINE_${id}@@`, () => rendered);
 	});
 
 	return { html, title };
@@ -195,7 +196,7 @@ function blockChrome(
 
 function mdInline(text: string): string {
 	const mathInlines: string[] = [];
-	const processedMd = text.replace(/\$([^$\n]+?)\$/g, (_, tex) => {
+	const processedMd = text.replace(/\$(?!\s)([^$\n]+?)(?<!\s)\$/g, (_, tex) => {
 		const id = mathInlines.length;
 		mathInlines.push(tex);
 		return `@@BK_MATH_INLINE_${id}@@`;
@@ -208,7 +209,7 @@ function mdInline(text: string): string {
 			throwOnError: false,
 			displayMode: false,
 		});
-		html = html.replace(`@@BK_MATH_INLINE_${id}@@`, rendered);
+		html = html.replace(`@@BK_MATH_INLINE_${id}@@`, () => rendered);
 	});
 
 	return html;
@@ -264,15 +265,34 @@ function renderBlock(
 	idx: number,
 	options: BuildOptions,
 ): { html: string; navItem?: NavItem } {
+	try {
+		const result = renderBlockInner(block, idx, options);
+		if (result.html && "src" in block && typeof block.src === "string" && block.src.includes(".")) {
+			result.html = result.html.replace(/^<([a-zA-Z0-9-]+)([^>]*)>/, `<$1 data-bk-src="${escAttr(block.src)}"$2>`);
+		}
+		return result;
+	} catch (e) {
+		const msg = e instanceof Error ? e.message : String(e);
+		console.warn(`  ⚠ Error rendering block ${idx + 1} (${block.type}): ${msg}`);
+		const errorHtml = `<div class="bk-callout bk-callout--warning"><div class="bk-callout-icon"></div><div class="bk-callout-content"><div class="bk-callout-label">Block Error (${escHtml(block.type)})</div><div class="bk-callout-body"><p>${escHtml(msg)}</p></div></div></div>`;
+		return { html: errorHtml };
+	}
+}
+
+function renderBlockInner(
+	block: Block,
+	idx: number,
+	options: BuildOptions,
+): { html: string; navItem?: NavItem } {
 	switch (block.type) {
-		case "chapter": {
+		case "heading": {
 			const md = resolveContent(block.src, options, "md");
 			const { html, title } = mdToHtml(md);
-			const label = block.title ?? title ?? "Chapter";
-			const id = `chapter-${idx}`;
+			const label = block.title ?? title ?? "Heading";
+			const id = `heading-${idx}`;
 			return {
-				html: `<section id="${id}" class="bk-section bk-chapter">${html}</section>`,
-				navItem: { id, label, kind: "chapter" },
+				html: `<section id="${id}" class="bk-section bk-heading">${html}</section>`,
+				navItem: { id, label, kind: "heading" },
 			};
 		}
 
@@ -477,12 +497,12 @@ function renderBlock(
 			try {
 				quiz = JSON.parse(rawJson);
 			} catch (e) {
+				const msg = e instanceof Error ? e.message : String(e);
 				if (options.strict !== false) {
-					throw new Error(
-						`Invalid Quiz JSON for block ${idx}: ${e instanceof Error ? e.message : String(e)}`,
-					);
+					throw new Error(`Invalid Quiz JSON for block ${idx + 1}: ${msg}`);
 				}
-				console.warn(`  ⚠ Invalid Quiz JSON for block ${idx}:`, e);
+				console.warn(`  ⚠ Invalid Quiz JSON for block ${idx + 1}:`, e);
+				return { html: `<div class="bk-callout bk-callout--warning"><div class="bk-callout-icon"></div><div class="bk-callout-content"><div class="bk-callout-label">Quiz JSON Error</div><div class="bk-callout-body"><p>${escHtml(msg)}</p></div></div></div>` };
 			}
 
 			return {
@@ -610,8 +630,8 @@ try {
 
 function renderNavItem(item: NavItem): string {
 	const kindClass =
-		item.kind === "chapter"
-			? "bk-nav-chapter"
+		item.kind === "heading"
+			? "bk-nav-heading"
 			: item.kind === "quiz"
 				? "bk-nav-quiz"
 				: "bk-nav-sub";
@@ -674,14 +694,18 @@ ${pageCSS()}
   <aside class="bk-sidebar">
     <div class="bk-sidebar-inner">
       <div class="bk-sidebar-header">
-        <div class="bk-brand-mark">BK</div>
-        <button class="bk-settings-button" id="bk-settings-button" type="button" aria-expanded="false" aria-controls="bk-theme-panel" title="Display settings">
-          <span class="bk-settings-glyph" aria-hidden="true"></span>
-          <span class="bk-sr-only">Display settings</span>
-        </button>
-        <button class="bk-sidebar-collapse" id="bk-sidebar-collapse" type="button" aria-label="Collapse sidebar">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
+        <div class="bk-sidebar-header-top">
+          <div class="bk-brand-mark" style="margin-bottom: 0;">BK</div>
+          <div style="flex-grow: 1;"></div>
+          ${lesson.meta.parentSlug ? `<a href="${lesson.meta.parentSlug}.html" class="bk-icon-btn" aria-label="Back to Chapter" title="Back to Chapter"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg></a>` : ""}
+          <button class="bk-icon-btn bk-settings-button" id="bk-settings-button" type="button" aria-expanded="false" aria-controls="bk-theme-panel" title="Display settings">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <span class="bk-sr-only">Display settings</span>
+          </button>
+          <button class="bk-icon-btn bk-sidebar-collapse" id="bk-sidebar-collapse" type="button" aria-label="Collapse sidebar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M9 3v18"/><path d="M14 15l-3-3 3-3"/></svg>
+          </button>
+        </div>
         <div class="bk-sidebar-title">${escHtml(lesson.meta.title)}</div>
         ${lesson.meta.author ? `<div class="bk-sidebar-author">By ${escHtml(lesson.meta.author)}</div>` : ""}
         ${lesson.meta.tags?.length ? `<div class="bk-tag-row">${lesson.meta.tags.map((tag) => `<span>${escHtml(tag)}</span>`).join("")}</div>` : ""}
@@ -893,10 +917,13 @@ body {
   border: 1px solid var(--line-strong); border-radius: 8px;
   color: var(--accent); font-weight: 700; font-size: 12px; margin-bottom: 18px;
 }
-.bk-settings-button {
-  position: absolute;
-  top: 0;
-  right: 62px;
+.bk-sidebar-header-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.bk-icon-btn {
   width: 36px;
   height: 36px;
   display: grid;
@@ -906,49 +933,15 @@ body {
   background: var(--paper);
   color: var(--muted);
   cursor: pointer;
+  text-decoration: none;
   transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
 }
-.bk-settings-button:hover,
-.bk-settings-button[aria-expanded="true"] {
+.bk-icon-btn:hover,
+.bk-icon-btn[aria-expanded="true"] {
   transform: translateY(-1px);
   border-color: var(--accent);
   color: var(--accent);
   background: var(--accent-soft);
-}
-.bk-settings-glyph {
-  position: relative;
-  width: 18px;
-  height: 18px;
-  border: 2px solid currentColor;
-  border-radius: 50%;
-}
-.bk-settings-glyph::before {
-  content: "";
-  position: absolute;
-  inset: 4px;
-  border: 2px solid currentColor;
-  border-radius: 50%;
-}
-
-.bk-sidebar-collapse {
-  position: absolute;
-  top: 0;
-  right: 18px;
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--paper);
-  color: var(--muted);
-  cursor: pointer;
-  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
-}
-.bk-sidebar-collapse:hover {
-  transform: translateY(-1px);
-  border-color: var(--line-strong);
-  color: var(--ink);
 }
 .bk-sidebar-expand {
   position: fixed;
@@ -976,16 +969,7 @@ body {
   transform: translateY(-1px);
 }
 
-.bk-settings-glyph::after {
-  content: "";
-  position: absolute;
-  left: 7px;
-  top: -5px;
-  width: 2px;
-  height: 26px;
-  background: currentColor;
-  box-shadow: 7px 7px 0 -1px currentColor, -7px 7px 0 -1px currentColor;
-}
+
 .bk-sr-only {
   position: absolute;
   width: 1px;
@@ -1099,7 +1083,7 @@ body {
   font-size: 34px; font-weight: 700; letter-spacing: 0;
   margin: 16px 0 24px; line-height: 1.2;
 }
-.bk-section.bk-chapter { margin-top: 24px; }
+.bk-section.bk-heading { margin-top: 24px; }
 .bk-section.bk-subsection { margin-top: 16px; }
 .bk-markdown h2, .bk-section h3 { font-size: 23px; font-weight: 650; margin: 32px 0 16px; letter-spacing: 0; }
 .bk-markdown h3, .bk-section h4 { font-size: 18px; font-weight: 600; margin: 24px 0 12px; }
@@ -1638,7 +1622,7 @@ document.addEventListener('DOMContentLoaded', () => {
   bkWireSimControls()
   bkWireInteractiveFrames()
 
-  const sections = document.querySelectorAll('[id^="chapter-"], [id^="section-"], [id^="quiz-"]')
+  const sections = document.querySelectorAll('[id^="heading-"], [id^="section-"], [id^="quiz-"]')
   const navLinks = document.querySelectorAll('.bk-nav-item')
 
   if (!sections.length || !navLinks.length) return
@@ -1683,3 +1667,327 @@ export function render(lesson: Lesson, opts: BuildOptions = {}): string {
 
 	return renderPage(lesson, structuredNavItems, bodyItems.join("\n"), opts);
 }
+
+// ─── Chapter Rendering ────────────────────────────────────────────────────────
+
+export function renderChapter(chapter: Chapter, opts: BuildOptions = {}): string {
+	const theme = opts.theme ?? "auto";
+	const schemeAttr = theme === "auto" ? "" : `data-theme="${theme}"`;
+	const preset = opts.preset ?? {};
+	const layout = preset.layout ?? "lesson";
+	const density = preset.density ?? "comfortable";
+	const tone = preset.tone ?? "scholarly";
+	const palette = opts.palette ?? "ink";
+
+	const navHtml = chapter.lessons.map(l => `<a href="${escAttr(l.meta.slug)}.html" class="bk-nav-item bk-nav-chapter">${escHtml(l.meta.title)}</a>`).join("\n");
+
+	const timelineHtml = `
+<div class="bk-chapter-timeline">
+  ${chapter.lessons.map((lesson, idx) => `
+    <a href="${escAttr(lesson.meta.slug)}.html" class="bk-timeline-card bk-status-${lesson.meta.status ?? 'unread'}" style="animation-delay: ${idx * 0.1}s">
+      <div class="bk-timeline-node"></div>
+      <div class="bk-timeline-content">
+        <h3 class="bk-timeline-title">${escHtml(lesson.meta.title)}</h3>
+        ${lesson.meta.description ? `<p class="bk-timeline-desc">${escHtml(lesson.meta.description)}</p>` : ''}
+        <span class="bk-timeline-action">${lesson.meta.status === 'read' ? 'Read again' : 'Start Lesson'} <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
+      </div>
+    </a>
+  `).join("")}
+</div>`;
+
+	const chapterStyles = `
+.bk-chapter-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  padding: 3rem 0;
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.bk-chapter-timeline::before {
+  content: '';
+  position: absolute;
+  left: 24px; /* center of the 48px node */
+  top: 3rem;
+  bottom: 3rem;
+  width: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to bottom, var(--accent) 0%, var(--accent-soft) 100%);
+  z-index: 0;
+  transform: translateX(-50%);
+  opacity: 0.5;
+}
+.bk-timeline-card {
+  display: flex;
+  align-items: stretch;
+  gap: 2rem;
+  text-decoration: none !important;
+  border: none !important;
+  color: inherit;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  animation: bk-fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.bk-timeline-node {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--paper) 0%, var(--panel) 100%);
+  border: 3px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08), inset 0 2px 4px rgba(255,255,255,0.5);
+}
+.bk-timeline-node::after {
+  content: '';
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.bk-timeline-card:hover .bk-timeline-node {
+  background: var(--accent-soft);
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+.bk-timeline-card:hover .bk-timeline-node::after {
+  transform: scale(1.15);
+}
+.bk-timeline-content {
+  background: linear-gradient(145deg, var(--paper) 0%, var(--panel) 100%);
+  padding: 2rem;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  flex: 1;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.bk-timeline-content::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 8%, transparent), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.bk-timeline-card:hover .bk-timeline-content {
+  border-color: var(--accent);
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--accent) 10%, transparent);
+  transform: translateY(-2px);
+}
+.bk-timeline-card:hover .bk-timeline-content::before {
+  opacity: 1;
+}
+.bk-timeline-title {
+  margin: 0 0 0.75rem 0;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  color: var(--ink);
+  transition: color 0.2s;
+}
+.bk-timeline-card:hover .bk-timeline-title {
+  color: var(--accent);
+}
+.bk-timeline-desc {
+  margin: 0 0 1.5rem 0;
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 1.05rem;
+}
+.bk-timeline-action {
+  font-weight: 600;
+  color: var(--paper);
+  background: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: 999px;
+  align-self: flex-start;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.bk-timeline-card:hover .bk-timeline-action {
+  gap: 0.75rem;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 35%, transparent);
+  background: color-mix(in srgb, var(--accent) 85%, black);
+}
+@keyframes bk-fade-in-up {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.bk-status-unread .bk-timeline-node {
+  border-color: var(--line-strong);
+  box-shadow: none;
+  background: var(--surface);
+}
+.bk-status-unread .bk-timeline-node::after {
+  background: var(--muted);
+  box-shadow: none;
+  transform: scale(0.8);
+}
+.bk-status-unread .bk-timeline-content {
+  background: var(--surface);
+  box-shadow: none;
+}
+.bk-status-unread .bk-timeline-content::before {
+  display: none;
+}
+.bk-status-unread .bk-timeline-title {
+  color: var(--muted);
+}
+.bk-status-unread .bk-timeline-desc {
+  color: color-mix(in srgb, var(--muted) 70%, transparent);
+}
+.bk-status-unread .bk-timeline-action {
+  background: var(--paper);
+  color: var(--muted);
+  box-shadow: none;
+  border: 1px solid var(--line-strong);
+}
+.bk-status-unread:hover .bk-timeline-node {
+  border-color: var(--muted);
+  background: var(--paper);
+}
+.bk-status-unread:hover .bk-timeline-node::after {
+  background: var(--ink);
+  transform: scale(1);
+}
+.bk-status-unread:hover .bk-timeline-content {
+  background: var(--paper);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+}
+.bk-status-unread:hover .bk-timeline-title {
+  color: var(--ink);
+}
+.bk-status-unread:hover .bk-timeline-action {
+  background: var(--line);
+  color: var(--ink);
+  border-color: transparent;
+}
+
+@media (prefers-color-scheme: dark) {
+  .bk-chapter-timeline::before {
+    opacity: 0.2;
+  }
+  .bk-timeline-node {
+    background: linear-gradient(135deg, var(--panel) 0%, var(--panel-strong) 100%);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .bk-timeline-content {
+    background: linear-gradient(145deg, var(--panel) 0%, var(--panel-strong) 100%);
+  }
+  .bk-timeline-card:hover .bk-timeline-content {
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+  }
+}
+@media (max-width: 600px) {
+  .bk-chapter-timeline::before {
+    left: 20px;
+  }
+  .bk-timeline-node {
+    width: 40px;
+    height: 40px;
+  }
+  .bk-timeline-node::after {
+    width: 12px;
+    height: 12px;
+  }
+  .bk-timeline-content {
+    padding: 1.5rem;
+  }
+}
+`;
+
+	return `<!DOCTYPE html>
+<html lang="en" data-palette="${palette}" ${schemeAttr}>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${escHtml(chapter.meta.title)}</title>
+${chapter.meta.description ? `<meta name="description" content="${escHtml(chapter.meta.description)}">` : ""}
+${opts.head ?? ""}
+<style>
+${opts.font ? `:root { --font-sans: ${opts.font}, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }` : ""}
+${pageCSS()}
+${chapterStyles}
+</style>
+</head>
+<body class="bk-layout-${layout} bk-density-${density} bk-tone-${tone}">
+<div class="bk-shell">
+  <aside class="bk-sidebar">
+    <div class="bk-sidebar-inner">
+      <div class="bk-sidebar-header">
+        <div class="bk-sidebar-header-top">
+          <div class="bk-brand-mark" style="margin-bottom: 0;">BK</div>
+          <div style="flex-grow: 1;"></div>
+          <button class="bk-icon-btn bk-settings-button" id="bk-settings-button" type="button" aria-expanded="false" aria-controls="bk-theme-panel" title="Display settings">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <span class="bk-sr-only">Display settings</span>
+          </button>
+          <button class="bk-icon-btn bk-sidebar-collapse" id="bk-sidebar-collapse" type="button" aria-label="Collapse sidebar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M9 3v18"/><path d="M14 15l-3-3 3-3"/></svg>
+          </button>
+        </div>
+        <div class="bk-sidebar-title">${escHtml(chapter.meta.title)}</div>
+        <div class="bk-theme-panel" id="bk-theme-panel" aria-label="Display settings" hidden>
+          <label>
+            <span>Theme</span>
+            <select id="bk-theme-select">
+              <option value="auto" ${theme === "auto" ? "selected" : ""}>System</option>
+              <option value="light" ${theme === "light" ? "selected" : ""}>Light</option>
+              <option value="dark" ${theme === "dark" ? "selected" : ""}>Dark</option>
+            </select>
+          </label>
+          <label>
+            <span>Palette</span>
+            <select id="bk-palette-select">
+              <option value="ink" ${palette === "ink" ? "selected" : ""}>Ink</option>
+              <option value="field" ${palette === "field" ? "selected" : ""}>Field</option>
+              <option value="ember" ${palette === "ember" ? "selected" : ""}>Ember</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <nav class="bk-nav">${navHtml}</nav>
+    </div>
+  </aside>
+  <main class="bk-main">
+    <button class="bk-sidebar-expand" id="bk-sidebar-expand" type="button" aria-label="Expand sidebar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </button>
+    <article class="bk-content" style="max-width: 1000px; margin: 0 auto;">
+      <header class="bk-hero" style="border-bottom: none;">
+        <p class="bk-eyebrow">Chapter</p>
+        <h1>${escHtml(chapter.meta.title)}</h1>
+        ${chapter.meta.description ? `<p class="bk-deck">${escHtml(chapter.meta.description)}</p>` : ""}
+      </header>
+      ${timelineHtml}
+    </article>
+  </main>
+</div>
+<script>
+${clientScript()}
+</script>
+</body>
+</html>`;
+}
+

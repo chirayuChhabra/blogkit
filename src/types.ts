@@ -1,7 +1,7 @@
 // ─── Block Types ─────────────────────────────────────────────────────────────
 
 export type BlockType =
-	| "chapter"
+	| "heading"
 	| "markdown"
 	| "section"
 	| "important"
@@ -23,8 +23,8 @@ export interface BaseBlock {
 }
 
 // Markdown content blocks
-export interface ChapterBlock extends BaseBlock {
-	type: "chapter";
+export interface HeadingBlock extends BaseBlock {
+	type: "heading";
 	src: string; // path to .md file or inline markdown
 	title?: string; // override title extracted from md
 }
@@ -134,7 +134,7 @@ export interface DividerBlock extends BaseBlock {
 }
 
 export type Block =
-	| ChapterBlock
+	| HeadingBlock
 	| MarkdownBlock
 	| SectionBlock
 	| CalloutBlock
@@ -156,6 +156,8 @@ export interface LessonMeta {
 	description?: string;
 	tags?: string[];
 	author?: string;
+	status?: "read" | "unread" | "locked";
+	parentSlug?: string;
 }
 
 export interface Lesson {
@@ -250,4 +252,17 @@ export interface LatexOptions {
 export interface ColumnsOptions {
 	label?: string;
 	caption?: string;
+}
+
+// ─── Chapter Schema ──────────────────────────────────────────────────────────
+
+export interface ChapterMeta {
+	title: string;
+	slug: string;
+	description?: string;
+}
+
+export interface Chapter {
+	meta: ChapterMeta;
+	lessons: Lesson[];
 }
