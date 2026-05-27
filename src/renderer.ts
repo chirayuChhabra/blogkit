@@ -695,7 +695,6 @@ ${pageCSS()}
     <div class="bk-sidebar-inner">
       <div class="bk-sidebar-header">
         <div class="bk-sidebar-header-top">
-          <div class="bk-brand-mark" style="margin-bottom: 0;">BK</div>
           <div style="flex-grow: 1;"></div>
           <button class="bk-icon-btn bk-sidebar-collapse" id="bk-sidebar-collapse" type="button" aria-label="Collapse sidebar">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M9 3v18"/><path d="M14 15l-3-3 3-3"/></svg>
@@ -1961,7 +1960,6 @@ ${chapterStyles}
     <div class="bk-sidebar-inner">
       <div class="bk-sidebar-header">
         <div class="bk-sidebar-header-top">
-          <div class="bk-brand-mark" style="margin-bottom: 0;">BK</div>
           <div style="flex-grow: 1;"></div>
           <button class="bk-icon-btn bk-sidebar-collapse" id="bk-sidebar-collapse" type="button" aria-label="Collapse sidebar">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M9 3v18"/><path d="M14 15l-3-3 3-3"/></svg>
