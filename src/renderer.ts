@@ -695,12 +695,12 @@ ${pageCSS()}
     <div class="bk-sidebar-inner">
       <div class="bk-sidebar-header">
         <div class="bk-sidebar-header-top">
+          ${lesson.meta.parentSlug ? `<a href="${lesson.meta.parentSlug}.html" class="bk-back-link" aria-label="Back to Chapter" style="margin-bottom: 0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>Back to Chapter</a>` : ""}
           <div style="flex-grow: 1;"></div>
           <button class="bk-icon-btn bk-sidebar-collapse" id="bk-sidebar-collapse" type="button" aria-label="Collapse sidebar">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M9 3v18"/><path d="M14 15l-3-3 3-3"/></svg>
           </button>
         </div>
-        ${lesson.meta.parentSlug ? `<a href="${lesson.meta.parentSlug}.html" class="bk-back-link" aria-label="Back to Chapter"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>Back to Chapter</a>` : ""}
         <div class="bk-sidebar-title">${escHtml(lesson.meta.title)}</div>
         ${lesson.meta.author ? `<div class="bk-sidebar-author">By ${escHtml(lesson.meta.author)}</div>` : ""}
         ${lesson.meta.tags?.length ? `<div class="bk-tag-row">${lesson.meta.tags.map((tag) => `<span>${escHtml(tag)}</span>`).join("")}</div>` : ""}
@@ -730,7 +730,6 @@ ${pageCSS()}
           </label>
         </div>
       </div>
-      <nav class="bk-nav">${navHtml}</nav>
     </div>
   </aside>
   <main class="bk-main">
@@ -1992,7 +1991,6 @@ ${chapterStyles}
           </label>
         </div>
       </div>
-      <nav class="bk-nav">${navHtml}</nav>
     </div>
   </aside>
   <main class="bk-main">
