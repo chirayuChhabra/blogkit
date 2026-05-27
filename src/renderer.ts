@@ -888,7 +888,8 @@ body {
 
 .bk-sidebar-collapse-floating {
   position: absolute;
-  top: 32px;
+  top: 50%;
+  transform: translateY(-50%);
   left: 274px;
   width: 28px;
   height: 28px;
