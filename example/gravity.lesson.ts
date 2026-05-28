@@ -16,7 +16,7 @@ export default lesson("Gravity: From Newton to Einstein", {
 	.tags("physics", "astrophysics", "relativity")
 	.author("Chirayu")
 
-	.chapter("gravity-intro.md")
+	.heading("gravity-intro.md")
 
 	.columns(
 		[
@@ -64,6 +64,4 @@ export default lesson("Gravity: From Newton to Einstein", {
 
 	.quiz("gravity-quiz-2.json", {
 		label: "Final Review",
-	})
-
-	.build();
+	});

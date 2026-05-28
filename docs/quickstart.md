@@ -11,31 +11,35 @@ Ensure you have a Node.js or Bun environment set up.
 Create a file named `charge.lesson.ts` (or similar) and import `lesson` from `blogkit`.
 
 ```ts
-import { lesson } from "blogkit";
+import { lesson, chapter } from "blogkit";
 
-export default lesson("Charge is a Mystery", {
-  contentBase: "./content", // Where your markdown files live
-  outDir: "./out",          // Where the compiled HTML will go
-  theme: "auto",
-  palette: "ink",
-  preset: { layout: "lab", tone: "scholarly" },
-  font: "Inter, sans-serif" // Optional custom font
-})
+const myLesson = lesson("Charge is a Mystery")
   .description("A guided lesson about electric charge.")
   .tags("physics", "electromagnetism")
   .author("Chirayu")
   
-  // Use core blocks to build your page sequentially:
-  .chapter("intro.md")
-  .lab("../charge-sim.js", { label: "Electric field explorer" })
+  // Use the smart .add() router to quickly sequence your files:
+  .add("intro.md")
+  .add("../charge-sim.js", { label: "Electric field explorer" })
   
+  // Or use specific layout blocks for advanced needs:
   .columns([
     { markdown: "Force weakens with distance." },
     { latex: "F = k\\frac{q_1q_2}{r^2}" },
   ])
   
-  .youtube("https://youtu.be/dQw4w9WgXcQ", { label: "Reference clip" })
-  .quiz("questions.json")
+  .add("https://youtu.be/dQw4w9WgXcQ", { label: "Reference clip" })
+  .add("questions.json");
+
+// Lessons inherit configuration (like outDir) from their parent Chapter!
+chapter("Physics 101", {
+  contentBase: "./content", // Where your markdown files live
+  outDir: "./out",          // Where the compiled HTML will go
+  theme: "auto",
+  palette: "ink",
+  preset: { layout: "lab", tone: "scholarly" }
+})
+  .lesson(myLesson)
   .build();
 ```
 

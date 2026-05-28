@@ -2,9 +2,29 @@
 
 Blogkit provides a fluent API where you chain method calls on the `lesson()` builder to add blocks of content sequentially.
 
+## The Smart `.add()` Router
+
+For most use cases, you don't need to memorize specific method names. The universal `.add(src)` method automatically infers the correct block type based on the file extension or URL provided.
+
+* **`.add("file.md")`** → Parses as standard Markdown.
+* **`.add("sim.js")`** → Mounts an Interactive Lab.
+* **`.add("questions.json")`** → Renders an Interactive Quiz.
+* **`.add("video.mp4")`** → Embeds a local video.
+* **`.add("image.png")`** → Embeds an image.
+* **`.add("https://youtu.be/...")`** → Embeds a YouTube video.
+
+```ts
+lesson("My Lesson")
+  .add("intro.md")
+  .add("sim.js", { label: "Electric field explorer" })
+  .add("questions.json")
+```
+
+If you need specific layout semantics (like a new major heading, callouts, or columns), you can use the targeted layout blocks below.
+
 ## Text & Markdown
 
-* **`chapter(src, title?)`**: Creates a primary section heading (H2) and a corresponding entry in the sidebar navigation.
+* **`heading(src, title?)`**: Creates a primary section heading (H2) and a corresponding entry in the sidebar navigation.
 * **`section(src, label?)`**: Creates a subsection heading (H3) and a nested entry in the sidebar navigation.
 * **`content(src)` / `markdown(src)`**: Adds standard prose from a markdown file without creating a new sidebar entry.
 

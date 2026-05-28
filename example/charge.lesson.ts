@@ -1,11 +1,9 @@
 import * as path from "path";
 import { lesson } from "../src/index";
 
-const contentBase = path.join(__dirname, "content");
+const _contentBase = path.join(__dirname, "content");
 
 export default lesson("Charge is a Mystery", {
-	outDir: path.join(__dirname, "out"),
-	contentBase,
 	theme: "auto",
 	preset: { layout: "lab", tone: "scholarly" },
 })
@@ -14,15 +12,16 @@ export default lesson("Charge is a Mystery", {
 	)
 	.tags("physics", "electromagnetism", "quantum")
 	.author("Chirayu")
+	.status("read")
 
-	.chapter("chargeIsAMystery.md")
+	.heading("chargeIsAMystery.md")
 
-	.lab("../chargesInteractive.js", {
+	.add("../chargesInteractive.js", {
 		label: "Electric field explorer",
 		caption: "Drag the charges to see how the field changes in real time.",
 	})
 
-	.content("chargeInQFT.md")
+	.add("chargeInQFT.md")
 
 	.divider()
 
@@ -42,9 +41,7 @@ export default lesson("Charge is a Mystery", {
 
 	.note("conservationOfCharge.md")
 
-	.quiz("chargeQuestions.json", {
+	.add("chargeQuestions.json", {
 		label: "Review questions",
 		caption: "Immediate feedback keeps the lesson self-checking.",
-	})
-
-	.build();
+	});
