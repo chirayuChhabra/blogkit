@@ -2,3 +2,4 @@ node_modules/
 *.log
 scratch_test.html
 test-regex.js
+out/
