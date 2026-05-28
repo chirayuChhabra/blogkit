@@ -1,56 +1,19 @@
-import { course, chapter, lesson } from "../src";
+import { course, chapter } from "../src/index";
+import { physicsChapter } from "./chapter";
 
-course("Web Development 101", { theme: "light" })
-	.description("A complete journey from HTML to modern frameworks")
-	.chapter(
-		chapter("Chapter 1: The Basics")
-			.description("HTML, CSS, and basic scripting")
-			.status("completed")
-			.lesson(
-				lesson("HTML Basics")
-					.description("The skeleton of the web")
-					.content("# HTML Basics\nHello World!")
-			)
-			.lesson(
-				lesson("CSS Styling")
-					.description("Making it look pretty")
-					.content("# CSS\nColor it red.")
-			)
-	)
-	.chapter(
-		chapter("Chapter 2: Interactivity")
-			.description("JavaScript fundamentals")
-			.status("completed")
-			.lesson(
-				lesson("Intro to JS")
-					.content("# JS\nVariables and loops")
-			)
-	)
-	.chapter(
-		chapter("Chapter 3: Advanced Frontend")
-			.description("DOM Manipulation and async JS")
-			.status("active")
-			.lesson(
-				lesson("DOM API")
-					.content("# DOM\nDocument Object Model")
-			)
-	)
-	.chapter(
-		chapter("Chapter 4: React Basics")
-			.description("Components and State")
-			.status("locked")
-			.lesson(
-				lesson("Hello React")
-					.content("# React\nComponents")
-			)
-	)
-	.chapter(
-		chapter("Chapter 5: Next.js")
-			.description("Server-side rendering")
-			.status("locked")
-			.lesson(
-				lesson("Next JS")
-					.content("# Next\nSSR")
-			)
-	)
+// In a real app, chapters would typically be imported from their own files
+// just like we did with physicsChapter above.
+const quantumChapter = chapter("Quantum Mechanics")
+	.description("The weird world of the very small")
+	.status("locked");
+
+const relativityChapter = chapter("Relativity")
+	.description("Space, time, and gravity")
+	.status("locked");
+
+course("Physics Journey", { theme: "dark" })
+	.description("Your path to understanding the universe")
+	.chapter(physicsChapter.status("active")) // Imported from chapter.ts
+	.chapter(quantumChapter)
+	.chapter(relativityChapter)
 	.build();

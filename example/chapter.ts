@@ -6,10 +6,9 @@ import gravityLesson from "./gravity.lesson";
 const outDir = path.join(__dirname, "out");
 const contentBase = path.join(__dirname, "content");
 
-chapter("Physics Basics", { outDir, contentBase })
+export const physicsChapter = chapter("Physics Basics", { outDir, contentBase })
 	.description(
 		"Welcome to your first level! Master the fundamentals of the universe.",
 	)
 	.lesson(chargeLesson)
-	.lesson(gravityLesson)
-	.build();
+	.lesson(gravityLesson);
