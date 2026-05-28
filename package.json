@@ -7,7 +7,7 @@
 		"example": "example"
 	},
 	"scripts": {
-		"build:example": "bun example/charge.lesson.ts && bun example/gravity.lesson.ts",
+		"build:example": "bun example/chapter.ts",
 		"typecheck": "bunx tsc --noEmit",
 		"test": "bun test && bun run typecheck"
 	},
