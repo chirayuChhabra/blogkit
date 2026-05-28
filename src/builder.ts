@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { render, renderChapter } from "./renderer";
+import { render, renderChapter, renderCourse } from "./renderer";
 import type {
 	AnimationBlock,
 	AnimationOptions,
@@ -8,13 +8,15 @@ import type {
 	BuildOptions,
 	CalloutBlock,
 	Chapter,
-	HeadingBlock,
 	ChapterMeta,
 	CodeBlock,
 	ColumnItem,
 	ColumnsBlock,
 	ColumnsOptions,
+	Course,
+	CourseMeta,
 	DividerBlock,
+	HeadingBlock,
 	LatexBlock,
 	LatexOptions,
 	Lesson,
@@ -103,12 +105,22 @@ export class LessonBuilder {
 	/** @internal Used by ChapterBuilder to push down shared config */
 	_inheritOptions(parentOpts: BuildOptions) {
 		this.options = {
-			outDir: this._rawOptions.outDir ?? parentOpts.outDir ?? this.options.outDir,
-			contentBase: this._rawOptions.contentBase ?? parentOpts.contentBase ?? this.options.contentBase,
+			outDir:
+				this._rawOptions.outDir ?? parentOpts.outDir ?? this.options.outDir,
+			contentBase:
+				this._rawOptions.contentBase ??
+				parentOpts.contentBase ??
+				this.options.contentBase,
 			theme: this._rawOptions.theme ?? parentOpts.theme ?? this.options.theme,
-			palette: this._rawOptions.palette ?? parentOpts.palette ?? this.options.palette,
-			strict: this._rawOptions.strict ?? parentOpts.strict ?? this.options.strict,
-			preset: { ...parentOpts.preset, ...this._rawOptions.preset, ...this.options.preset },
+			palette:
+				this._rawOptions.palette ?? parentOpts.palette ?? this.options.palette,
+			strict:
+				this._rawOptions.strict ?? parentOpts.strict ?? this.options.strict,
+			preset: {
+				...parentOpts.preset,
+				...this._rawOptions.preset,
+				...this.options.preset,
+			},
 		};
 	}
 
@@ -126,20 +138,42 @@ export class LessonBuilder {
 	add(src: `${string}.md` | `${string}.mdx`): this;
 	add(src: `${string}.json`, opts?: Pick<QuizBlock, "label" | "caption">): this;
 	add(src: `${string}.js` | `${string}.ts`, opts?: SimulationOptions): this;
-	add(src: `${string}.mp4` | `${string}.webm` | `${string}.mov`, opts?: Omit<MediaOptions, "kind">): this;
-	add(src: `${string}.mp3` | `${string}.wav` | `${string}.ogg` | `${string}.m4a`, opts?: Omit<MediaOptions, "kind" | "aspect">): this;
-	add(src: `${string}.png` | `${string}.jpg` | `${string}.jpeg` | `${string}.gif` | `${string}.svg` | `${string}.webp` | `${string}.avif`, opts?: Omit<MediaOptions, "kind">): this;
+	add(
+		src: `${string}.mp4` | `${string}.webm` | `${string}.mov`,
+		opts?: Omit<MediaOptions, "kind">,
+	): this;
+	add(
+		src: `${string}.mp3` | `${string}.wav` | `${string}.ogg` | `${string}.m4a`,
+		opts?: Omit<MediaOptions, "kind" | "aspect">,
+	): this;
+	add(
+		src:
+			| `${string}.png`
+			| `${string}.jpg`
+			| `${string}.jpeg`
+			| `${string}.gif`
+			| `${string}.svg`
+			| `${string}.webp`
+			| `${string}.avif`,
+		opts?: Omit<MediaOptions, "kind">,
+	): this;
+	// biome-ignore lint/suspicious/noExplicitAny: Overload signature
 	add(src: string, opts?: any): this;
+	// biome-ignore lint/suspicious/noExplicitAny: Overload implementation
 	add(src: string, opts: any = {}): this {
 		const lower = src.toLowerCase();
-		if (lower.endsWith(".md") || lower.endsWith(".mdx")) return this.markdown(src);
+		if (lower.endsWith(".md") || lower.endsWith(".mdx"))
+			return this.markdown(src);
 		if (lower.endsWith(".json")) return this.quiz(src, opts);
-		if (lower.endsWith(".js") || lower.endsWith(".ts")) return this.lab(src, opts);
-		if (lower.match(/\.(png|jpg|jpeg|gif|webp|avif|svg)$/)) return this.image(src, opts);
+		if (lower.endsWith(".js") || lower.endsWith(".ts"))
+			return this.lab(src, opts);
+		if (lower.match(/\.(png|jpg|jpeg|gif|webp|avif|svg)$/))
+			return this.image(src, opts);
 		if (lower.match(/\.(mp4|webm|mov)$/)) return this.video(src, opts);
 		if (lower.match(/\.(mp3|wav|ogg|m4a)$/)) return this.audio(src, opts);
-		if (lower.includes("youtube.com") || lower.includes("youtu.be")) return this.youtube(src, opts);
-		
+		if (lower.includes("youtube.com") || lower.includes("youtu.be"))
+			return this.youtube(src, opts);
+
 		// Fallback to text/markdown if unknown
 		return this.markdown(src);
 	}
@@ -238,7 +272,7 @@ export class LessonBuilder {
 			const base = this.options.contentBase ?? process.cwd();
 			const resolved = path.resolve(base, src);
 			const ext = path.extname(resolved);
-			const configPath = resolved.slice(0, -ext.length) + ".config.json";
+			const configPath = `${resolved.slice(0, -ext.length)}.config.json`;
 			if (fs.existsSync(configPath)) {
 				return JSON.parse(fs.readFileSync(configPath, "utf-8"));
 			}
@@ -364,7 +398,7 @@ export class LessonBuilder {
 		const lesson: Lesson = { meta: this.meta, blocks: this.blocks };
 		const html = render(lesson, this.options);
 
-		const outDir = path.resolve(this.options.outDir!);
+		const outDir = path.resolve(this.options.outDir as string);
 		if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 
 		const outPath = path.join(outDir, `${this.meta.slug}.html`);
@@ -537,6 +571,11 @@ export class ChapterBuilder {
 		return this;
 	}
 
+	status(status: "completed" | "active" | "locked"): this {
+		this.meta.status = status;
+		return this;
+	}
+
 	lesson(lessonBuilder: LessonBuilder): this {
 		lessonBuilder._inheritOptions(this.options);
 		lessonBuilder._setParentSlug(this.meta.slug);
@@ -557,18 +596,109 @@ export class ChapterBuilder {
 		const chapterData: Chapter = { meta: this.meta, lessons };
 		const html = renderChapter(chapterData, this.options);
 
-		const outDir = path.resolve(this.options.outDir!);
+		const outDir = path.resolve(this.options.outDir as string);
 		if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 
 		const outPath = path.join(outDir, `${this.meta.slug}.html`);
 		fs.writeFileSync(outPath, html, "utf-8");
 
 		const relPath = path.relative(process.cwd(), outPath);
-		console.log(`✓ Built Chapter (${this.lessonBuilders.length} lessons) → ${relPath}`);
+		console.log(
+			`  ✓ Built chapter (${this.lessonBuilders.length} lessons) → ${relPath}`,
+		);
+		return outPath;
+	}
+
+	/** Returns the raw Chapter object (useful for CourseBuilder) */
+	toJSON(): Chapter {
+		const lessons: Lesson[] = [];
+		for (const lb of this.lessonBuilders) {
+			lessons.push(lb.toJSON());
+		}
+		return { meta: this.meta, lessons };
+	}
+}
+
+export function chapter(
+	title: string,
+	options: BuildOptions = {},
+): ChapterBuilder {
+	return new ChapterBuilder(title, options);
+}
+
+// ─── CourseBuilder ───────────────────────────────────────────────────────────
+
+export class CourseBuilder {
+	private meta: CourseMeta;
+	private chapterBuilders: ChapterBuilder[] = [];
+	private options: BuildOptions;
+
+	constructor(title: string, options: BuildOptions = {}) {
+		this.meta = {
+			title,
+			slug: title
+				.toLowerCase()
+				.replace(/[^a-z0-9]+/g, "-")
+				.replace(/(^-|-$)/g, ""),
+		};
+		this.options = {
+			outDir: options.outDir ?? "./out",
+			contentBase: options.contentBase ?? ".",
+			theme: options.theme ?? "auto",
+			palette: options.palette ?? "ink",
+			strict: options.strict ?? true,
+			preset: {
+				layout: "lesson",
+				density: "comfortable",
+				tone: "scholarly",
+				...options.preset,
+			},
+			...options,
+		};
+	}
+
+	slug(slug: string): this {
+		this.meta.slug = slug;
+		return this;
+	}
+
+	description(text: string): this {
+		this.meta.description = text;
+		return this;
+	}
+
+	chapter(chapterBuilder: ChapterBuilder): this {
+		this.chapterBuilders.push(chapterBuilder);
+		return this;
+	}
+
+	build(): string {
+		const chapters: Chapter[] = [];
+		for (const cb of this.chapterBuilders) {
+			cb.build();
+			chapters.push(cb.toJSON());
+		}
+
+		const courseData: Course = { meta: this.meta, chapters };
+		const html = renderCourse(courseData, this.options);
+
+		const outDir = path.resolve(this.options.outDir as string);
+		if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+
+		const outPath = path.join(outDir, `${this.meta.slug}.html`);
+		fs.writeFileSync(outPath, html, "utf-8");
+
+		const relPath = path.relative(process.cwd(), outPath);
+		console.log(
+			`✓ Built Course (${this.chapterBuilders.length} chapters) → ${relPath}`,
+		);
 		return outPath;
 	}
 }
 
-export function chapter(title: string, options: BuildOptions = {}): ChapterBuilder {
-	return new ChapterBuilder(title, options);
+export function course(
+	title: string,
+	options: BuildOptions = {},
+): CourseBuilder {
+	return new CourseBuilder(title, options);
 }

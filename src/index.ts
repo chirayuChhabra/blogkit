@@ -1,5 +1,5 @@
-export { LessonBuilder, lesson } from "./builder";
-export { render } from "./renderer";
+export { ChapterBuilder, chapter, LessonBuilder, lesson, CourseBuilder, course } from "./builder";
+export { render } from "./renderer/index";
 export type {
 	AnimationBlock,
 	AnimationOptions,
@@ -8,11 +8,13 @@ export type {
 	BlockType,
 	BuildOptions,
 	CalloutBlock,
-	ChapterBlock,
 	CodeBlock,
 	ColumnItem,
 	ColumnsBlock,
 	ColumnsOptions,
+	Course,
+	CourseMeta,
+	HeadingBlock,
 	LatexBlock,
 	LatexOptions,
 	Lesson,
