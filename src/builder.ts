@@ -130,6 +130,23 @@ export class LessonBuilder {
 		this.meta.parentSlug = slug;
 	}
 
+	/** @internal Used by ChapterBuilder */
+	_setPrev(slug: string, title: string) {
+		this.meta.prevSlug = slug;
+		this.meta.prevTitle = title;
+	}
+
+	/** @internal Used by ChapterBuilder */
+	_setNext(slug: string, title: string) {
+		this.meta.nextSlug = slug;
+		this.meta.nextTitle = title;
+	}
+
+	/** @internal Used by CourseBuilder/ChapterBuilder */
+	_getMeta(): LessonMeta {
+		return this.meta;
+	}
+
 	// ── Content blocks ───────────────────────────────────────────────────────────
 
 	/**
@@ -591,7 +608,25 @@ export class ChapterBuilder {
 		return this;
 	}
 
+	/** @internal Used by CourseBuilder */
+	_getLessonBuilders(): LessonBuilder[] {
+		return this.lessonBuilders;
+	}
+
 	build(): string {
+		for (let i = 0; i < this.lessonBuilders.length; i++) {
+			const lb = this.lessonBuilders[i];
+			const currentMeta = lb._getMeta();
+			if (i > 0 && !currentMeta.prevSlug) {
+				const prev = this.lessonBuilders[i - 1]._getMeta();
+				lb._setPrev(prev.slug, prev.title);
+			}
+			if (i < this.lessonBuilders.length - 1 && !currentMeta.nextSlug) {
+				const next = this.lessonBuilders[i + 1]._getMeta();
+				lb._setNext(next.slug, next.title);
+			}
+		}
+
 		// Build all nested lessons first
 		const lessons: Lesson[] = [];
 		for (const lb of this.lessonBuilders) {
@@ -682,6 +717,23 @@ export class CourseBuilder {
 	}
 
 	build(): string {
+		const allLessons: LessonBuilder[] = [];
+		for (const cb of this.chapterBuilders) {
+			allLessons.push(...cb._getLessonBuilders());
+		}
+
+		for (let i = 0; i < allLessons.length; i++) {
+			const lb = allLessons[i];
+			if (i > 0) {
+				const prev = allLessons[i - 1]._getMeta();
+				lb._setPrev(prev.slug, prev.title);
+			}
+			if (i < allLessons.length - 1) {
+				const next = allLessons[i + 1]._getMeta();
+				lb._setNext(next.slug, next.title);
+			}
+		}
+
 		const chapters: Chapter[] = [];
 		for (const cb of this.chapterBuilders) {
 			cb.build();

@@ -239,6 +239,7 @@ function renderBlockInner(
 					block.caption,
 					`<div class="${block.display === false ? "bk-latex-inline" : "bk-latex-block"}">${rendered}</div>`,
 					"violet",
+					false
 				),
 			};
 		}
@@ -268,6 +269,7 @@ function renderBlockInner(
 							.join("")}
           </div>`,
 					"neutral",
+					false
 				),
 			};
 		}

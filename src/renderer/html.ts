@@ -16,24 +16,23 @@ function renderNavItem(item: NavItem): string {
 	return `<a href="#${item.id}" class="bk-nav-item ${kindClass}" data-id="${item.id}">${escHtml(item.label)}</a>`;
 }
 
-function renderEndNav(navItems: NavItem[]): string {
-	if (navItems.length < 2) return "";
-	const first = navItems[0];
-	const next = navItems[1] ?? first;
-	const last = navItems[navItems.length - 1];
-	return `<nav class="bk-end-nav" aria-label="Lesson navigation">
-    <a class="bk-end-link bk-end-link--prev" href="#${first.id}">
-      <span>Previous</span>
-      <strong>${escHtml(first.label)}</strong>
+function renderEndNav(lesson: Lesson): string {
+	const { prevSlug, prevTitle, nextSlug, nextTitle } = lesson.meta;
+	if (!prevSlug && !nextSlug) return "";
+
+	return `<nav class="bk-end-nav" aria-label="Lesson navigation" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+    ${prevSlug ? `
+    <a class="bk-end-link bk-end-link--prev" href="${prevSlug}.html">
+      <span>Previous Lesson</span>
+      <strong>${escHtml(prevTitle || "Previous")}</strong>
     </a>
-    <a class="bk-end-link bk-end-link--next" href="#${next.id}">
-      <span>Next</span>
-      <strong>${escHtml(next.label)}</strong>
+    ` : `<div class="bk-end-link" style="visibility:hidden"></div>`}
+    ${nextSlug ? `
+    <a class="bk-end-link bk-end-link--next" href="${nextSlug}.html">
+      <span>Next Lesson</span>
+      <strong>${escHtml(nextTitle || "Next")}</strong>
     </a>
-    <a class="bk-end-link" href="#${last.id}">
-      <span>Jump to end</span>
-      <strong>${escHtml(last.label)}</strong>
-    </a>
+    ` : `<div class="bk-end-link" style="visibility:hidden"></div>`}
   </nav>`;
 }
 
@@ -51,7 +50,7 @@ function renderPage(
 	const tone = preset.tone ?? "scholarly";
 	const palette = opts.palette ?? "ink";
 	const navHtml = navItems.map(renderNavItem).join("\n");
-	const endNavHtml = renderEndNav(navItems);
+	const endNavHtml = renderEndNav(lesson);
 
 	return `<!DOCTYPE html>
 <html lang="en" data-palette="${palette}" ${schemeAttr}>

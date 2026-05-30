@@ -155,6 +155,10 @@ export interface LessonMeta {
 	author?: string;
 	status?: "read" | "unread" | "locked";
 	parentSlug?: string;
+	prevSlug?: string;
+	prevTitle?: string;
+	nextSlug?: string;
+	nextTitle?: string;
 }
 
 export interface Lesson {

@@ -702,7 +702,7 @@ hr.bk-divider {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 10px 16px;
+	padding: 10px 44px 10px 16px;
 	background: rgba(255, 255, 255, 0.05);
 	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 	font-family: var(--font-mono);
@@ -733,6 +733,35 @@ hr.bk-divider {
 }
 .hljs {
 	background: transparent !important;
+}
+
+.bk-copy-btn {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	width: 28px;
+	height: 28px;
+	display: grid;
+	place-items: center;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	background: rgba(255, 255, 255, 0.05);
+	color: #a1a1aa;
+	border-radius: 6px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	z-index: 10;
+}
+.bk-code-block:has(.bk-code-header) .bk-copy-btn {
+	top: 4px;
+}
+.bk-copy-btn:hover {
+	background: rgba(255, 255, 255, 0.1);
+	color: #fff;
+}
+.bk-copy-btn.copied {
+	color: #61b58d;
+	border-color: rgba(97, 181, 141, 0.3);
+	background: rgba(97, 181, 141, 0.1);
 }
 
 .bk-object {
