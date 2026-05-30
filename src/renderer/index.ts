@@ -334,7 +334,8 @@ ${chapterStyles}
   <aside class="bk-sidebar">
     <div class="bk-sidebar-inner">
       <div class="bk-sidebar-header">
-        <div class="bk-sidebar-title" style="margin-top: 8px;">${escHtml(chapter.meta.title)}</div>
+        ${chapter.meta.parentSlug ? `<div style="margin-top: 8px;"><a href="${chapter.meta.parentSlug}.html" class="bk-back-link" aria-label="Back to Course" style="margin-bottom: 12px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>Back to Course</a></div>` : `<div style="margin-top: 8px;"></div>`}
+        <div class="bk-sidebar-title">${escHtml(chapter.meta.title)}</div>
       </div>
       <nav class="bk-nav">${navHtml}</nav>
       <div class="bk-sidebar-footer">
@@ -343,22 +344,34 @@ ${chapterStyles}
           <span class="bk-sr-only">Display settings</span>
         </button>
         <div class="bk-theme-panel" id="bk-theme-panel" aria-label="Display settings" hidden>
-          <label>
+          <div class="bk-theme-row">
             <span>Theme</span>
-            <select id="bk-theme-select">
-              <option value="auto" ${theme === "auto" ? "selected" : ""}>System</option>
-              <option value="light" ${theme === "light" ? "selected" : ""}>Light</option>
-              <option value="dark" ${theme === "dark" ? "selected" : ""}>Dark</option>
-            </select>
-          </label>
-          <label>
+            <div class="bk-segmented-control" id="bk-theme-icons">
+               <button type="button" class="bk-segment-btn ${theme === "light" ? "active" : ""}" data-theme="light" title="Light" aria-label="Light theme">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+               </button>
+               <button type="button" class="bk-segment-btn ${theme === "dark" ? "active" : ""}" data-theme="dark" title="Dark" aria-label="Dark theme">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+               </button>
+               <button type="button" class="bk-segment-btn ${theme === "auto" ? "active" : ""}" data-theme="auto" title="System" aria-label="System theme">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+               </button>
+            </div>
+          </div>
+          <div class="bk-theme-row">
             <span>Palette</span>
-            <select id="bk-palette-select">
-              <option value="ink" ${palette === "ink" ? "selected" : ""}>Ink</option>
-              <option value="field" ${palette === "field" ? "selected" : ""}>Field</option>
-              <option value="ember" ${palette === "ember" ? "selected" : ""}>Ember</option>
-            </select>
-          </label>
+            <div class="bk-segmented-control" id="bk-palette-icons">
+               <button type="button" class="bk-segment-btn ${palette === "ink" ? "active" : ""}" data-palette="ink" title="Ink" aria-label="Ink palette">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+               </button>
+               <button type="button" class="bk-segment-btn ${palette === "field" ? "active" : ""}" data-palette="field" title="Field" aria-label="Field palette">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 12"></path></svg>
+               </button>
+               <button type="button" class="bk-segment-btn ${palette === "ember" ? "active" : ""}" data-palette="ember" title="Ember" aria-label="Ember palette">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"></path></svg>
+               </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -470,24 +483,30 @@ export function renderCourse(
 		}
 	}
 
-	// If no active node, we assume we haven't started, or we finished. 
-	// If the last one isn't completed, and no active found, maybe just highlight none.
 	if (!activeNodeFound) {
-		activePathD = ""; // No active path if no active node found
+		activePathD = ""; 
 	}
 
 	const courseHtml = `
 <div class="bk-course-map-container" style="height: ${totalHeight}px;">
   <svg class="bk-course-map-svg" viewBox="0 0 ${mapWidth} ${totalHeight}" preserveAspectRatio="xMidYMid meet">
-    <path d="${pathD}" stroke="var(--line)" stroke-width="14" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="${activePathD}" stroke="var(--accent)" stroke-width="14" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Base track -->
+    <path class="bk-course-map-path-base" d="${pathD}" />
+    <!-- Dotted inner track for the base -->
+    <path class="bk-course-map-path-inner" d="${pathD}" style="stroke: var(--panel);" />
+    
+    <!-- Active track overlay -->
+    ${activePathD ? `
+      <path class="bk-course-map-path-active" d="${activePathD}" />
+      <path class="bk-course-map-path-inner" d="${activePathD}" style="stroke: var(--paper);" />
+    ` : ''}
   </svg>
   
-  ${nodes.map(n => `
-    <a href="${escAttr(n.chapter.meta.slug)}.html" class="bk-course-node bk-status-${n.status}" style="left: calc(50% - ${mapWidth/2}px + ${n.x}px); top: ${n.y}px;">
+  ${nodes.map((n, i) => `
+    <a href="${escAttr(n.chapter.meta.slug)}.html" class="bk-course-node bk-status-${n.status}" style="left: calc(50% - ${mapWidth/2}px + ${n.x}px); top: ${n.y}px; animation-delay: ${i * 0.1}s;">
       <div class="bk-course-node-circle"></div>
-      <div class="bk-course-node-label">
-        <div class="bk-course-node-title">${escHtml(n.chapter.meta.title)}</div>
+      <div class="bk-course-node-label ${n.x < mapWidth / 2 ? 'bk-label-left' : 'bk-label-right'}">
+        ${escHtml(n.chapter.meta.title)}
       </div>
     </a>
   `).join("")}
@@ -496,10 +515,9 @@ export function renderCourse(
   window.addEventListener('DOMContentLoaded', () => {
     const activeNode = document.querySelector('.bk-status-active');
     if (activeNode) {
-      activeNode.scrollIntoView({ behavior: 'auto', block: 'center' });
+      activeNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
-      // Scroll to bottom (start)
-      window.scrollTo(0, document.body.scrollHeight);
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
   });
 </script>`;
@@ -511,6 +529,7 @@ export function renderCourse(
   max-width: ${mapWidth}px;
   margin: 0 auto;
   overflow: visible;
+  padding: 40px 0;
 }
 
 .bk-course-map-svg {
@@ -520,6 +539,31 @@ export function renderCourse(
   width: 100%;
   height: 100%;
   z-index: 0;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.06));
+}
+
+.bk-course-map-path-base {
+  stroke: var(--line-strong);
+  stroke-width: 24;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.bk-course-map-path-active {
+  stroke: var(--accent);
+  stroke-width: 24;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.bk-course-map-path-inner {
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  stroke-dasharray: 0 24;
 }
 
 .bk-course-node {
@@ -529,100 +573,147 @@ export function renderCourse(
   flex-direction: column;
   align-items: center;
   text-decoration: none !important;
+  border: none !important;
+  outline: none;
   z-index: 1;
+  animation: node-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes node-pop {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }
 
 .bk-course-node-circle {
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   background: var(--paper);
   border: 4px solid var(--line);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.08), inset 0 -4px 8px rgba(0,0,0,0.04);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
 
-.bk-course-node-circle::after {
+/* Active Node: The "Play" Level */
+.bk-status-active .bk-course-node-circle {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, var(--paper));
+  transform: scale(1.2);
+  box-shadow: 0 16px 32px color-mix(in srgb, var(--accent) 40%, transparent), inset 0 -4px 8px rgba(0,0,0,0.1);
+  animation: node-float 3s ease-in-out infinite;
+}
+
+@keyframes node-float {
+  0%, 100% { transform: scale(1.2) translateY(0); }
+  50% { transform: scale(1.2) translateY(-8px); }
+}
+
+.bk-status-active .bk-course-node-circle::after {
   content: '';
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--line);
-  transition: all 0.3s ease;
+  background: var(--accent);
+  box-shadow: 0 0 16px var(--accent);
+  animation: node-pulse-inner 2s infinite ease-in-out;
 }
 
+@keyframes node-pulse-inner {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+/* Completed Nodes: The "Beaten" Levels */
+.bk-status-completed .bk-course-node-circle {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 8px 16px color-mix(in srgb, var(--accent) 40%, transparent), inset 0 -4px 8px rgba(0,0,0,0.25);
+}
+
+.bk-status-completed .bk-course-node-circle::after {
+  content: '';
+  width: 14px;
+  height: 24px;
+  border: solid var(--paper);
+  border-width: 0 4px 4px 0;
+  transform: rotate(45deg) translate(-2px, -4px);
+  border-radius: 2px;
+}
+
+/* Locked Nodes: The "Future" Levels */
+.bk-status-locked .bk-course-node-circle {
+  background: var(--panel);
+  border-color: var(--line-strong);
+  box-shadow: inset 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.bk-status-locked .bk-course-node-circle::after {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--line-strong);
+  opacity: 0.4;
+}
+
+/* Labels */
 .bk-course-node-label {
   position: absolute;
-  top: 100%;
-  margin-top: 8px;
+  top: 50%;
+  transform: translateY(-50%);
   white-space: nowrap;
   background: var(--paper);
-  padding: 4px 12px;
-  border-radius: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  border: 1px solid var(--line);
-  opacity: 0.9;
+  padding: 8px 20px;
+  border-radius: 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  border: 2px solid var(--line);
   transition: all 0.3s ease;
-}
-
-.bk-course-node-title {
+  z-index: 2;
   font-family: var(--font-sans);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.95rem;
   color: var(--ink);
 }
 
-/* Status variants */
-.bk-status-completed .bk-course-node-circle {
-  border-color: var(--accent);
-}
-.bk-status-completed .bk-course-node-circle::after {
-  background: var(--accent);
+.bk-label-left {
+  right: calc(100% + 16px);
 }
 
-.bk-status-active .bk-course-node-circle {
-  border-color: var(--accent);
-  transform: scale(1.15);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 0 0 8px color-mix(in srgb, var(--accent) 20%, transparent);
-  animation: bk-pulse 2s infinite cubic-bezier(0.66, 0, 0, 1);
+.bk-label-right {
+  left: calc(100% + 16px);
 }
-.bk-status-active .bk-course-node-circle::after {
-  background: var(--accent);
-}
+
 .bk-status-active .bk-course-node-label {
-  opacity: 1;
   border-color: var(--accent);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  color: var(--accent);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
-.bk-status-locked .bk-course-node-circle {
-  background: var(--panel);
-  border-color: var(--line);
+.bk-status-locked .bk-course-node-label {
+  color: var(--muted);
+  border-color: transparent;
+  background: transparent;
   box-shadow: none;
 }
-.bk-status-locked .bk-course-node-circle::after {
-  background: var(--line);
-  opacity: 0.3;
-}
-.bk-status-locked .bk-course-node-title {
-  color: var(--muted);
-}
 
-/* Hover effects */
+/* Hover Dynamics */
 .bk-course-node:hover:not(.bk-status-locked) .bk-course-node-circle {
-  transform: scale(1.1);
-}
-.bk-status-active:hover .bk-course-node-circle {
-  transform: scale(1.2);
+  transform: scale(1.15) translateY(-4px);
+  box-shadow: 0 16px 32px rgba(0,0,0,0.12), inset 0 -4px 8px rgba(0,0,0,0.04);
 }
 
-@keyframes bk-pulse {
-  0% { box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 0 0 0 color-mix(in srgb, var(--accent) 40%, transparent); }
-  70% { box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 0 0 20px color-mix(in srgb, var(--accent) 0%, transparent); }
-  100% { box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent); }
+.bk-status-active:hover .bk-course-node-circle {
+  transform: scale(1.25) translateY(-4px);
+}
+
+.bk-course-node:hover:not(.bk-status-locked) .bk-course-node-label {
+  transform: translateY(calc(-50% - 4px));
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 @media (max-width: 768px) {
@@ -660,22 +751,34 @@ ${courseStyles}
           <span class="bk-sr-only">Display settings</span>
         </button>
         <div class="bk-theme-panel" id="bk-theme-panel" aria-label="Display settings" hidden>
-          <label>
+          <div class="bk-theme-row">
             <span>Theme</span>
-            <select id="bk-theme-select">
-              <option value="auto" ${theme === "auto" ? "selected" : ""}>System</option>
-              <option value="light" ${theme === "light" ? "selected" : ""}>Light</option>
-              <option value="dark" ${theme === "dark" ? "selected" : ""}>Dark</option>
-            </select>
-          </label>
-          <label>
+            <div class="bk-segmented-control" id="bk-theme-icons">
+               <button type="button" class="bk-segment-btn ${theme === "light" ? "active" : ""}" data-theme="light" title="Light" aria-label="Light theme">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+               </button>
+               <button type="button" class="bk-segment-btn ${theme === "dark" ? "active" : ""}" data-theme="dark" title="Dark" aria-label="Dark theme">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+               </button>
+               <button type="button" class="bk-segment-btn ${theme === "auto" ? "active" : ""}" data-theme="auto" title="System" aria-label="System theme">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+               </button>
+            </div>
+          </div>
+          <div class="bk-theme-row">
             <span>Palette</span>
-            <select id="bk-palette-select">
-              <option value="ink" ${palette === "ink" ? "selected" : ""}>Ink</option>
-              <option value="field" ${palette === "field" ? "selected" : ""}>Field</option>
-              <option value="ember" ${palette === "ember" ? "selected" : ""}>Ember</option>
-            </select>
-          </label>
+            <div class="bk-segmented-control" id="bk-palette-icons">
+               <button type="button" class="bk-segment-btn ${palette === "ink" ? "active" : ""}" data-palette="ink" title="Ink" aria-label="Ink palette">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+               </button>
+               <button type="button" class="bk-segment-btn ${palette === "field" ? "active" : ""}" data-palette="field" title="Field" aria-label="Field palette">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 12"></path></svg>
+               </button>
+               <button type="button" class="bk-segment-btn ${palette === "ember" ? "active" : ""}" data-palette="ember" title="Ember" aria-label="Ember palette">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"></path></svg>
+               </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

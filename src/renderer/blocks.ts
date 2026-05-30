@@ -7,6 +7,7 @@ import {
 	mdToHtml,
 	renderSimulationControls,
 } from "./markdown";
+import hljs from "highlight.js";
 import { type NavItem, resolveAssetSrc, resolveContent } from "./utils";
 
 // HTML escaping utility needed by blocks
@@ -16,7 +17,7 @@ export function escHtml(str: string): string {
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;")
 		.replace(/"/g, "&quot;")
-		.replace(/'/g, "&#039;");
+		.replace(/'/g, "&#39;");
 }
 export function escAttr(str: string): string {
 	return escHtml(str);
@@ -62,7 +63,7 @@ function renderBlockInner(
 		case "heading": {
 			const md = resolveContent(block.src, options, "md");
 			const { html, title } = mdToHtml(md);
-			const label = block.title ?? title ?? "Heading";
+			const label = block.title || title || (typeof block.src === "string" && !block.src.includes(".md") ? block.src : "Heading");
 			const id = `heading-${idx}`;
 			return {
 				html: `<section id="${id}" class="bk-section bk-heading">${html}</section>`,
@@ -79,7 +80,7 @@ function renderBlockInner(
 		case "section": {
 			const md = resolveContent(block.src, options, "md");
 			const { html, title } = mdToHtml(md);
-			const label = block.label ?? title ?? "Section";
+			const label = block.label || title || (typeof block.src === "string" && !block.src.includes(".md") ? block.src : "Section");
 			const id = `section-${idx}`;
 			return {
 				html: `<section id="${id}" class="bk-section bk-subsection">${html}</section>`,
@@ -118,11 +119,17 @@ function renderBlockInner(
 				(typeof block.src === "string" && block.src.includes(".")
 					? (block.src.split(".").pop() ?? "")
 					: "");
+            let highlighted = escHtml(raw);
+            if (lang && hljs.getLanguage(lang)) {
+                highlighted = hljs.highlight(raw, { language: lang }).value;
+            } else {
+                highlighted = hljs.highlightAuto(raw).value;
+            }
 			return {
 				html: `<div class="bk-code-block">
           ${block.label ? `<div class="bk-code-header"><span class="bk-code-label">${escHtml(block.label)}</span><span class="bk-code-lang">${lang}</span></div>` : ""}
           <div class="bk-code-scroll">
-            <pre><code class="language-${lang}">${escHtml(raw)}</code></pre>
+            <pre><code class="language-${lang} hljs">${highlighted}</code></pre>
           </div>
         </div>`,
 			};
@@ -131,18 +138,18 @@ function renderBlockInner(
 		case "simulation": {
 			const propsJson = JSON.stringify(block.props ?? {});
 			const simSrc = resolveContent(block.src, options, "js");
-			const simConfig = { js: simSrc, loop: false };
+			const simConfig = { js: simSrc, loop: false, dependencies: block.dependencies };
 			return {
 				html: blockChrome(
 					block.controls === "observe" ? "Simulation" : "Interactive Lab",
 					block.label,
 					block.caption,
-					`${renderSimulationControls(block)}
-          <div class="bk-embed-frame bk-embed-interactive bk-aspect-${block.aspect ?? "wide"}" ${block.height ? `style="height:${block.height}px"` : ""}>
+					`${renderSimulationControls(block as Extract<Block, { type: "simulation" }>)}
+          <div class="bk-embed-frame bk-embed-interactive">
             <div class="bk-embed-overlay" tabindex="0" role="button" aria-label="Activate interactive simulation">
               <span class="bk-embed-overlay-text">Click to interact</span>
             </div>
-            <iframe srcdoc="${iframeDoc(simSrc, propsJson)}"
+            <iframe srcdoc="${iframeDoc(simSrc, propsJson, false, block.dependencies)}"
               sandbox="allow-scripts"
               style="width:100%;height:100%;border:none;display:block;">
             </iframe>
@@ -160,7 +167,7 @@ function renderBlockInner(
 					"Animation",
 					block.label,
 					block.caption,
-					`<div class="bk-embed-frame bk-embed-interactive bk-aspect-${block.aspect ?? "wide"}" ${block.height ? `style="height:${block.height}px"` : ""}>
+					`<div class="bk-embed-frame bk-embed-interactive">
             <div class="bk-embed-overlay" tabindex="0" role="button" aria-label="Activate interactive animation">
               <span class="bk-embed-overlay-text">Click to interact</span>
             </div>
@@ -176,7 +183,6 @@ function renderBlockInner(
 
 		case "media": {
 			const src = resolveAssetSrc(block.src, options);
-			const aspectClass = `bk-aspect-${block.aspect ?? "auto"}`;
 			const media =
 				block.kind === "image"
 					? `<img src="${escAttr(src)}" alt="${escAttr(block.alt ?? "")}" loading="lazy">`
@@ -191,7 +197,7 @@ function renderBlockInner(
 					[block.caption, block.credit ? `Credit: ${block.credit}` : ""]
 						.filter(Boolean)
 						.join(" "),
-					`<div class="bk-media bk-media--${block.kind} ${aspectClass}">${media}</div>`,
+					`<div class="bk-media bk-media--${block.kind}">${media}</div>`,
 					"neutral",
 				),
 			};
@@ -206,11 +212,12 @@ function renderBlockInner(
 					"YouTube",
 					block.label,
 					block.caption,
-					`<div class="bk-embed-frame bk-aspect-${block.aspect ?? "wide"}">
-            <iframe src="https://www.youtube-nocookie.com/embed/${escAttr(block.id)}?${params.toString()}&origin=https://youtube.com"
+					`<div class="bk-embed-frame">
+            <iframe src="https://www.youtube-nocookie.com/embed/${escAttr(block.id)}?${params.toString()}"
               title="${escAttr(block.label ?? "YouTube video")}"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowfullscreen
+              referrerpolicy="strict-origin-when-cross-origin"
               loading="lazy"
               style="width:100%;height:100%;border:none;display:block;">
             </iframe>
@@ -331,50 +338,81 @@ function renderQuestion(q: QuizQuestion, quizId: string, qi: number): string {
 }
 
 // Wraps a JS string in a minimal iframe document
-function iframeDoc(js: string, props: string, loop?: boolean): string {
+function iframeDoc(js: string, props: string, loop?: boolean, dependencies?: string[]): string {
+	const scriptTags = (dependencies ?? []).map((url) => `<script src="${escAttr(url)}"></script>`).join("\\n");
 	const doc = `<!DOCTYPE html><html><head>
+${scriptTags}
 <style>
   html, body { height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; background: transparent; display: flex; align-items: center; justify-content: center; }
-  canvas { display: block; touch-action: none; transform-origin: center center; }
-  body { background: #ffffff; color: #111; font-family: sans-serif; }
-  @media (prefers-color-scheme: dark) { body { background: #0a0a0a; color: #eee; } }
+  canvas { display: block; touch-action: none; transform-origin: center center; flex-shrink: 0; }
+  body { font-family: sans-serif; }
 </style>
 </head><body>
 <canvas id="c" width="800" height="500"></canvas>
 <script>
 window.__simProps=${props};
 window.__loop=${loop ?? false};
-window.bkSetup = function(logicalW, logicalH, loopFn) {
+window.bkSetupCalled = false;
+window.bkCanvasPoint = function(event, canvas) {
+  const c = canvas || event.currentTarget || event.target;
+  const rect = c.getBoundingClientRect();
+  const logicalW = c.__bkLogicalW || 800;
+  const logicalH = c.__bkLogicalH || 500;
+  return {
+    x: (event.clientX - rect.left) * logicalW / rect.width,
+    y: (event.clientY - rect.top) * logicalH / rect.height
+  };
+};
+window.bkFitCanvas = function(c, requestedW, requestedH, options) {
+  if (!c) return { scale: 1, width: requestedW, height: requestedH, cssScale: 1 };
+  const dpr = window.devicePixelRatio || 1;
+  const w = requestedW;
+  const h = requestedH;
+  
+  c.__bkLogicalW = w;
+  c.__bkLogicalH = h;
+  
+  c.style.width = w + "px";
+  c.style.height = h + "px";
+  
+  c.style.position = "relative";
+  c.style.left = "auto";
+  c.style.top = "auto";
+  c.style.transformOrigin = "center center";
+  
+  const scaleX = window.innerWidth / w;
+  const scaleY = window.innerHeight / h;
+  const cssScale = Math.max(scaleX, scaleY);
+  
+  c.style.transform = "scale(" + cssScale + ")";
+  
+  const physW = Math.max(1, Math.round(w * dpr));
+  const physH = Math.max(1, Math.round(h * dpr));
+
+  if (!options || options.bitmap !== false) {
+    if (c.width !== physW || c.height !== physH) {
+      c.width = physW;
+      c.height = physH;
+    }
+  }
+  return { scale: dpr, width: w, height: h, cssScale };
+};
+window.bkSetup = function(requestedW, requestedH, loopFn) {
+  window.bkSetupCalled = true;
   const canvas = document.getElementById("c");
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
   
-  window.parent.postMessage({type:"bk:aspect",aspect:logicalW/logicalH}, "*");
-  
   function loop() {
-    const bw = window.innerWidth;
-    const bh = window.innerHeight;
-    const cssScale = Math.max(bw / logicalW, bh / logicalH);
-    const dpr = window.devicePixelRatio || 1;
-    const bitmapScale = cssScale * dpr;
-    
-    const nextW = Math.floor(logicalW * bitmapScale);
-    const nextH = Math.floor(logicalH * bitmapScale);
-    
-    if (canvas.width !== nextW || canvas.height !== nextH) {
-      canvas.width = nextW;
-      canvas.height = nextH;
-      canvas.style.width = logicalW + "px";
-      canvas.style.height = logicalH + "px";
-      canvas.style.transform = "scale(" + cssScale + ")";
+    const fit = window.bkFitCanvas(canvas, requestedW, requestedH);
+    if (window.innerWidth >= 32 && window.innerHeight >= 32) {
+      ctx.save();
+      ctx.scale(fit.scale, fit.scale);
+      
+      loopFn(ctx, fit.width, fit.height);
+      
+      ctx.restore();
     }
-    
-    ctx.save();
-    ctx.scale(bitmapScale, bitmapScale);
-    
-    loopFn(ctx, logicalW, logicalH);
-    
-    ctx.restore();
     requestAnimationFrame(loop);
   }
   loop();
@@ -390,6 +428,13 @@ try {
 } catch (e) {
   console.error("Simulation Error:", e);
   document.body.innerHTML = '<div style="padding:20px;color:red;font-family:monospace">Error: ' + e.message + '</div>';
+}
+if (!window.bkSetupCalled) {
+  function fallbackScale() {
+    window.bkFitCanvas(document.getElementById("c"), 800, 500, { bitmap: false });
+    requestAnimationFrame(fallbackScale);
+  }
+  fallbackScale();
 }
 </script>
 </body></html>`;

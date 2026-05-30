@@ -360,11 +360,42 @@ body {
 .bk-theme-panel[hidden] {
 	display: none;
 }
-.bk-theme-panel label {
-	display: grid;
-	grid-template-columns: 64px 1fr;
+.bk-theme-row {
+	display: flex;
 	align-items: center;
+	justify-content: space-between;
 	gap: 8px;
+}
+.bk-segmented-control {
+	display: flex;
+	gap: 4px;
+	padding: 4px;
+	background: color-mix(in srgb, var(--panel) 50%, var(--paper));
+	border: 1px solid var(--line);
+	border-radius: 8px;
+}
+.bk-segment-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border: none;
+	background: transparent;
+	color: var(--muted);
+	border-radius: 6px;
+	cursor: pointer;
+	transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.bk-segment-btn:hover {
+	color: var(--ink);
+	background: color-mix(in srgb, var(--panel) 80%, transparent);
+}
+.bk-segment-btn.active {
+	background: var(--paper);
+	color: var(--accent);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	border: 1px solid var(--line);
 }
 .bk-theme-panel span {
 	color: var(--muted);
@@ -372,16 +403,6 @@ body {
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.06em;
-}
-.bk-theme-panel select {
-	min-width: 0;
-	border: 1px solid var(--line);
-	border-radius: 6px;
-	background: var(--paper);
-	color: var(--ink);
-	font: inherit;
-	font-size: 12px;
-	padding: 6px 8px;
 }
 
 .bk-nav {
@@ -414,13 +435,24 @@ body {
 	border-left-color: var(--accent);
 	font-weight: 600;
 }
+.bk-nav-heading {
+	font-weight: 600;
+	color: var(--ink);
+	margin-top: 8px;
+}
+.bk-nav-heading:first-child {
+	margin-top: 0;
+}
 .bk-nav-sub {
-	padding-left: 24px;
-	font-size: 13.5px;
+	padding-left: 32px;
+	font-size: 13px;
+	position: relative;
 }
 .bk-nav-quiz {
+	padding-left: 32px;
 	font-style: italic;
-	opacity: 0.8;
+	opacity: 0.85;
+	position: relative;
 }
 
 .bk-main {
@@ -691,11 +723,16 @@ hr.bk-divider {
 	padding: 0;
 }
 .bk-code-block code {
-	background: transparent;
 	border: none;
 	padding: 0;
-	color: var(--text-code);
 	font-size: 14px;
+}
+.bk-code-block code:not(.hljs) {
+	background: transparent;
+	color: var(--text-code);
+}
+.hljs {
+	background: transparent !important;
 }
 
 .bk-object {
@@ -765,13 +802,24 @@ hr.bk-divider {
 	border-radius: 0;
 	display: flex;
 	flex-direction: column;
+	overflow: hidden;
 }
-.bk-object--maximized .bk-embed-frame,
-.bk-object--maximized .bk-media,
 .bk-object--maximized .bk-code-block {
 	flex-grow: 1;
+	min-height: 0;
 	height: auto !important;
 	max-height: none !important;
+}
+.bk-object--maximized .bk-embed-frame,
+.bk-object--maximized .bk-media {
+	flex: 0 1 auto;
+	min-height: 0;
+	min-width: 0;
+	margin: auto;
+	height: 100% !important;
+	width: auto !important;
+	max-width: 100% !important;
+	max-height: 100% !important;
 }
 .bk-object--maximized .bk-caption {
 	margin-top: auto;
@@ -798,9 +846,16 @@ hr.bk-divider {
 	--object-accent: var(--violet);
 }
 .bk-embed-frame {
-	background: #0d1116;
 	position: relative;
 	width: 100%;
+	border-radius: 8px;
+	overflow: hidden;
+	background: #000;
+	isolation: isolate;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	aspect-ratio: 16 / 9;
 }
 .bk-embed-interactive iframe {
 	pointer-events: none;
@@ -891,9 +946,14 @@ hr.bk-divider {
 	font-variant-numeric: tabular-nums;
 }
 .bk-media {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 8px;
+	overflow: hidden;
 	background: var(--panel);
-	display: grid;
-	place-items: center;
+	aspect-ratio: 16 / 9;
 }
 .bk-media img,
 .bk-media video {
@@ -907,15 +967,6 @@ hr.bk-divider {
 }
 .bk-media audio {
 	width: 100%;
-}
-.bk-aspect-wide {
-	aspect-ratio: 16 / 9;
-}
-.bk-aspect-standard {
-	aspect-ratio: 4 / 3;
-}
-.bk-aspect-square {
-	aspect-ratio: 1 / 1;
 }
 .bk-aspect-auto {
 	min-height: 0;
@@ -1159,10 +1210,18 @@ hr.bk-divider {
 	.bk-end-nav {
 		grid-template-columns: 1fr;
 	}
+	.bk-object {
+		margin-left: -20px;
+		margin-right: -20px;
+		max-width: none;
+		border-left: none;
+		border-right: none;
+		border-radius: 0;
+	}
 	.bk-object-header,
 	.bk-quiz-head {
-		padding-left: 14px;
-		padding-right: 14px;
+		padding-left: 20px;
+		padding-right: 20px;
 	}
 	.bk-columns {
 		grid-template-columns: 1fr !important;

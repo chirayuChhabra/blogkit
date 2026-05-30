@@ -71,8 +71,8 @@ export interface SimulationBlock extends BaseBlock, CaptionedBlock {
 	src: string; // path to .js file or inline JS
 	props?: Record<string, unknown>; // passed to the sim as window.__simProps
 	tunables?: Record<string, SimulationControl>;
+	dependencies?: string[]; // external CDN scripts loaded before the simulation
 	height?: number; // iframe height, default 400
-	aspect?: "wide" | "standard" | "square";
 	controls?: "interactive" | "observe";
 	accent?: BlockAccent;
 }
@@ -82,7 +82,6 @@ export interface AnimationBlock extends BaseBlock, CaptionedBlock {
 	src: string; // path to .js file or inline JS
 	loop?: boolean;
 	height?: number;
-	aspect?: "wide" | "standard" | "square";
 	accent?: BlockAccent;
 }
 
@@ -96,14 +95,12 @@ export interface MediaBlock extends BaseBlock, CaptionedBlock {
 	credit?: string;
 	poster?: string;
 	controls?: boolean;
-	aspect?: "wide" | "standard" | "square" | "auto";
 }
 
 export interface YouTubeBlock extends BaseBlock, CaptionedBlock {
 	type: "youtube";
 	id: string;
 	start?: number;
-	aspect?: "wide" | "standard";
 }
 
 export interface LatexBlock extends BaseBlock, CaptionedBlock {
@@ -202,11 +199,14 @@ export interface SimulationOptions {
 	props?: Record<string, unknown>;
 	tunables?: Record<string, SimulationControl>;
 	height?: number;
-	aspect?: SimulationBlock["aspect"];
 	label?: string;
 	caption?: string;
 	controls?: SimulationBlock["controls"];
 	accent?: BlockAccent;
+}
+
+export interface SimulationConfig extends SimulationOptions {
+	dependencies?: string[];
 }
 
 export interface SimulationControl {
@@ -219,7 +219,6 @@ export interface SimulationControl {
 export interface AnimationOptions {
 	loop?: boolean;
 	height?: number;
-	aspect?: AnimationBlock["aspect"];
 	label?: string;
 	caption?: string;
 	accent?: BlockAccent;
@@ -233,14 +232,12 @@ export interface MediaOptions {
 	credit?: string;
 	poster?: string;
 	controls?: boolean;
-	aspect?: MediaBlock["aspect"];
 }
 
 export interface YouTubeOptions {
 	start?: number;
 	label?: string;
 	caption?: string;
-	aspect?: YouTubeBlock["aspect"];
 }
 
 export interface LatexOptions {
@@ -261,6 +258,7 @@ export interface ChapterMeta {
 	slug: string;
 	description?: string;
 	status?: "completed" | "active" | "locked";
+	parentSlug?: string;
 }
 
 export interface Chapter {

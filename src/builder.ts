@@ -27,6 +27,7 @@ import type {
 	QuizBlock,
 	SectionBlock,
 	SimulationBlock,
+	SimulationConfig,
 	SimulationOptions,
 	YouTubeBlock,
 	YouTubeOptions,
@@ -137,14 +138,13 @@ export class LessonBuilder {
 	 */
 	add(src: `${string}.md` | `${string}.mdx`): this;
 	add(src: `${string}.json`, opts?: Pick<QuizBlock, "label" | "caption">): this;
-	add(src: `${string}.js` | `${string}.ts`, opts?: SimulationOptions): this;
 	add(
 		src: `${string}.mp4` | `${string}.webm` | `${string}.mov`,
 		opts?: Omit<MediaOptions, "kind">,
 	): this;
 	add(
 		src: `${string}.mp3` | `${string}.wav` | `${string}.ogg` | `${string}.m4a`,
-		opts?: Omit<MediaOptions, "kind" | "aspect">,
+		opts?: Omit<MediaOptions, "kind">,
 	): this;
 	add(
 		src:
@@ -165,8 +165,15 @@ export class LessonBuilder {
 		if (lower.endsWith(".md") || lower.endsWith(".mdx"))
 			return this.markdown(src);
 		if (lower.endsWith(".json")) return this.quiz(src, opts);
-		if (lower.endsWith(".js") || lower.endsWith(".ts"))
-			return this.lab(src, opts);
+		
+		if (lower.endsWith(".js") || lower.endsWith(".ts")) {
+			throw new Error(
+				`Ambiguous use of .add("${src}"). ` +
+				`Please use .code("${src}") to display the source code, ` +
+				`or .lab("${src}") to mount it as an interactive simulation.`
+			);
+		}
+
 		if (lower.match(/\.(png|jpg|jpeg|gif|webp|avif|svg)$/))
 			return this.image(src, opts);
 		if (lower.match(/\.(mp4|webm|mov)$/)) return this.video(src, opts);
@@ -267,7 +274,7 @@ export class LessonBuilder {
 
 	// ── Interactive blocks ───────────────────────────────────────────────────────
 
-	private loadSimulationConfig(src: string): SimulationOptions | null {
+	private loadSimulationConfig(src: string): SimulationConfig | null {
 		try {
 			const base = this.options.contentBase ?? process.cwd();
 			const resolved = path.resolve(base, src);
@@ -298,6 +305,7 @@ export class LessonBuilder {
 		this.blocks.push({
 			type: "simulation",
 			src,
+			dependencies: fileConfig?.dependencies,
 			...normalized,
 		} as SimulationBlock);
 		return this;
@@ -320,7 +328,6 @@ export class LessonBuilder {
 			src,
 			loop: opts.loop ?? true,
 			height: opts.height ?? 360,
-			aspect: opts.aspect ?? "wide",
 			label: opts.label,
 			caption: opts.caption,
 			accent: opts.accent ?? "neutral",
@@ -339,7 +346,6 @@ export class LessonBuilder {
 			credit: opts.credit,
 			poster: opts.poster,
 			controls: opts.controls ?? true,
-			aspect: opts.aspect ?? "auto",
 		} as MediaBlock);
 		return this;
 	}
@@ -359,13 +365,12 @@ export class LessonBuilder {
 			start: opts.start,
 			label: opts.label,
 			caption: opts.caption,
-			aspect: opts.aspect ?? "wide",
 		} as YouTubeBlock);
 		return this;
 	}
 
-	audio(src: string, opts: Omit<MediaOptions, "kind" | "aspect"> = {}): this {
-		return this.media(src, { ...opts, kind: "audio", aspect: "auto" });
+	audio(src: string, opts: Omit<MediaOptions, "kind"> = {}): this {
+		return this.media(src, { ...opts, kind: "audio" });
 	}
 
 	/**
@@ -422,14 +427,13 @@ export function lesson(
 function normalizeSimulationOptions(
 	opts: SimulationOptions | Record<string, unknown>,
 	legacyHeight: number,
-	fileConfig: SimulationOptions | null = null,
+	fileConfig: SimulationConfig | null = null,
 ): SimulationOptions {
 	let inline: SimulationOptions;
 	const optionKeys = [
 		"props",
 		"tunables",
 		"height",
-		"aspect",
 		"label",
 		"caption",
 		"controls",
@@ -449,7 +453,6 @@ function normalizeSimulationOptions(
 		props: { ...(fileConfig?.props ?? {}), ...(inline.props ?? {}) },
 		tunables: inline.tunables ?? fileConfig?.tunables,
 		height: inline.height ?? fileConfig?.height ?? legacyHeight,
-		aspect: inline.aspect ?? fileConfig?.aspect ?? "wide",
 		label: inline.label ?? fileConfig?.label,
 		caption: inline.caption ?? fileConfig?.caption,
 		controls: inline.controls ?? fileConfig?.controls ?? "interactive",
@@ -576,6 +579,11 @@ export class ChapterBuilder {
 		return this;
 	}
 
+	/** @internal Used by CourseBuilder */
+	_setParentSlug(slug: string) {
+		this.meta.parentSlug = slug;
+	}
+
 	lesson(lessonBuilder: LessonBuilder): this {
 		lessonBuilder._inheritOptions(this.options);
 		lessonBuilder._setParentSlug(this.meta.slug);
@@ -668,6 +676,7 @@ export class CourseBuilder {
 	}
 
 	chapter(chapterBuilder: ChapterBuilder): this {
+		chapterBuilder._setParentSlug(this.meta.slug);
 		this.chapterBuilders.push(chapterBuilder);
 		return this;
 	}
