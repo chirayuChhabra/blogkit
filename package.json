@@ -20,7 +20,7 @@
 		"demo": "demo"
 	},
 	"scripts": {
-		"build": "tsc -p tsconfig.build.json",
+		"build": "tsc -p tsconfig.build.json && mkdir -p dist/styles dist/client && cp -r src/styles/* dist/styles/ && cp -r src/client/* dist/client/",
 		"prepublishOnly": "bun run build",
 		"build:example": "bun demo/demo-1/course.ts",
 		"serve:example": "bunx serve demo/demo-1/out",
