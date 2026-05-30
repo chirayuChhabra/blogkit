@@ -114,9 +114,10 @@ function renderBlockInner(
 
 		case "code": {
 			const raw = resolveContent(block.src, options, "text"); // Could be file or inline
+			const isInlineCode = typeof block.src === "string" && (block.src.includes("\n") || block.src.includes(" "));
 			const lang =
 				block.lang ??
-				(typeof block.src === "string" && block.src.includes(".")
+				(typeof block.src === "string" && !isInlineCode && block.src.includes(".")
 					? (block.src.split(".").pop() ?? "")
 					: "");
             let highlighted = escHtml(raw);
@@ -136,7 +137,7 @@ function renderBlockInner(
 		}
 
 		case "simulation": {
-			const propsJson = JSON.stringify(block.props ?? {});
+			const propsJson = escapeScriptJson(block.props ?? {});
 			const simSrc = resolveContent(block.src, options, "js");
 			const simConfig = { js: simSrc, loop: false, dependencies: block.dependencies };
 			return {
@@ -278,7 +279,11 @@ function renderBlockInner(
 			let quiz: QuizFile = { questions: [] };
 			const rawJson = resolveContent(block.src, options, "json");
 			try {
-				quiz = JSON.parse(rawJson);
+				const trimmed = rawJson.trim();
+				if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) {
+					throw new Error("Quiz file not found or invalid JSON format");
+				}
+				quiz = JSON.parse(trimmed);
 			} catch (e) {
 				const msg = e instanceof Error ? e.message : String(e);
 				if (options.strict !== false) {

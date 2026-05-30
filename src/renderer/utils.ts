@@ -17,6 +17,13 @@ function resolveContent(
 ): string {
 	if (src.includes("\n")) return src;
 
+	if (/^https?:\/\//.test(src)) {
+		if (options.strict !== false) {
+			throw new Error(`Remote URLs are not yet supported for content files: ${src}`);
+		}
+		return src;
+	}
+
 	const isLikelyFilePath =
 		(expectedType !== "text" && src.endsWith(`.${expectedType}`)) ||
 		src.startsWith("/") ||
@@ -45,9 +52,14 @@ function resolveContent(
 }
 
 function resolveAssetSrc(src: string, options: BuildOptions): string {
-	if (/^(https?:|data:|\/)/.test(src)) return src;
+	if (/^(https?:|data:)/.test(src)) return src;
 
-	const filePath = path.resolve(options.contentBase ?? ".", src);
+	const isWebAbsolute = src.startsWith("/") && !fs.existsSync(src);
+	if (isWebAbsolute) return src;
+
+	const filePath = path.isAbsolute(src) 
+		? src 
+		: path.resolve(options.contentBase ?? ".", src);
 	if (!fs.existsSync(filePath)) {
 		if (options.strict !== false)
 			throw new Error(`Missing media asset: ${filePath}`);

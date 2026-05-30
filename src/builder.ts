@@ -31,6 +31,40 @@ import type {
 	YouTubeOptions,
 } from "./types.js";
 
+function getCallerDir(): string | undefined {
+	const err = new Error();
+	const stack = err.stack?.split("\n");
+	if (!stack || stack.length < 2) return undefined;
+
+	let builderFilePath: string | undefined;
+
+	for (let i = 1; i < stack.length; i++) {
+		const line = stack[i];
+		const match = line.match(/\((.*?):\d+:\d+\)/) || line.match(/at (.*?):\d+:\d+/);
+		if (match) {
+			let p = match[1];
+			if (p.startsWith("file://")) {
+				p = p.replace(/^file:\/\//, "");
+			}
+			if (p.startsWith("/") && p[2] === ":") {
+				p = p.substring(1); // Handle Windows paths like /C:/
+			}
+			
+			if (!builderFilePath) {
+				builderFilePath = p;
+				continue;
+			}
+			
+			if (p === builderFilePath) {
+				continue;
+			}
+			
+			return path.dirname(p);
+		}
+	}
+	return undefined;
+}
+
 // ─── LessonBuilder ────────────────────────────────────────────────────────────
 
 export class LessonBuilder {
@@ -39,18 +73,22 @@ export class LessonBuilder {
 	private options: BuildOptions;
 	private _rawOptions: BuildOptions;
 
-	constructor(title: string, options: BuildOptions = {}) {
+	constructor(title: string, options: BuildOptions = {}, callerDir?: string) {
 		this._rawOptions = options;
+		
+		let slug = title
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, "-")
+			.replace(/(^-|-$)/g, "");
+		if (!slug) slug = "lesson";
+
 		this.meta = {
 			title,
-			slug: title
-				.toLowerCase()
-				.replace(/[^a-z0-9]+/g, "-")
-				.replace(/(^-|-$)/g, ""),
+			slug,
 		};
 		this.options = {
 			outDir: options.outDir ?? "./out",
-			contentBase: options.contentBase ?? ".",
+			contentBase: options.contentBase ?? callerDir ?? ".",
 			theme: options.theme ?? "auto",
 			palette: options.palette ?? "ink",
 			strict: options.strict ?? true,
@@ -115,13 +153,13 @@ export class LessonBuilder {
 	}
 
 	/** @internal Used by ChapterBuilder to push down shared config */
-	_inheritOptions(parentOpts: BuildOptions) {
+	_inheritOptions(parentOpts: BuildOptions, parentRawOpts?: BuildOptions) {
 		this.options = {
 			outDir:
-				this._rawOptions.outDir ?? parentOpts.outDir ?? this.options.outDir,
+				this._rawOptions.outDir ?? (parentRawOpts?.outDir || parentOpts.outDir) ?? this.options.outDir,
 			contentBase:
 				this._rawOptions.contentBase ??
-				parentOpts.contentBase ??
+				parentRawOpts?.contentBase ??
 				this.options.contentBase,
 			theme: this._rawOptions.theme ?? parentOpts.theme ?? this.options.theme,
 			palette:
@@ -476,7 +514,7 @@ export function lesson(
 	title: string,
 	options: BuildOptions = {},
 ): LessonBuilder {
-	return new LessonBuilder(title, options);
+	return new LessonBuilder(title, options, getCallerDir());
 }
 
 function normalizeSimulationOptions(
@@ -594,18 +632,23 @@ export class ChapterBuilder {
 	private meta: ChapterMeta;
 	private lessonBuilders: LessonBuilder[] = [];
 	private options: BuildOptions;
+	private _rawOptions: BuildOptions;
 
-	constructor(title: string, options: BuildOptions = {}) {
+	constructor(title: string, options: BuildOptions = {}, callerDir?: string) {
+		this._rawOptions = options;
+		let slug = title
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, "-")
+			.replace(/(^-|-$)/g, "");
+		if (!slug) slug = "chapter";
+
 		this.meta = {
 			title,
-			slug: title
-				.toLowerCase()
-				.replace(/[^a-z0-9]+/g, "-")
-				.replace(/(^-|-$)/g, ""),
+			slug,
 		};
 		this.options = {
 			outDir: options.outDir ?? "./out",
-			contentBase: options.contentBase ?? ".",
+			contentBase: options.contentBase ?? callerDir ?? ".",
 			theme: options.theme ?? "auto",
 			palette: options.palette ?? "ink",
 			strict: options.strict ?? true,
@@ -635,7 +678,7 @@ export class ChapterBuilder {
 	}
 
 	lesson(lessonBuilder: LessonBuilder): this {
-		lessonBuilder._inheritOptions(this.options);
+		lessonBuilder._inheritOptions(this.options, this._rawOptions);
 		lessonBuilder._setParentSlug(this.meta.slug);
 		this.lessonBuilders.push(lessonBuilder);
 		return this;
@@ -704,5 +747,5 @@ export function chapter(
 	title: string,
 	options: BuildOptions = {},
 ): ChapterBuilder {
-	return new ChapterBuilder(title, options);
+	return new ChapterBuilder(title, options, getCallerDir());
 }
