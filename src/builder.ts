@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { render, renderChapter, renderCourse } from "./renderer";
+import { render, renderChapter } from "./renderer";
 import type {
 	AnimationBlock,
 	AnimationOptions,
@@ -13,8 +13,6 @@ import type {
 	ColumnItem,
 	ColumnsBlock,
 	ColumnsOptions,
-	Course,
-	CourseMeta,
 	DividerBlock,
 	HeadingBlock,
 	LatexBlock,
@@ -142,7 +140,7 @@ export class LessonBuilder {
 		this.meta.nextTitle = title;
 	}
 
-	/** @internal Used by CourseBuilder/ChapterBuilder */
+	/** @internal Used by ChapterBuilder */
 	_getMeta(): LessonMeta {
 		return this.meta;
 	}
@@ -545,7 +543,7 @@ function validateLesson(
 
 	if (errors.length) {
 		throw new Error(
-			`Blogkit production checks failed:\n- ${errors.join("\n- ")}`,
+			`Mr Markdown production checks failed:\n- ${errors.join("\n- ")}`,
 		);
 	}
 }
@@ -596,21 +594,11 @@ export class ChapterBuilder {
 		return this;
 	}
 
-	/** @internal Used by CourseBuilder */
-	_setParentSlug(slug: string) {
-		this.meta.parentSlug = slug;
-	}
-
 	lesson(lessonBuilder: LessonBuilder): this {
 		lessonBuilder._inheritOptions(this.options);
 		lessonBuilder._setParentSlug(this.meta.slug);
 		this.lessonBuilders.push(lessonBuilder);
 		return this;
-	}
-
-	/** @internal Used by CourseBuilder */
-	_getLessonBuilders(): LessonBuilder[] {
-		return this.lessonBuilders;
 	}
 
 	build(): string {
@@ -652,7 +640,7 @@ export class ChapterBuilder {
 		return outPath;
 	}
 
-	/** Returns the raw Chapter object (useful for CourseBuilder) */
+	/** Returns the raw Chapter object */
 	toJSON(): Chapter {
 		const lessons: Lesson[] = [];
 		for (const lb of this.lessonBuilders) {
@@ -667,99 +655,4 @@ export function chapter(
 	options: BuildOptions = {},
 ): ChapterBuilder {
 	return new ChapterBuilder(title, options);
-}
-
-// ─── CourseBuilder ───────────────────────────────────────────────────────────
-
-export class CourseBuilder {
-	private meta: CourseMeta;
-	private chapterBuilders: ChapterBuilder[] = [];
-	private options: BuildOptions;
-
-	constructor(title: string, options: BuildOptions = {}) {
-		this.meta = {
-			title,
-			slug: title
-				.toLowerCase()
-				.replace(/[^a-z0-9]+/g, "-")
-				.replace(/(^-|-$)/g, ""),
-		};
-		this.options = {
-			outDir: options.outDir ?? "./out",
-			contentBase: options.contentBase ?? ".",
-			theme: options.theme ?? "auto",
-			palette: options.palette ?? "ink",
-			strict: options.strict ?? true,
-			preset: {
-				layout: "lesson",
-				density: "comfortable",
-				tone: "scholarly",
-				...options.preset,
-			},
-			...options,
-		};
-	}
-
-	slug(slug: string): this {
-		this.meta.slug = slug;
-		return this;
-	}
-
-	description(text: string): this {
-		this.meta.description = text;
-		return this;
-	}
-
-	chapter(chapterBuilder: ChapterBuilder): this {
-		chapterBuilder._setParentSlug(this.meta.slug);
-		this.chapterBuilders.push(chapterBuilder);
-		return this;
-	}
-
-	build(): string {
-		const allLessons: LessonBuilder[] = [];
-		for (const cb of this.chapterBuilders) {
-			allLessons.push(...cb._getLessonBuilders());
-		}
-
-		for (let i = 0; i < allLessons.length; i++) {
-			const lb = allLessons[i];
-			if (i > 0) {
-				const prev = allLessons[i - 1]._getMeta();
-				lb._setPrev(prev.slug, prev.title);
-			}
-			if (i < allLessons.length - 1) {
-				const next = allLessons[i + 1]._getMeta();
-				lb._setNext(next.slug, next.title);
-			}
-		}
-
-		const chapters: Chapter[] = [];
-		for (const cb of this.chapterBuilders) {
-			cb.build();
-			chapters.push(cb.toJSON());
-		}
-
-		const courseData: Course = { meta: this.meta, chapters };
-		const html = renderCourse(courseData, this.options);
-
-		const outDir = path.resolve(this.options.outDir as string);
-		if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-
-		const outPath = path.join(outDir, `${this.meta.slug}.html`);
-		fs.writeFileSync(outPath, html, "utf-8");
-
-		const relPath = path.relative(process.cwd(), outPath);
-		console.log(
-			`✓ Built Course (${this.chapterBuilders.length} chapters) → ${relPath}`,
-		);
-		return outPath;
-	}
-}
-
-export function course(
-	title: string,
-	options: BuildOptions = {},
-): CourseBuilder {
-	return new CourseBuilder(title, options);
 }

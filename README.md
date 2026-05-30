@@ -1,6 +1,6 @@
-# Blogkit
+# Mr Markdown
 
-Blogkit is an opinionated TypeScript SDK for building interactive, single-file learning pages. It is designed for lessons that mix prose, LaTeX, simulations, media, video, and quizzes without making every author build layout and interaction chrome from scratch.
+Mr Markdown is an opinionated TypeScript SDK for building interactive, single-file learning pages. It is designed for lessons that mix prose, LaTeX, simulations, media, video, and quizzes without making every author build layout and interaction chrome from scratch.
 
 ## Documentation
 
@@ -11,7 +11,7 @@ The documentation has been split into dedicated guides. Start with the Quick Sta
 3. [Simulations & Interactivity](./docs/simulations.md) - The definitive guide for building and integrating sandboxed JavaScript simulations, including zero-config companion files.
 4. [Themes and Styling](./docs/themes-and-styling.md) - Learn how to customize fonts, colors, and hook into Dark Mode.
 5. [Quizzes](./docs/quizzes.md) - Learn the JSON format for injecting interactive quizzes.
-6. [Production Checks](./docs/production-checks.md) - Understand Blogkit's strict mode and quality enforcement.
+6. [Production Checks](./docs/production-checks.md) - Understand Mr Markdown's strict mode and quality enforcement.
 
 ## Example
 

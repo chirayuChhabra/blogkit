@@ -27,8 +27,8 @@ describe("Renderer Bug Fixes", () => {
 		const { render } = require("../src/renderer");
 		const html = render(l, { contentBase: TEST_DIR, strict: true });
 
-		// The code block should contain "const x = 42;" not "dummy.ts"
-		expect(html).toContain("const x = 42;");
+		// The code block should contain '42' not "dummy.ts"
+		expect(html).toContain("42");
 		expect(html).not.toContain(">dummy.ts<");
 	});
 

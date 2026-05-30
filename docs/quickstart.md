@@ -1,6 +1,6 @@
 # Quick Start
 
-Blogkit is an opinionated TypeScript SDK for building interactive, single-file learning pages. It is designed for lessons that mix prose, LaTeX, simulations, media, video, and quizzes without making every author build layout and interaction chrome from scratch.
+Mr Markdown is an opinionated TypeScript SDK for building interactive, single-file learning pages. It is designed for lessons that mix prose, LaTeX, simulations, media, video, and quizzes without making every author build layout and interaction chrome from scratch.
 
 ## Installation
 
@@ -11,7 +11,7 @@ Ensure you have a Node.js or Bun environment set up.
 Create a file named `charge.lesson.ts` (or similar) and import `lesson` from `blogkit`.
 
 ```ts
-import { lesson, chapter } from "blogkit";
+import { lesson, chapter } from "mr-md";
 
 const myLesson = lesson("Charge is a Mystery")
   .description("A guided lesson about electric charge.")

@@ -1,19 +1,41 @@
 {
-	"name": "blogkit",
+	"name": "mr-md",
 	"version": "1.0.0",
-	"description": "",
-	"main": "index.js",
+	"description": "Mr Markdown is an opinionated TypeScript SDK for building interactive, single-file learning pages.",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"files": [
+		"dist"
+	],
 	"directories": {
 		"example": "example"
 	},
 	"scripts": {
+		"build": "tsc -p tsconfig.build.json",
+		"prepublishOnly": "bun run build",
 		"build:example": "bun demo/demo-1/course.ts",
 		"serve:example": "bunx serve demo/demo-1/out",
 		"typecheck": "bunx tsc --noEmit",
-		"test": "bun test && bun run typecheck"
+		"test": "bun test && bun run typecheck",
+		"test:watch": "bun test --watch",
+		"lint": "biome lint .",
+		"format": "biome format --write .",
+		"check": "biome check --write ."
 	},
-	"keywords": [],
-	"author": "",
+	"keywords": [
+		"markdown",
+		"blog",
+		"interactive",
+		"education",
+		"shiki",
+		"katex",
+		"course"
+	],
+	"author": "Chirayu Chhabra",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/chirayuChhabra/blogkit.git"
+	},
 	"license": "ISC",
 	"devDependencies": {
 		"@types/katex": "^0.16.8",

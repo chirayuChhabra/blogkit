@@ -4,3 +4,5 @@ scratch_test.html
 test-regex.js
 out/
 demo/
+dist/
+.vscode/

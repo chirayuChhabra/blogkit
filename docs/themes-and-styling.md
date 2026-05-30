@@ -23,7 +23,7 @@ export default lesson("My Lesson", {
 
 ## Dark Mode in Content
 
-If you are writing custom CSS or building simulations, you can hook into the current theme seamlessly. Blogkit sets the `data-theme` attribute on the `<html>` root element, but it is highly recommended to rely on standard media queries inside simulations:
+If you are writing custom CSS or building simulations, you can hook into the current theme seamlessly. Mr Markdown sets the `data-theme` attribute on the `<html>` root element, but it is highly recommended to rely on standard media queries inside simulations:
 
 ```css
 /* Standard color */

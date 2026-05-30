@@ -262,23 +262,9 @@ export interface ChapterMeta {
 	slug: string;
 	description?: string;
 	status?: "completed" | "active" | "locked";
-	parentSlug?: string;
 }
 
 export interface Chapter {
 	meta: ChapterMeta;
 	lessons: Lesson[];
-}
-
-// ─── Course Schema ───────────────────────────────────────────────────────────
-
-export interface CourseMeta {
-	title: string;
-	slug: string;
-	description?: string;
-}
-
-export interface Course {
-	meta: CourseMeta;
-	chapters: Chapter[];
 }

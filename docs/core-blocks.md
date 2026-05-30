@@ -1,6 +1,6 @@
 # Core Blocks
 
-Blogkit provides a fluent API where you chain method calls on the `lesson()` builder to add blocks of content sequentially.
+Mr Markdown provides a fluent API where you chain method calls on the `lesson()` builder to add blocks of content sequentially.
 
 ## The Smart `.add()` Router
 
