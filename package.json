@@ -2,13 +2,21 @@
 	"name": "mr-md",
 	"version": "1.0.0",
 	"description": "Mr Markdown is an opinionated TypeScript SDK for building interactive, single-file learning pages.",
+	"type": "module",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"default": "./dist/index.js"
+		}
+	},
 	"files": [
 		"dist"
 	],
 	"directories": {
-		"example": "example"
+		"demo": "demo"
 	},
 	"scripts": {
 		"build": "tsc -p tsconfig.build.json",
@@ -45,11 +53,9 @@
 		"typescript": "^6.0.3"
 	},
 	"dependencies": {
-		"@types/marked": "^5.0.2",
 		"highlight.js": "^11.11.1",
 		"katex": "^0.16.47",
 		"marked": "^18.0.4",
-		"marked-highlight": "^2.2.4",
-		"shiki": "^4.1.0"
+		"marked-highlight": "^2.2.4"
 	}
 }

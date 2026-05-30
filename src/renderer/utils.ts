@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import type { BuildOptions } from "../types";
+import type { BuildOptions } from "../types.js";
 
 export interface NavItem {
 	id: string;

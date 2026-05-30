@@ -1,7 +1,8 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import * as fs from "fs";
 import * as path from "path";
-import { lesson } from "../src/index";
+import { lesson } from "../src/index.js";
+import { render } from "../src/renderer/index.js";
 
 const TEST_DIR = path.join(__dirname, ".test_fixtures");
 
@@ -23,8 +24,6 @@ describe("Renderer Bug Fixes", () => {
 
 		// We expect the renderer to load the file contents instead of outputting "dummy.ts"
 		// To test this we must call render on it.
-		// Wait, the renderer is not exported from index.ts, only render function is.
-		const { render } = require("../src/renderer");
 		const html = render(l, { contentBase: TEST_DIR, strict: true });
 
 		// The code block should contain '42' not "dummy.ts"
@@ -38,7 +37,6 @@ describe("Renderer Bug Fixes", () => {
 			.code(inlineCode)
 			.toJSON();
 
-		const { render } = require("../src/renderer");
 		const html = render(l, { contentBase: TEST_DIR, strict: true });
 
 		expect(html).toContain("console.log(&#39;hello&#39;);");
@@ -49,7 +47,6 @@ describe("Renderer Bug Fixes", () => {
 			"This is a price of $10.\n\nAnd here is another price of $20.";
 		const l = lesson("Test Lesson").markdown(mdContent).toJSON();
 
-		const { render } = require("../src/renderer");
 		const html = render(l, { strict: true });
 
 		// The text should not be swallowed by the math parser.

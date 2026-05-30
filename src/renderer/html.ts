@@ -1,8 +1,8 @@
 import * as fs from "fs";
 import * as path from "path";
-import type { BuildOptions, Lesson } from "../types";
-import { escHtml } from "./blocks";
-import type { NavItem } from "./utils";
+import type { BuildOptions, Lesson } from "../types.js";
+import { escHtml } from "./blocks.js";
+import type { NavItem } from "./utils.js";
 
 // ─── Page shell ───────────────────────────────────────────────────────────────
 

@@ -2,7 +2,7 @@ import katex from "katex";
 import { marked } from "marked";
 import { markedHighlight } from "marked-highlight";
 import hljs from "highlight.js";
-import type { Block } from "../types";
+import type { Block } from "../types.js";
 
 marked.use(markedHighlight({
 	langPrefix: 'hljs language-',

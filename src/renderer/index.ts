@@ -1,7 +1,7 @@
-import type { BuildOptions, Chapter, Lesson } from "../types";
-import { escAttr, escHtml, renderBlock } from "./blocks";
-import { clientScript, pageCSS, renderPage } from "./html"; // Used in renderChapter
-import type { NavItem } from "./utils";
+import type { BuildOptions, Chapter, Lesson } from "../types.js";
+import { escAttr, escHtml, renderBlock } from "./blocks.js";
+import { clientScript, pageCSS, renderPage } from "./html.js"; // Used in renderChapter
+import type { NavItem } from "./utils.js";
 
 // ─── Main render function ─────────────────────────────────────────────────────
 

@@ -1,5 +1,5 @@
-export { ChapterBuilder, chapter, LessonBuilder, lesson } from "./builder";
-export { render } from "./renderer/index";
+export { ChapterBuilder, chapter, LessonBuilder, lesson } from "./builder.js";
+export { render } from "./renderer/index.js";
 export type {
 	AnimationBlock,
 	AnimationOptions,
@@ -31,4 +31,4 @@ export type {
 	SimulationOptions,
 	YouTubeBlock,
 	YouTubeOptions,
-} from "./types";
+} from "./types.js";

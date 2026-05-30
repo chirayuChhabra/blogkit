@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { render, renderChapter } from "./renderer";
+import { render, renderChapter } from "./renderer/index.js";
 import type {
 	AnimationBlock,
 	AnimationOptions,
@@ -29,7 +29,7 @@ import type {
 	SimulationOptions,
 	YouTubeBlock,
 	YouTubeOptions,
-} from "./types";
+} from "./types.js";
 
 // ─── LessonBuilder ────────────────────────────────────────────────────────────
 

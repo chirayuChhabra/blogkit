@@ -1,14 +1,14 @@
 import katex from "katex";
-import type { Block, BuildOptions, QuizFile, QuizQuestion } from "../types";
+import type { Block, BuildOptions, QuizFile, QuizQuestion } from "../types.js";
 import {
 	blockChrome,
 	escapeScriptJson,
 	mdInline,
 	mdToHtml,
 	renderSimulationControls,
-} from "./markdown";
+} from "./markdown.js";
 import hljs from "highlight.js";
-import { type NavItem, resolveAssetSrc, resolveContent } from "./utils";
+import { type NavItem, resolveAssetSrc, resolveContent } from "./utils.js";
 
 // HTML escaping utility needed by blocks
 export function escHtml(str: string): string {
