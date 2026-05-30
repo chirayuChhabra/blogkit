@@ -14,7 +14,7 @@ marked.use(markedHighlight({
 
 // ─── Markdown Rendering (using Marked + KaTeX) ───────────────────────────────
 
-function mdToHtml(md: string): { html: string; title: string } {
+function mdToHtml(md: string): { html: string; title: string; headings: { id: string; text: string; level: number }[] } {
 	let title = "";
 
 	// Extract first H1 or H2 as title
@@ -55,7 +55,20 @@ function mdToHtml(md: string): { html: string; title: string } {
 		processedMd = processedMd.replace(`@@BK_CODE_${id}@@`, () => match);
 	});
 
-	let html = marked.parse(processedMd) as string;
+	const headings: { id: string; text: string; level: number }[] = [];
+	let headingIdCounter = 0;
+
+	const renderer = new marked.Renderer();
+	renderer.heading = ({ tokens, depth, text }) => {
+		const id = `bk-heading-${headingIdCounter++}`;
+		if (depth === 2 || depth === 3) {
+			const plainText = text.replace(/<[^>]+>/g, "");
+			headings.push({ id, text: plainText, level: depth });
+		}
+		return `<h${depth} id="${id}" class="bk-heading-${depth}">${text}</h${depth}>`;
+	};
+
+	let html = marked.parse(processedMd, { renderer }) as string;
 
 	// Restore math
 	mathBlocks.forEach((tex, id) => {
@@ -83,7 +96,7 @@ function mdToHtml(md: string): { html: string; title: string } {
 		html = html.replace(`@@BK_MATH_INLINE_${id}@@`, () => rendered);
 	});
 
-	return { html, title };
+	return { html, title, headings };
 }
 
 function escHtml(s: string): string {

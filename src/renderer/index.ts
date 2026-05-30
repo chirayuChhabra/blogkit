@@ -10,10 +10,10 @@ export function render(lesson: Lesson, opts: BuildOptions = {}): string {
 	const structuredNavItems: NavItem[] = [];
 
 	lesson.blocks.forEach((block, idx) => {
-		const { html, navItem } = renderBlock(block, idx, opts);
+		const { html, navItems } = renderBlock(block, idx, opts);
 		bodyItems.push(html);
-		if (navItem) {
-			structuredNavItems.push(navItem);
+		if (navItems) {
+			structuredNavItems.push(...navItems);
 		}
 	});
 

@@ -29,7 +29,7 @@ function renderBlock(
 	block: Block,
 	idx: number,
 	options: BuildOptions,
-): { html: string; navItem?: NavItem } {
+): { html: string; navItems?: NavItem[] } {
 	try {
 		const result = renderBlockInner(block, idx, options);
 		if (
@@ -58,7 +58,7 @@ function renderBlockInner(
 	block: Block,
 	idx: number,
 	options: BuildOptions,
-): { html: string; navItem?: NavItem } {
+): { html: string; navItems?: NavItem[] } {
 	switch (block.type) {
 		case "heading": {
 			const md = resolveContent(block.src, options, "md");
@@ -67,14 +67,19 @@ function renderBlockInner(
 			const id = `heading-${idx}`;
 			return {
 				html: `<section id="${id}" class="bk-section bk-heading">${html}</section>`,
-				navItem: { id, label, kind: "heading" },
+				navItems: [{ id, label, kind: "heading" }],
 			};
 		}
 
 		case "markdown": {
 			const md = resolveContent(block.src, options, "md");
-			const { html } = mdToHtml(md);
-			return { html: `<div class="bk-markdown">${html}</div>` };
+			const { html, headings } = mdToHtml(md);
+			const navItems: NavItem[] = headings.map(h => ({
+				id: h.id,
+				label: h.text,
+				kind: h.level === 2 ? "heading" : "section"
+			}));
+			return { html: `<div class="bk-markdown">${html}</div>`, navItems: navItems.length > 0 ? navItems : undefined };
 		}
 
 		case "section": {
@@ -84,7 +89,7 @@ function renderBlockInner(
 			const id = `section-${idx}`;
 			return {
 				html: `<section id="${id}" class="bk-section bk-subsection">${html}</section>`,
-				navItem: { id, label, kind: "section" },
+				navItems: [{ id, label, kind: "section" }],
 			};
 		}
 
@@ -305,11 +310,11 @@ function renderBlockInner(
             ${quiz.questions.map((q, qi) => renderQuestion(q, `quiz-${idx}`, qi)).join("\n")}
           </div>
         </div>`,
-				navItem: {
+				navItems: [{
 					id: `quiz-${idx}`,
 					label: block.label ?? "Questions",
 					kind: "quiz",
-				},
+				}],
 			};
 		}
 
