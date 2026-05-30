@@ -66,26 +66,39 @@ export class LessonBuilder {
 
 	// ── Meta setters ────────────────────────────────────────────────────────────
 
+	/**
+	 * Sets the URL slug for the generated HTML file.
+	 * Automatically generated from the title by default.
+	 */
 	slug(slug: string): this {
 		this.meta.slug = slug;
 		return this;
 	}
 
+	/**
+	 * Sets the SEO meta description and subheading for the lesson.
+	 */
 	description(text: string): this {
 		this.meta.description = text;
 		return this;
 	}
 
+	/** Assigns taxonomy tags to the lesson. */
 	tags(...tags: string[]): this {
 		this.meta.tags = tags;
 		return this;
 	}
 
+	/** Sets the author name for this lesson. */
 	author(name: string): this {
 		this.meta.author = name;
 		return this;
 	}
 
+	/**
+	 * Sets the progression status of the lesson.
+	 * Used to visually distinguish read/unread/locked lessons in Chapter timelines.
+	 */
 	status(status: "read" | "unread" | "locked"): this {
 		this.meta.status = status;
 		return this;
@@ -204,6 +217,7 @@ export class LessonBuilder {
 	 * Creates a major chapter heading (H2) and a top-level sidebar navigation entry.
 	 * @param src Path to a markdown file or raw markdown string.
 	 * @param title Optional title override for the sidebar and heading.
+	 * @example lesson.heading("# Welcome to Physics")
 	 */
 	heading(src: string, title?: string): this {
 		this.blocks.push({ type: "heading", src, title } as HeadingBlock);
@@ -213,13 +227,17 @@ export class LessonBuilder {
 	/**
 	 * Adds standard markdown prose into the current section.
 	 * @param src Path to a markdown file or raw markdown string.
+	 * @example lesson.markdown("This is a **bold** statement.")
 	 */
 	markdown(src: string): this {
 		this.blocks.push({ type: "markdown", src } as MarkdownBlock);
 		return this;
 	}
 
-	/** Alias for prose. Keeps authoring readable in long lessons. */
+	/** 
+	 * Alias for `markdown()`. Keeps authoring readable in long lessons.
+	 * @example lesson.content("content/intro.md")
+	 */
 	content(src: string): this {
 		return this.markdown(src);
 	}
@@ -228,28 +246,42 @@ export class LessonBuilder {
 	 * Creates a new subsection heading (H3) and a sub-entry in the sidebar.
 	 * @param src Path to a markdown file or raw markdown string.
 	 * @param label Optional title override for the sidebar label.
+	 * @example lesson.section("### 1. Kinematics")
 	 */
 	section(src: string, label?: string): this {
 		this.blocks.push({ type: "section", src, label } as SectionBlock);
 		return this;
 	}
 
-	/** Highlighted callouts */
+	/** 
+	 * Adds an 'Important' highlighted callout.
+	 * @example lesson.important("Do not touch the exposed wire.")
+	 */
 	important(src: string): this {
 		this.blocks.push({ type: "important", src } as CalloutBlock);
 		return this;
 	}
 
+	/** 
+	 * Adds a 'Warning' highlighted callout.
+	 * @example lesson.warning("This is deprecated.")
+	 */
 	warning(src: string): this {
 		this.blocks.push({ type: "warning", src } as CalloutBlock);
 		return this;
 	}
 
+	/** 
+	 * Adds a 'Tip' highlighted callout.
+	 */
 	tip(src: string): this {
 		this.blocks.push({ type: "tip", src } as CalloutBlock);
 		return this;
 	}
 
+	/** 
+	 * Adds a 'Note' highlighted callout.
+	 */
 	note(src: string): this {
 		this.blocks.push({ type: "note", src } as CalloutBlock);
 		return this;
@@ -309,6 +341,7 @@ export class LessonBuilder {
 	 * @param src Path to the JavaScript simulation code.
 	 * @param opts Configuration options including tunables, height, and aspect ratio.
 	 * @param height Optional fixed iframe height in pixels.
+	 * @example lesson.simulation("sims/pendulum.js", { height: 500 })
 	 */
 	simulation(
 		src: string,
@@ -331,6 +364,7 @@ export class LessonBuilder {
 	 * Sets the default interaction mode to fully interactive.
 	 * @param src Path to the JavaScript simulation code.
 	 * @param opts Configuration options.
+	 * @example lesson.lab("sims/optics-lab.js")
 	 */
 	lab(src: string, opts: SimulationOptions = {}): this {
 		return this.simulation(src, { controls: "interactive", ...opts });
@@ -432,6 +466,12 @@ export class LessonBuilder {
 
 // ─── Factory function (the public API) ───────────────────────────────────────
 
+/**
+ * Starts building a new interactive lesson.
+ * @param title The display title for the lesson.
+ * @param options Build configuration for this specific lesson.
+ * @example const l = lesson("Introduction to Kinematics").markdown("intro.md");
+ */
 export function lesson(
 	title: string,
 	options: BuildOptions = {},
@@ -650,6 +690,16 @@ export class ChapterBuilder {
 	}
 }
 
+/**
+ * Starts building a new chapter that groups multiple lessons together.
+ * @param title The display title for the chapter.
+ * @param options Shared build configuration that cascades to all child lessons.
+ * @example 
+ * chapter("Mechanics")
+ *   .lesson(kinematicsLesson)
+ *   .lesson(dynamicsLesson)
+ *   .build();
+ */
 export function chapter(
 	title: string,
 	options: BuildOptions = {},

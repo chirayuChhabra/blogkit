@@ -187,18 +187,32 @@ export interface QuizFile {
 
 // ─── Build Options ────────────────────────────────────────────────────────────
 
+/**
+ * Global configuration for building a lesson or chapter.
+ * Passed to `lesson(title, options)` or `chapter(title, options)`.
+ */
 export interface BuildOptions {
-	outDir?: string; // default: './out'
-	contentBase?: string; // base path for resolving .md / .js / .json files
+	/** Directory where the generated HTML file will be written. Default: `'./out'` */
+	outDir?: string;
+	/** Base path for resolving local files like `.md`, `.js`, `.json`. Default: `'.'` */
+	contentBase?: string;
+	/** Light or dark mode. `auto` respects user system preferences. Default: `'auto'` */
 	theme?: "light" | "dark" | "auto";
+	/** Visual color palette of the generated page. Default: `'ink'` */
 	palette?: "ink" | "field" | "ember";
-	font?: string; // custom font family
+	/** Custom CSS font-family string (e.g. `'Inter, sans-serif'`). */
+	font?: string;
+	/** Path to a favicon. */
 	favicon?: string;
-	head?: string; // custom HTML to inject into <head>
+	/** Custom raw HTML to inject into the `<head>` tag. */
+	head?: string;
+	/** Preset for layout, density, and tone. */
 	preset?: LessonPreset;
-	strict?: boolean; // default: true. Throws on missing files and invalid production blocks.
+	/** If true, throws errors on missing files and invalid blocks to prevent silent failures. Default: `true` */
+	strict?: boolean;
 }
 
+/** Configuration for simulation blocks */
 export interface SimulationOptions {
 	props?: Record<string, unknown>;
 	tunables?: Record<string, SimulationControl>;
@@ -213,6 +227,7 @@ export interface SimulationConfig extends SimulationOptions {
 	dependencies?: string[];
 }
 
+/** Represents a single interactive control in a simulation (e.g., a slider) */
 export interface SimulationControl {
 	label?: string;
 	min?: number;
@@ -257,6 +272,9 @@ export interface ColumnsOptions {
 
 // ─── Chapter Schema ──────────────────────────────────────────────────────────
 
+/**
+ * Represents a logical grouping of multiple lessons.
+ */
 export interface ChapterMeta {
 	title: string;
 	slug: string;
