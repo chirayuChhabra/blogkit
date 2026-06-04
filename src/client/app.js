@@ -41,13 +41,9 @@ function bkReadSimProps(figure) {
 	return props;
 }
 
-function bkRestartSim(iframe, config, props) {
-	iframe.srcdoc = bkSimDoc(config.js, props, config.loop, config.dependencies);
-}
-
 function bkWireSimControls() {
 	const handler = (e) => {
-		const input = e.target.closest("[data-bk-prop]");
+		const input = e.target.closest?.("[data-bk-prop]");
 		if (!input) return;
 		const figure = input.closest(".bk-object");
 		if (!figure) return;
@@ -62,7 +58,7 @@ function bkWireSimControls() {
 
 function bkWireMaximizeControls() {
 	document.addEventListener("click", (e) => {
-		const btn = e.target.closest(".bk-object-maximize");
+		const btn = e.target.closest?.(".bk-object-maximize");
 		if (!btn) return;
 		const obj = btn.closest(".bk-object");
 		if (!obj) return;
@@ -81,7 +77,7 @@ function bkWireMaximizeControls() {
 
 function bkWireInteractiveFrames() {
 	const activate = (e) => {
-		const obj = e.target.closest(".bk-object");
+		const obj = e.target.closest?.(".bk-object");
 		if (!obj) return;
 		const frame = obj.querySelector(".bk-embed-interactive");
 		if (frame) {
@@ -275,7 +271,7 @@ function bkWireCodeCopy() {
 	});
 
 	document.addEventListener("click", async (e) => {
-		const btn = e.target.closest(".bk-copy-btn");
+		const btn = e.target.closest?.(".bk-copy-btn");
 		if (!btn) return;
 		const container = btn.closest(".bk-code-block");
 		if (!container) return;
@@ -351,15 +347,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const mainScrollContainer = document.querySelector(".bk-main");
 	const sectionObs = new IntersectionObserver((entries) => {
-		entries.forEach((entry) => {
+		for (const entry of entries) {
 			const section = sections.find(s => s.el === entry.target);
-			if (!section) return;
+			if (!section) continue;
 			if (entry.isIntersecting) {
 				section.isAbove = true;
 			} else {
 				section.isAbove = entry.boundingClientRect.top < (entry.rootBounds?.top ?? 0);
 			}
-		});
+		}
 		updateActive();
 	}, {
 		root: mainScrollContainer || null,
