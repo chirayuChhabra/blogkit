@@ -1,0 +1,6 @@
+{
+  "props": { "energyDensity": 5 },
+  "tunables": {
+    "energyDensity": { "label": "Energy Density", "min": 1, "max": 10, "step": 1 }
+  }
+}

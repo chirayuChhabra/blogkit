@@ -1,0 +1,9 @@
+{
+  "props": { "highlightFamily": "all" },
+  "tunables": {
+    "highlightFamily": { 
+      "label": "Highlight Family", 
+      "options": ["all", "quarks", "leptons", "gauge_bosons", "scalar_bosons"] 
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "questions": [
+    {
+      "q": "What is an antiparticle?",
+      "options": ["A particle with negative mass", "A particle with the same mass but opposite charge", "A particle with zero mass"],
+      "answer": 1,
+      "explanation": "Antiparticles have the same mass as their corresponding matter particles, but have opposite electrical charges and quantum numbers."
+    },
+    {
+      "q": "What happens when a particle and its antiparticle interact?",
+      "options": ["They orbit each other indefinitely", "They merge into a heavier particle", "They annihilate each other, releasing energy"],
+      "answer": 2,
+      "explanation": "Matter and antimatter annihilate upon contact, converting their mass entirely into energy."
+    }
+  ]
+}

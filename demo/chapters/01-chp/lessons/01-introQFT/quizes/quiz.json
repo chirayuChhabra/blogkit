@@ -1,0 +1,16 @@
+{
+  "questions": [
+    {
+      "q": "In Quantum Field Theory, what is considered the fundamental building block of the universe?",
+      "options": ["Particles", "Quantum Fields", "Strings"],
+      "answer": 1,
+      "explanation": "QFT proposes that continuous, vibrating fluid-like substances known as fields are fundamental, and particles are just excitations in these fields."
+    },
+    {
+      "q": "What is the vacuum of space in QED?",
+      "options": ["Completely empty", "Filled with dark matter only", "Teeming with fluctuating fields and virtual photons"],
+      "answer": 2,
+      "explanation": "In QFT, the vacuum is not truly empty; it contains fluctuating fields and virtual photons that constantly pop in and out of existence."
+    }
+  ]
+}

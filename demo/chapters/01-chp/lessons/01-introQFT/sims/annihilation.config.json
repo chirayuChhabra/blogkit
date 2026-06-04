@@ -1,0 +1,7 @@
+{
+  "props": { "speed": 3, "reset": false },
+  "tunables": {
+    "speed": { "label": "Initial Speed", "min": 1, "max": 10, "step": 1 },
+    "reset": { "label": "Restart Annihilation", "type": "boolean" }
+  }
+}
