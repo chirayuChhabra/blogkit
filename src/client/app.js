@@ -46,65 +46,54 @@ function bkRestartSim(iframe, config, props) {
 }
 
 function bkWireSimControls() {
-	document.querySelectorAll(".bk-object").forEach((figure) => {
-		const configEl = figure.querySelector(".bk-sim-config");
+	const handler = (e) => {
+		const input = e.target.closest("[data-bk-prop]");
+		if (!input) return;
+		const figure = input.closest(".bk-object");
+		if (!figure) return;
 		const iframe = figure.querySelector("iframe");
-		if (!configEl || !iframe) return;
-
-		let config;
-		try {
-			config = JSON.parse(configEl.textContent || "{}");
-		} catch {
-			return;
-		}
-
-		figure.querySelectorAll("[data-bk-prop]").forEach((input) => {
-			input.addEventListener("input", () => {
-				const props = bkReadSimProps(figure);
-				iframe.contentWindow?.postMessage({ type: "bk:set-props", props }, "*");
-			});
-			input.addEventListener("change", () => {
-				const props = bkReadSimProps(figure);
-				iframe.contentWindow?.postMessage({ type: "bk:set-props", props }, "*");
-			});
-		});
-	});
+		if (!iframe) return;
+		const props = bkReadSimProps(figure);
+		iframe.contentWindow?.postMessage({ type: "bk:set-props", props }, "*");
+	};
+	document.addEventListener("input", handler, { passive: true });
+	document.addEventListener("change", handler, { passive: true });
 }
 
 function bkWireMaximizeControls() {
-	document.querySelectorAll(".bk-object-maximize").forEach((btn) => {
-		btn.addEventListener("click", () => {
-			const obj = btn.closest(".bk-object");
-			if (!obj) return;
-			const isMax = obj.classList.toggle("bk-object--maximized");
-			if (isMax) {
-				document.body.style.overflow = "hidden";
-				btn.innerHTML =
-					'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>';
-			} else {
-				document.body.style.overflow = "";
-				btn.innerHTML =
-					'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
-			}
-		});
+	document.addEventListener("click", (e) => {
+		const btn = e.target.closest(".bk-object-maximize");
+		if (!btn) return;
+		const obj = btn.closest(".bk-object");
+		if (!obj) return;
+		const isMax = obj.classList.toggle("bk-object--maximized");
+		if (isMax) {
+			document.body.style.overflow = "hidden";
+			btn.innerHTML =
+				'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>';
+		} else {
+			document.body.style.overflow = "";
+			btn.innerHTML =
+				'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
+		}
 	});
 }
 
 function bkWireInteractiveFrames() {
-	document.querySelectorAll(".bk-object").forEach((obj) => {
-		const activate = () => {
-			const frame = obj.querySelector(".bk-embed-interactive");
-			if (frame) {
-				frame.classList.add("is-interactive");
-				const iframe = frame.querySelector("iframe");
-				if (iframe && iframe.contentWindow) {
-					iframe.contentWindow.postMessage({ type: "bk:play" }, "*");
-				}
+	const activate = (e) => {
+		const obj = e.target.closest(".bk-object");
+		if (!obj) return;
+		const frame = obj.querySelector(".bk-embed-interactive");
+		if (frame) {
+			frame.classList.add("is-interactive");
+			const iframe = frame.querySelector("iframe");
+			if (iframe && iframe.contentWindow) {
+				iframe.contentWindow.postMessage({ type: "bk:play" }, "*");
 			}
-		};
-		obj.addEventListener("pointerdown", activate, { passive: true });
-		obj.addEventListener("focusin", activate, { passive: true });
-	});
+		}
+	};
+	document.addEventListener("pointerdown", activate, { passive: true });
+	document.addEventListener("focusin", activate, { passive: true });
 
 	const exitInteractive = (e) => {
 		document
@@ -282,22 +271,27 @@ function bkWireCodeCopy() {
 		btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
 		btn.setAttribute("aria-label", "Copy code");
 		btn.title = "Copy code";
-
-		btn.addEventListener("click", async () => {
-			try {
-				await navigator.clipboard.writeText(code.textContent || "");
-				btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-				btn.classList.add("copied");
-				setTimeout(() => {
-					btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
-					btn.classList.remove("copied");
-				}, 2000);
-			} catch (err) {
-				console.error("Failed to copy", err);
-			}
-		});
-
 		container.appendChild(btn);
+	});
+
+	document.addEventListener("click", async (e) => {
+		const btn = e.target.closest(".bk-copy-btn");
+		if (!btn) return;
+		const container = btn.closest(".bk-code-block");
+		if (!container) return;
+		const code = container.querySelector("code");
+		if (!code) return;
+		try {
+			await navigator.clipboard.writeText(code.textContent || "");
+			btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+			btn.classList.add("copied");
+			setTimeout(() => {
+				btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+				btn.classList.remove("copied");
+			}, 2000);
+		} catch (err) {
+			console.error("Failed to copy", err);
+		}
 	});
 }
 
@@ -326,58 +320,53 @@ document.addEventListener("DOMContentLoaded", () => {
 		const id = l.dataset.id;
 		if (id) {
 			const el = document.getElementById(id);
-			if (el) sections.push({ id, el, link: l });
+			if (el) sections.push({ id, el, link: l, isAbove: false });
 		}
 	});
 
 	if (!sections.length) return;
 
-	let isScrolling = false;
-	const onScroll = () => {
-		if (!isScrolling) {
-			window.requestAnimationFrame(() => {
-				const threshold = window.innerHeight * 0.25;
-				let activeIndex = -1;
-				
-				for (let i = 0; i < sections.length; i++) {
-					const rect = sections[i].el.getBoundingClientRect();
-					if (rect.top <= threshold) {
-						activeIndex = i;
-					}
+	function setActive(idx) {
+		sections.forEach((s, i) => {
+			if (i === idx) {
+				s.link.classList.add("active");
+				if (pill) {
+					pill.style.top = s.link.offsetTop + "px";
+					pill.style.height = s.link.offsetHeight + "px";
+					pill.style.opacity = "1";
 				}
-				
-				if (activeIndex === -1 && sections.length > 0) {
-					activeIndex = 0;
-				}
+			} else {
+				s.link.classList.remove("active");
+			}
+		});
+	}
 
-				if (activeIndex !== -1) {
-					const activeId = sections[activeIndex].id;
-					sections.forEach((s) => {
-						if (s.id === activeId) {
-							s.link.classList.add("active");
-							if (pill) {
-								pill.style.top = s.link.offsetTop + "px";
-								pill.style.height = s.link.offsetHeight + "px";
-								pill.style.opacity = "1";
-							}
-						} else {
-							s.link.classList.remove("active");
-						}
-					});
-				}
-				
-				isScrolling = false;
-			});
-			isScrolling = true;
+	function updateActive() {
+		let activeIdx = 0;
+		for (let i = 0; i < sections.length; i++) {
+			if (sections[i].isAbove) activeIdx = i;
 		}
-	};
+		setActive(activeIdx);
+	}
 
 	const mainScrollContainer = document.querySelector(".bk-main");
-	if (mainScrollContainer) {
-		mainScrollContainer.addEventListener("scroll", onScroll, { passive: true });
-	} else {
-		window.addEventListener("scroll", onScroll, { passive: true });
-	}
-	// Initial call
-	onScroll();
+	const sectionObs = new IntersectionObserver((entries) => {
+		entries.forEach((entry) => {
+			const section = sections.find(s => s.el === entry.target);
+			if (!section) return;
+			if (entry.isIntersecting) {
+				section.isAbove = true;
+			} else {
+				section.isAbove = entry.boundingClientRect.top < (entry.rootBounds?.top ?? 0);
+			}
+		});
+		updateActive();
+	}, {
+		root: mainScrollContainer || null,
+		rootMargin: "0px 0px -75% 0px",
+		threshold: 0
+	});
+
+	sections.forEach(s => sectionObs.observe(s.el));
+	setActive(0);
 });
