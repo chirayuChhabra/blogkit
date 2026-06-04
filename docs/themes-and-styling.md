@@ -23,14 +23,20 @@ export default lesson("My Lesson", {
 
 ## Dark Mode in Content
 
-If you are writing custom CSS or building simulations, you can hook into the current theme seamlessly. Mr Markdown sets the `data-theme` attribute on the `<html>` root element, but it is highly recommended to rely on standard media queries inside simulations:
+If you are writing custom CSS, you can hook into the current theme seamlessly. Mr Markdown sets the `data-theme` attribute on the `<html>` root element. It is highly recommended to use CSS variables if possible, but if you need to hardcode colors, be sure to respect the user's manual theme override:
 
 ```css
-/* Standard color */
-body { background: white; color: black; }
-
-/* Dark mode override */
+/* Fallback to dark mode ONLY if the user hasn't forced light mode */
 @media (prefers-color-scheme: dark) {
-  body { background: #0a0a0a; color: white; }
+  :root[data-theme="auto"] body {
+    background: #0a0a0a;
+    color: white;
+  }
+}
+
+/* Force dark mode if the user manually overrides the theme */
+:root[data-theme="dark"] body {
+  background: #0a0a0a;
+  color: white;
 }
 ```
