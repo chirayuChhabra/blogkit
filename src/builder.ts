@@ -512,9 +512,23 @@ export class LessonBuilder {
  */
 export function lesson(
 	title: string,
-	options: BuildOptions = {},
+	optionsOrSetup?: BuildOptions | ((ctx: LessonBuilder) => void),
+	setup?: (ctx: LessonBuilder) => void
 ): LessonBuilder {
-	return new LessonBuilder(title, options, getCallerDir());
+	let options: BuildOptions = {};
+	let cb: ((ctx: LessonBuilder) => void) | undefined = setup;
+
+	if (typeof optionsOrSetup === "function") {
+		cb = optionsOrSetup;
+	} else if (optionsOrSetup) {
+		options = optionsOrSetup;
+	}
+
+	const builder = new LessonBuilder(title, options, getCallerDir());
+	if (cb) {
+		cb(builder);
+	}
+	return builder;
 }
 
 function normalizeSimulationOptions(
@@ -745,7 +759,21 @@ export class ChapterBuilder {
  */
 export function chapter(
 	title: string,
-	options: BuildOptions = {},
+	optionsOrSetup?: BuildOptions | ((ctx: ChapterBuilder) => void),
+	setup?: (ctx: ChapterBuilder) => void
 ): ChapterBuilder {
-	return new ChapterBuilder(title, options, getCallerDir());
+	let options: BuildOptions = {};
+	let cb: ((ctx: ChapterBuilder) => void) | undefined = setup;
+
+	if (typeof optionsOrSetup === "function") {
+		cb = optionsOrSetup;
+	} else if (optionsOrSetup) {
+		options = optionsOrSetup;
+	}
+
+	const builder = new ChapterBuilder(title, options, getCallerDir());
+	if (cb) {
+		cb(builder);
+	}
+	return builder;
 }
