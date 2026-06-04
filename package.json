@@ -1,62 +1,62 @@
 {
-	"name": "mr-md",
-	"version": "1.0.1",
-	"description": "Mr Markdown is an opinionated TypeScript SDK for building interactive, single-file learning pages.",
-	"type": "module",
-	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
-	"exports": {
-		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js",
-			"default": "./dist/index.js"
-		}
-	},
-	"files": [
-		"dist",
-		"src"
-	],
-	"directories": {
-		"demo": "demo"
-	},
-	"scripts": {
-		"build": "tsc -p tsconfig.build.json && mkdir -p dist/styles dist/client && cp -r src/styles/* dist/styles/ && cp -r src/client/* dist/client/",
-		"prepublishOnly": "bun run build",
-		"build:example": "bun demo/demo-1/course.ts",
-		"serve:example": "bunx serve demo/demo-1/out",
-		"typecheck": "bunx tsc --noEmit",
-		"test": "bun test && bun run typecheck",
-		"test:watch": "bun test --watch",
-		"lint": "biome lint .",
-		"format": "biome format --write .",
-		"check": "biome check --write ."
-	},
-	"keywords": [
-		"markdown",
-		"blog",
-		"interactive",
-		"education",
-		"shiki",
-		"katex",
-		"course"
-	],
-	"author": "Chirayu Chhabra",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/chirayuChhabra/blogkit.git"
-	},
-	"license": "ISC",
-	"devDependencies": {
-		"@types/katex": "^0.16.8",
-		"@types/node": "^25.8.0",
-		"biome": "^0.3.3",
-		"ts-node": "^10.9.2",
-		"typescript": "^6.0.3"
-	},
-	"dependencies": {
-		"highlight.js": "^11.11.1",
-		"katex": "^0.16.47",
-		"marked": "^18.0.4",
-		"marked-highlight": "^2.2.4"
-	}
+  "name": "mr-md",
+  "version": "1.0.1",
+  "description": "Mr Markdown is an opinionated TypeScript SDK for building interactive, single-file learning pages.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "directories": {
+    "demo": "demo"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && mkdir -p dist/styles dist/client && cp -r src/styles/* dist/styles/ && cp -r src/client/* dist/client/",
+    "prepublishOnly": "bun run build",
+    "build:example": "bun demo/chapters/01-chp/chapter.ts",
+    "serve:example": "bunx serve demo/chapters/01-chp/out",
+    "typecheck": "bunx tsc --noEmit",
+    "test": "bun test && bun run typecheck",
+    "test:watch": "bun test --watch",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "check": "biome check --write ."
+  },
+  "keywords": [
+    "markdown",
+    "blog",
+    "interactive",
+    "education",
+    "shiki",
+    "katex",
+    "course"
+  ],
+  "author": "Chirayu Chhabra",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chirayuChhabra/blogkit.git"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "@types/katex": "^0.16.8",
+    "@types/node": "^25.8.0",
+    "biome": "^0.3.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "highlight.js": "^11.11.1",
+    "katex": "^0.16.47",
+    "marked": "^18.0.4",
+    "marked-highlight": "^2.2.4"
+  }
 }

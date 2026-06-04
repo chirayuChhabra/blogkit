@@ -3,7 +3,7 @@ node_modules/
 scratch_test.html
 test-regex.js
 out/
-demo/
+demo/**/out/
 dist/
 .vscode/
 
