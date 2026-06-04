@@ -98,8 +98,13 @@ export const ${varName}Lesson = lesson("${lessonTitle}", { contentBase: import.m
 				// Very basic auto-import regex for demonstration
 				chapterContent = `import { ${varName}Lesson } from "./lessons/${lessonDirName}/lesson.js";\n` + chapterContent;
 				
-				// Inject into builder
-				chapterContent = chapterContent.replace(/(chapter\([^,]+, ctx => \{)/, `$1\n\tctx.lesson(${varName}Lesson);`);
+				// Inject into builder chronologically (before the comment)
+				chapterContent = chapterContent.replace(/(\t\/\/\s*Add lessons here)/, `\tctx.lesson(${varName}Lesson);\n$1`);
+				
+				// Fallback if comment was removed
+				if (!chapterContent.includes(`ctx.lesson(${varName}Lesson)`)) {
+					chapterContent = chapterContent.replace(/(chapter\([^,]+, ctx => \{)/, `$1\n\tctx.lesson(${varName}Lesson);`);
+				}
 				
 				fs.writeFileSync(chapterFile, chapterContent, "utf-8");
 				console.log(`Auto-imported ${name}Lesson into chapter.ts`);
@@ -130,7 +135,12 @@ export const ${varName}Lesson = lesson("${lessonTitle}", { contentBase: import.m
 			const lessonFile = path.join(cwd, "lesson.ts");
 			if (fs.existsSync(lessonFile)) {
 				let lessonContent = fs.readFileSync(lessonFile, "utf-8");
-				lessonContent = lessonContent.replace(/(lesson\([^,]+,[^,]+, ctx => \{)/, `$1\n\tctx.quiz("quizes/${name}.json");`);
+				lessonContent = lessonContent.replace(/(\t\/\/\s*Add markdown, quizes, sims here)/, `\tctx.quiz("quizes/${name}.json");\n$1`);
+				
+				// Fallback if comment was removed
+				if (!lessonContent.includes(`ctx.quiz("quizes/${name}.json")`)) {
+					lessonContent = lessonContent.replace(/(lesson\([^,]+,[^,]+, ctx => \{)/, `$1\n\tctx.quiz("quizes/${name}.json");`);
+				}
 				fs.writeFileSync(lessonFile, lessonContent, "utf-8");
 				console.log(`Auto-added quiz to lesson.ts`);
 			}
