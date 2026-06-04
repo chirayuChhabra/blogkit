@@ -145,6 +145,8 @@ function renderBlockInner(
 			const propsJson = escapeScriptJson(block.props ?? {});
 			const simSrc = resolveContent(block.src, options, "js");
 			const simConfig = { js: simSrc, loop: false, dependencies: block.dependencies };
+			const id = `sim-${idx}`;
+			const label = block.label || "Interactive Simulation";
 			return {
 				html: blockChrome(
 					block.controls === "observe" ? "Simulation" : "Interactive Lab",
@@ -162,7 +164,10 @@ function renderBlockInner(
           </div>
           <script type="application/json" class="bk-sim-config">${escapeScriptJson(simConfig)}</script>`,
 					block.accent ?? "blue",
+					true,
+					id
 				),
+				navItems: [{ id, label, kind: "simulation" }],
 			};
 		}
 
@@ -173,7 +178,7 @@ function renderBlockInner(
 					"Animation",
 					block.label,
 					block.caption,
-					`<div class="bk-embed-frame bk-embed-interactive">
+					`<div class="bk-embed-frame bk-embed-interactive" data-is-animation="true">
             <div class="bk-embed-overlay" tabindex="0" role="button" aria-label="Activate interactive animation">
               <span class="bk-embed-overlay-text">Click to interact</span>
             </div>
@@ -415,19 +420,56 @@ window.bkSetup = function(requestedW, requestedH, loopFn) {
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
   
+  let loopId = null;
+  let cachedFit = window.bkFitCanvas(canvas, requestedW, requestedH);
+
   function loop() {
-    const fit = window.bkFitCanvas(canvas, requestedW, requestedH);
     if (window.innerWidth >= 32 && window.innerHeight >= 32) {
       ctx.save();
-      ctx.scale(fit.scale, fit.scale);
+      ctx.scale(cachedFit.scale, cachedFit.scale);
       
-      loopFn(ctx, fit.width, fit.height);
+      loopFn(ctx, cachedFit.width, cachedFit.height);
       
       ctx.restore();
     }
-    requestAnimationFrame(loop);
+    if (window.__loop) {
+      loopId = requestAnimationFrame(loop);
+    } else {
+      loopId = null;
+    }
   }
-  loop();
+  
+  function initDraw() {
+    if (window.innerWidth >= 32 && window.innerHeight >= 32) {
+      cachedFit = window.bkFitCanvas(canvas, requestedW, requestedH);
+      loop();
+    } else {
+      requestAnimationFrame(initDraw);
+    }
+  }
+  initDraw();
+  
+  window.addEventListener("resize", () => {
+    cachedFit = window.bkFitCanvas(canvas, requestedW, requestedH);
+    if (!window.__loop && window.innerWidth >= 32 && window.innerHeight >= 32) {
+      if (!loopId) {
+        ctx.save();
+        ctx.scale(cachedFit.scale, cachedFit.scale);
+        loopFn(ctx, cachedFit.width, cachedFit.height);
+        ctx.restore();
+      }
+    }
+  });
+  
+  window.addEventListener("message", (event) => {
+    if (!event.data) return;
+    if (event.data.type === "bk:play") {
+      window.__loop = true;
+      if (!loopId) loopId = requestAnimationFrame(loop);
+    } else if (event.data.type === "bk:pause") {
+      window.__loop = false; // will stop at next frame
+    }
+  });
 };
 
 window.addEventListener("message", (event) => {
@@ -444,9 +486,9 @@ try {
 if (!window.bkSetupCalled) {
   function fallbackScale() {
     window.bkFitCanvas(document.getElementById("c"), 800, 500, { bitmap: false });
-    requestAnimationFrame(fallbackScale);
   }
   fallbackScale();
+  window.addEventListener("resize", fallbackScale);
 }
 </script>
 </body></html>`;
