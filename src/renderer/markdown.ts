@@ -119,8 +119,9 @@ function blockChrome(
 	body: string,
 	accent = "neutral",
 	allowMaximize = true,
+	id?: string,
 ): string {
-	return `<figure class="bk-object bk-object--${escAttr(accent)}">
+	return `<figure ${id ? `id="${escAttr(id)}" ` : ""}class="bk-object bk-object--${escAttr(accent)}">
     <div class="bk-object-header">
       <span class="bk-object-kicker">${escHtml(kind)}</span>
       ${label ? `<span class="bk-object-title">${escHtml(label)}</span>` : ""}

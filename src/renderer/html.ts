@@ -16,7 +16,9 @@ function renderNavItem(item: NavItem): string {
 			? "bk-nav-heading"
 			: item.kind === "quiz"
 				? "bk-nav-quiz"
-				: "bk-nav-sub";
+				: item.kind === "simulation"
+					? "bk-nav-sim"
+					: "bk-nav-sub";
 	return `<a href="#${item.id}" class="bk-nav-item ${kindClass}" data-id="${item.id}">${escHtml(item.label)}</a>`;
 }
 
@@ -47,7 +49,7 @@ function renderPage(
 	opts: BuildOptions,
 ): string {
 	const theme = opts.theme ?? "auto";
-	const schemeAttr = theme === "auto" ? "" : `data-theme="${theme}"`;
+	const schemeAttr = `data-theme="${theme}"`;
 	const preset = opts.preset ?? {};
 	const layout = preset.layout ?? "lesson";
 	const density = preset.density ?? "comfortable";

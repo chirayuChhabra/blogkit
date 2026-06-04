@@ -5,7 +5,7 @@ import type { BuildOptions } from "../types.js";
 export interface NavItem {
 	id: string;
 	label: string;
-	kind: "heading" | "section" | "quiz";
+	kind: "heading" | "section" | "quiz" | "simulation";
 }
 
 // ─── Smart Content Resolution ────────────────────────────────────────────────

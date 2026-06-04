@@ -27,7 +27,7 @@ export function renderChapter(
 	opts: BuildOptions = {},
 ): string {
 	const theme = opts.theme ?? "auto";
-	const schemeAttr = theme === "auto" ? "" : `data-theme="${theme}"`;
+	const schemeAttr = `data-theme="${theme}"`;
 	const preset = opts.preset ?? {};
 	const layout = preset.layout ?? "lesson";
 	const density = preset.density ?? "comfortable";
@@ -279,15 +279,25 @@ export function renderChapter(
 }
 
 @media (prefers-color-scheme: dark) {
-  .bk-timeline-content {
+  :root[data-theme="auto"] .bk-timeline-content {
     background: var(--panel);
   }
-  .bk-status-unread .bk-timeline-content {
+  :root[data-theme="auto"] .bk-status-unread .bk-timeline-content {
     background: transparent;
   }
-  .bk-status-unread:hover .bk-timeline-content {
+  :root[data-theme="auto"] .bk-status-unread:hover .bk-timeline-content {
     background: var(--panel);
   }
+}
+
+:root[data-theme="dark"] .bk-timeline-content {
+  background: var(--panel);
+}
+:root[data-theme="dark"] .bk-status-unread .bk-timeline-content {
+  background: transparent;
+}
+:root[data-theme="dark"] .bk-status-unread:hover .bk-timeline-content {
+  background: var(--panel);
 }
 
 @media (max-width: 600px) {
