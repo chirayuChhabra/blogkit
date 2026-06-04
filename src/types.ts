@@ -196,8 +196,8 @@ export interface BuildOptions {
 	outDir?: string;
 	/** Base path for resolving local files like `.md`, `.js`, `.json`. Default: `'.'` */
 	contentBase?: string;
-	/** Light or dark mode. `auto` respects user system preferences. Default: `'auto'` */
-	theme?: "light" | "dark" | "auto";
+	/** Light or dark mode. Default: `'light'` */
+	theme?: "light" | "dark";
 	/** Visual color palette of the generated page. Default: `'ink'` */
 	palette?: "ink" | "field" | "ember";
 	/** Custom CSS font-family string (e.g. `'Inter, sans-serif'`). */

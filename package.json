@@ -24,6 +24,8 @@
     "prepublishOnly": "bun run build",
     "build:example": "bun demo/chapters/01-chp/chapter.ts",
     "serve:example": "bunx serve demo/chapters/01-chp/out",
+    "build:docs": "bun docs-site/build.ts",
+    "serve:docs": "bunx serve docs-site/out",
     "typecheck": "bunx tsc --noEmit",
     "test": "bun test && bun run typecheck",
     "test:watch": "bun test --watch",

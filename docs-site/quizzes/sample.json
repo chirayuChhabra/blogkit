@@ -1,0 +1,26 @@
+{
+  "questions": [
+    {
+      "q": "What does the `.lab()` method do in Mr Markdown?",
+      "options": [
+        "Renders a standard markdown code block",
+        "Mounts an interactive sandboxed JavaScript simulation",
+        "Plays an audio file",
+        "Displays a YouTube video"
+      ],
+      "answer": 1,
+      "explanation": "The `.lab()` method is specifically designed to mount sandboxed JS simulations for interactive learning labs."
+    },
+    {
+      "q": "How do you add a red callout box for critical information?",
+      "options": [
+        "`.note('text')`",
+        "`.warning('text')`",
+        "`.important('text')`",
+        "`.tip('text')`"
+      ],
+      "answer": 2,
+      "explanation": "The `.important()` method creates a red/accented box for critical information."
+    }
+  ]
+}

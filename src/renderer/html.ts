@@ -48,7 +48,7 @@ function renderPage(
 	bodyHtml: string,
 	opts: BuildOptions,
 ): string {
-	const theme = opts.theme ?? "auto";
+	const theme = opts.theme ?? "light";
 	const schemeAttr = `data-theme="${theme}"`;
 	const preset = opts.preset ?? {};
 	const layout = preset.layout ?? "lesson";
@@ -98,9 +98,6 @@ ${pageCSS()}
                </button>
                <button type="button" class="bk-segment-btn ${theme === "dark" ? "active" : ""}" data-theme="dark" title="Dark" aria-label="Dark theme">
                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-               </button>
-               <button type="button" class="bk-segment-btn ${theme === "auto" ? "active" : ""}" data-theme="auto" title="System" aria-label="System theme">
-                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
                </button>
             </div>
           </div>

@@ -70,28 +70,7 @@ html[data-palette="ember"] {
 	--accent-soft: #f2dfdd;
 }
 
-@media (prefers-color-scheme: dark) {
-	:root[data-theme="auto"] {
-		color-scheme: dark;
-		--bg: #11100f;
-		--paper: #191817;
-		--panel: #22201d;
-		--panel-strong: #2b2824;
-		--ink: #f4efe7;
-		--muted: #b8aa99;
-		--faint: #887b6d;
-		--line: #36312c;
-		--line-strong: #5b5046;
-		--code-bg: #0b0d10;
-		--text-code: #f1f1f1;
-		--accent-soft: #1a2a36;
-		--correct-bg: #173329;
-		--correct-line: #61b58d;
-		--wrong-bg: #351f20;
-		--wrong-line: #d56c60;
-		--shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
-	}
-}
+
 
 :root[data-theme="dark"] {
 	color-scheme: dark;
@@ -826,11 +805,7 @@ hr.bk-divider {
 	background: rgba(0, 0, 0, 0.05);
 	color: var(--ink);
 }
-@media (prefers-color-scheme: dark) {
-	:root[data-theme="auto"] .bk-object-maximize:hover {
-		background: rgba(255, 255, 255, 0.1);
-	}
-}
+
 :root[data-theme="dark"] .bk-object-maximize:hover {
 	background: rgba(255, 255, 255, 0.1);
 }
