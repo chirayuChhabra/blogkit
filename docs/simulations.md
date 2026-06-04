@@ -25,7 +25,9 @@ To make a simulation reusable, you must expose its defaults and interactive cont
 By providing this file, the lesson author can embed your simulation with zero configuration. Mr Markdown automatically resolves and parses the `.config.json` file during the build process, seamlessly turning your `tunables` into interactive UI sliders and toggles above the simulation!
 
 ```ts
-.lab("gravity.js", { label: "Orbit lab" })
+export const orbitLesson = lesson("Orbiting Planets", { contentBase: import.meta.dir }, ctx => {
+  ctx.lab("gravity.js", { label: "Orbit lab" });
+});
 ```
 
 > [!WARNING]
@@ -34,8 +36,9 @@ By providing this file, the lesson author can embed your simulation with zero co
 > 
 > In your `lesson.ts`, always explicitly specify `import.meta.dir`:
 > ```ts
-> export default lesson("Orbiting Planets", { contentBase: import.meta.dir })
->   .lab("gravity.js", { label: "Orbit lab" });
+> export const orbitLesson = lesson("Orbiting Planets", { contentBase: import.meta.dir }, ctx => {
+>   ctx.lab("gravity.js", { label: "Orbit lab" });
+> });
 > ```
 
 ---

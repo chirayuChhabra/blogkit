@@ -19,9 +19,11 @@ If any of these conditions are met, the build will throw an error and abort, pre
 While prototyping or writing rough drafts, you may wish to disable these checks to iterate quickly. You can do this by setting `strict: false` in the `lesson()` options:
 
 ```ts
-lesson("Draft Lesson", { 
+export const draftLesson = lesson("Draft Lesson", { 
   strict: false 
-})
+}, ctx => {
+  // Draft content...
+});
 ```
 
 *Warning: Never disable strict mode in production pipelines!*

@@ -7,12 +7,15 @@ Generated pages include a built-in theme and palette selector. Readers can custo
 In your `lesson()` options, you can define the default starting appearance:
 
 ```ts
-export default lesson("My Lesson", {
+export const myLesson = lesson("My Lesson", {
+  contentBase: import.meta.dir,
   theme: "auto",
   palette: "ink",
   preset: { layout: "lab", tone: "scholarly" },
   font: "Inter, sans-serif"
-})
+}, ctx => {
+  // Add content here
+});
 ```
 
 ### Supported Options:

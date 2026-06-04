@@ -1,26 +1,27 @@
 # Core Blocks
 
-Mr Markdown provides a fluent API where you chain method calls on the `lesson()` builder to add blocks of content sequentially.
+Mr Markdown provides a fluent callback API where you use the `ctx` object inside the `lesson()` builder to add blocks of content sequentially.
 
-## The Smart `.add()` Router
+## The Smart `ctx.add()` Router
 
-For most use cases, you don't need to memorize specific method names. The universal `.add(src)` method automatically infers the correct block type based on the file extension or URL provided.
+For most use cases, you don't need to memorize specific method names. The universal `ctx.add(src)` method automatically infers the correct block type based on the file extension or URL provided.
 
-* **`.add("file.md")`** → Parses as standard Markdown.
-* **`.add("sim.js")`** → Mounts an Interactive Lab.
-* **`.add("questions.json")`** → Renders an Interactive Quiz.
-* **`.add("video.mp4")`** → Embeds a local video.
-* **`.add("image.png")`** → Embeds an image.
-* **`.add("https://youtu.be/...")`** → Embeds a YouTube video.
+* **`ctx.add("file.md")`** → Parses as standard Markdown.
+* **`ctx.add("sim.js")`** → Mounts an Interactive Lab.
+* **`ctx.add("questions.json")`** → Renders an Interactive Quiz.
+* **`ctx.add("video.mp4")`** → Embeds a local video.
+* **`ctx.add("image.png")`** → Embeds an image.
+* **`ctx.add("https://youtu.be/...")`** → Embeds a YouTube video.
 
 ```ts
-lesson("My Lesson")
-  .add("intro.md")
-  .add("sim.js", { label: "Electric field explorer" })
-  .add("questions.json")
+export const myLesson = lesson("My Lesson", { contentBase: import.meta.dir }, ctx => {
+  ctx.add("intro.md");
+  ctx.add("sim.js", { label: "Electric field explorer" });
+  ctx.add("questions.json");
+});
 ```
 
-If you need specific layout semantics (like a new major heading, callouts, or columns), you can use the targeted layout blocks below.
+If you need specific layout semantics (like a new major heading, callouts, or columns), you can use the targeted layout blocks below on the `ctx` object (e.g. `ctx.heading()`).
 
 ## Text & Markdown
 

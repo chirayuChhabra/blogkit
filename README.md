@@ -13,12 +13,17 @@ The documentation has been split into dedicated guides. Start with the Quick Sta
 5. [Quizzes](./docs/quizzes.md) - Learn the JSON format for injecting interactive quizzes.
 6. [Production Checks](./docs/production-checks.md) - Understand Mr Markdown's strict mode and quality enforcement.
 
-## Example
+## Quick Start (CLI)
 
-To see a full example in action, compile the included `charge.lesson.ts`:
+The easiest way to use Mr Markdown is via the CLI which provides a smart scaffold and dev server.
 
 ```bash
-npx ts-node example/charge.lesson.ts
-# or 
-bun example/charge.lesson.ts
+mkdir my-course && cd my-course
+bunx mr-md init
+bunx mr-md g ch physics
+cd chapters/01-physics
+bunx mr-md g lesson intro
+
+# Start the dev server
+bunx mr-md dev .
 ```
