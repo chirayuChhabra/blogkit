@@ -84,7 +84,6 @@ if (import.meta.main) {
 			const content = `import { lesson } from "mr-md";
 
 export const ${varName}Lesson = lesson("${lessonTitle}", { contentBase: import.meta.dir }, ctx => {
-	// Add markdown, quizes, sims here
 });
 `;
 			fs.writeFileSync(path.join(lessonPath, "lesson.ts"), content, "utf-8");
@@ -93,21 +92,33 @@ export const ${varName}Lesson = lesson("${lessonTitle}", { contentBase: import.m
 			// Auto import into chapter.ts
 			const chapterFile = path.join(cwd, "chapter.ts");
 			if (fs.existsSync(chapterFile)) {
-				let chapterContent = fs.readFileSync(chapterFile, "utf-8");
+				const { Project, SyntaxKind } = await import("ts-morph");
+				const project = new Project();
+				const sourceFile = project.addSourceFileAtPath(chapterFile);
 				
-				// Very basic auto-import regex for demonstration
-				chapterContent = `import { ${varName}Lesson } from "./lessons/${lessonDirName}/lesson.js";\n` + chapterContent;
+				// 1. Add the import
+				sourceFile.addImportDeclaration({
+					namedImports: [`${varName}Lesson`],
+					moduleSpecifier: `./lessons/${lessonDirName}/lesson.js`
+				});
+
+				// 2. Find the chapter(...) call and inject ctx.lesson()
+				const calls = sourceFile.getDescendantsOfKind(SyntaxKind.CallExpression);
+				const chapterCall = calls.find((c: any) => c.getExpression().getText() === "chapter");
 				
-				// Inject into builder chronologically (before the comment)
-				chapterContent = chapterContent.replace(/(\t\/\/\s*Add lessons here)/, `\tctx.lesson(${varName}Lesson);\n$1`);
-				
-				// Fallback if comment was removed
-				if (!chapterContent.includes(`ctx.lesson(${varName}Lesson)`)) {
-					chapterContent = chapterContent.replace(/(chapter\([^,]+, ctx => \{)/, `$1\n\tctx.lesson(${varName}Lesson);`);
+				if (chapterCall) {
+					const args = chapterCall.getArguments();
+					const callback = args.find((a: any) => a.getKind() === SyntaxKind.ArrowFunction);
+					if (callback) {
+						const body = callback.asKind(SyntaxKind.ArrowFunction)?.getBody();
+						if (body && body.getKind() === SyntaxKind.Block) {
+							body.asKind(SyntaxKind.Block)?.addStatements(`ctx.lesson(${varName}Lesson);`);
+						}
+					}
 				}
 				
-				fs.writeFileSync(chapterFile, chapterContent, "utf-8");
-				console.log(`Auto-imported ${name}Lesson into chapter.ts`);
+				sourceFile.saveSync();
+				console.log(`Auto-imported ${varName}Lesson into chapter.ts`);
 			}
 			break;
 		}
@@ -134,14 +145,25 @@ export const ${varName}Lesson = lesson("${lessonTitle}", { contentBase: import.m
 			// Auto import into lesson.ts
 			const lessonFile = path.join(cwd, "lesson.ts");
 			if (fs.existsSync(lessonFile)) {
-				let lessonContent = fs.readFileSync(lessonFile, "utf-8");
-				lessonContent = lessonContent.replace(/(\t\/\/\s*Add markdown, quizes, sims here)/, `\tctx.quiz("quizes/${name}.json");\n$1`);
+				const { Project, SyntaxKind } = await import("ts-morph");
+				const project = new Project();
+				const sourceFile = project.addSourceFileAtPath(lessonFile);
 				
-				// Fallback if comment was removed
-				if (!lessonContent.includes(`ctx.quiz("quizes/${name}.json")`)) {
-					lessonContent = lessonContent.replace(/(lesson\([^,]+,[^,]+, ctx => \{)/, `$1\n\tctx.quiz("quizes/${name}.json");`);
+				const calls = sourceFile.getDescendantsOfKind(SyntaxKind.CallExpression);
+				const lessonCall = calls.find((c: any) => c.getExpression().getText() === "lesson");
+				
+				if (lessonCall) {
+					const args = lessonCall.getArguments();
+					const callback = args.find((a: any) => a.getKind() === SyntaxKind.ArrowFunction);
+					if (callback) {
+						const body = callback.asKind(SyntaxKind.ArrowFunction)?.getBody();
+						if (body && body.getKind() === SyntaxKind.Block) {
+							body.asKind(SyntaxKind.Block)?.addStatements(`ctx.quiz("quizes/${name}.json");`);
+						}
+					}
 				}
-				fs.writeFileSync(lessonFile, lessonContent, "utf-8");
+				
+				sourceFile.saveSync();
 				console.log(`Auto-added quiz to lesson.ts`);
 			}
 			
