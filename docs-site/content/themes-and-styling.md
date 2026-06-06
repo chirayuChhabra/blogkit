@@ -31,7 +31,7 @@ If you are writing custom CSS, you can hook into the current theme seamlessly. M
 ```css
 /* Fallback to dark mode ONLY if the user hasn't forced light mode */
 @media (prefers-color-scheme: dark) {
-  :root[data-theme="auto"] body {
+  :root:not([data-theme="light"]) body {
     background: #0a0a0a;
     color: white;
   }
