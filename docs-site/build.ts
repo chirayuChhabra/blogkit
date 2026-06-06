@@ -42,12 +42,17 @@ const production = lesson("Production Checks", ctx => {
   ctx.markdown("content/production-checks.md");
 });
 
+const cli = lesson("CLI", ctx => {
+  ctx.markdown("content/cli.md");
+});
+
 export const docsChapter = chapter("Mr Markdown Documentation", { outDir: "./out", contentBase: import.meta.dir }, ctx => {
   ctx.lesson(quickstart);
   ctx.lesson(coreBlocks);
   ctx.lesson(simulations);
   ctx.lesson(quizzes);
   ctx.lesson(themes);
+  ctx.lesson(cli);
   ctx.lesson(production);
 });
 
