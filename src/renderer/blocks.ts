@@ -439,7 +439,8 @@ try {
   ${js}
 } catch (e) {
   console.error("Simulation Error:", e);
-  document.body.innerHTML = '<div style="padding:20px;color:red;font-family:monospace">Error: ' + e.message + '</div>';
+  document.body.innerHTML = '<div id="bk-err" style="padding:20px;color:red;font-family:monospace"></div>';
+  document.getElementById('bk-err').textContent = 'Error: ' + e.message;
 }
 if (!window.bkSetupCalled) {
   function fallbackScale() {
