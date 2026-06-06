@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { render, renderChapter } from "./renderer/index.js";
+import { copyCoreAssets } from "./renderer/html.js";
 import type {
 	AnimationBlock,
 	AnimationOptions,
@@ -91,7 +92,7 @@ export class LessonBuilder {
 			contentBase: options.contentBase ?? callerDir ?? ".",
 			theme: options.theme ?? "light",
 			palette: options.palette ?? "ink",
-			strict: options.strict ?? true,
+			strict: options.strict ?? process.env.NODE_ENV !== "development",
 			preset: {
 				layout: "lesson",
 				density: "comfortable",
@@ -252,7 +253,7 @@ export class LessonBuilder {
 	}
 
 	/**
-	 * Creates a major chapter heading (H2) and a top-level sidebar navigation entry.
+	 * Creates a major chapter heading (H1) and a top-level sidebar navigation entry.
 	 * @param src Path to a markdown file or raw markdown string.
 	 * @param title Optional title override for the sidebar and heading.
 	 * @example lesson.heading("# Welcome to Physics")
@@ -281,10 +282,10 @@ export class LessonBuilder {
 	}
 
 	/**
-	 * Creates a new subsection heading (H3) and a sub-entry in the sidebar.
+	 * Creates a new subsection heading (H2) and a sub-entry in the sidebar.
 	 * @param src Path to a markdown file or raw markdown string.
 	 * @param label Optional title override for the sidebar label.
-	 * @example lesson.section("### 1. Kinematics")
+	 * @example lesson.section("## 1. Kinematics")
 	 */
 	section(src: string, label?: string): this {
 		this.blocks.push({ type: "section", src, label } as SectionBlock);
@@ -496,6 +497,8 @@ export class LessonBuilder {
 		const outPath = path.join(outDir, `${this.meta.slug}.html`);
 		fs.writeFileSync(outPath, html, "utf-8");
 
+		copyCoreAssets(outDir);
+
 		const relPath = path.relative(process.cwd(), outPath);
 		console.log(`  ✓ Built lesson (${this.blocks.length} blocks) → ${relPath}`);
 		return outPath;
@@ -665,7 +668,7 @@ export class ChapterBuilder {
 			contentBase: options.contentBase ?? callerDir ?? ".",
 			theme: options.theme ?? "light",
 			palette: options.palette ?? "ink",
-			strict: options.strict ?? true,
+			strict: options.strict ?? process.env.NODE_ENV !== "development",
 			preset: {
 				layout: "lesson",
 				density: "comfortable",
@@ -729,6 +732,8 @@ export class ChapterBuilder {
 
 		const outPath = path.join(outDir, `${this.meta.slug}.html`);
 		fs.writeFileSync(outPath, html, "utf-8");
+
+		copyCoreAssets(outDir);
 
 		const relPath = path.relative(process.cwd(), outPath);
 		console.log(

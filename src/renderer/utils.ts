@@ -1,5 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
+import * as crypto from "crypto";
+import { spawnSync } from "child_process";
 import type { BuildOptions } from "../types.js";
 
 export interface NavItem {
@@ -30,13 +32,31 @@ function resolveContent(
 		src.startsWith("./") ||
 		src.startsWith("../");
 
-	const filePath = path.isAbsolute(src)
+	let filePath = path.isAbsolute(src)
 		? src
 		: path.resolve(options.contentBase ?? ".", src);
+
+	// Graceful fallback: If it starts with "/" but doesn't exist at the root,
+	// the user likely meant it relative to the lesson folder (contentBase).
+	if (src.startsWith("/") && !fs.existsSync(filePath)) {
+		const fallbackPath = path.resolve(options.contentBase ?? ".", src.slice(1));
+		if (fs.existsSync(fallbackPath)) {
+			filePath = fallbackPath;
+		}
+	}
 
 	if (fs.existsSync(filePath)) {
 		const stat = fs.statSync(filePath);
 		if (stat.isFile()) {
+			if (expectedType === "js" && (filePath.endsWith(".js") || filePath.endsWith(".ts") || filePath.endsWith(".jsx") || filePath.endsWith(".tsx"))) {
+				const out = spawnSync("bun", ["build", "--target=browser", filePath]);
+				if (out.status === 0) {
+					return out.stdout.toString("utf-8");
+				} else {
+					console.warn(`\n  ⚠ Bun build failed for ${filePath}:\n${out.stderr.toString("utf-8")}`);
+					// fallback to reading raw
+				}
+			}
 			return fs.readFileSync(filePath, "utf-8");
 		}
 	}
@@ -54,43 +74,45 @@ function resolveContent(
 function resolveAssetSrc(src: string, options: BuildOptions): string {
 	if (/^(https?:|data:)/.test(src)) return src;
 
-	const isWebAbsolute = src.startsWith("/") && !fs.existsSync(src);
-	if (isWebAbsolute) return src;
+	let isWebAbsolute = src.startsWith("/") && !fs.existsSync(src);
 
-	const filePath = path.isAbsolute(src) 
+	let filePath = path.isAbsolute(src) 
 		? src 
 		: path.resolve(options.contentBase ?? ".", src);
+
+	if (src.startsWith("/") && !fs.existsSync(filePath)) {
+		const fallbackPath = path.resolve(options.contentBase ?? ".", src.slice(1));
+		if (fs.existsSync(fallbackPath)) {
+			filePath = fallbackPath;
+			isWebAbsolute = false; // We found it locally, so don't treat it as a web URL
+		}
+	}
+
+	if (isWebAbsolute) return src;
 	if (!fs.existsSync(filePath)) {
 		if (options.strict !== false)
 			throw new Error(`Missing media asset: ${filePath}`);
 		return src;
 	}
 
-	const ext = path.extname(filePath).toLowerCase();
-	const mime =
-		ext === ".svg"
-			? "image/svg+xml"
-			: ext === ".png"
-				? "image/png"
-				: ext === ".jpg" || ext === ".jpeg"
-					? "image/jpeg"
-					: ext === ".webp"
-						? "image/webp"
-						: ext === ".gif"
-							? "image/gif"
-							: ext === ".avif"
-								? "image/avif"
-								: ext === ".mp4"
-									? "video/mp4"
-									: ext === ".webm"
-										? "video/webm"
-										: ext === ".mp3"
-											? "audio/mpeg"
-											: ext === ".wav"
-												? "audio/wav"
-												: "application/octet-stream";
+	// Copy asset to outDir/assets instead of base64 encoding
+	const outDir = options.outDir ?? "./out";
+	const assetsDir = path.join(outDir, "assets");
+	if (!fs.existsSync(assetsDir)) {
+		fs.mkdirSync(assetsDir, { recursive: true });
+	}
 
-	return `data:${mime};base64,${fs.readFileSync(filePath).toString("base64")}`;
+	// Create a safe filename with hash to avoid collisions
+	const hash = crypto.createHash("md5").update(filePath).digest("hex").substring(0, 8);
+	const ext = path.extname(filePath);
+	const filename = `${path.basename(filePath, ext)}-${hash}${ext}`;
+	const outPath = path.join(assetsDir, filename);
+
+	if (!fs.existsSync(outPath)) {
+		fs.copyFileSync(filePath, outPath);
+	}
+
+	return `assets/${filename}`;
 }
 
 export { resolveAssetSrc, resolveContent };

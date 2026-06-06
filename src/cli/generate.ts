@@ -28,7 +28,7 @@ export async function runGenerate(args: string[]) {
 	const rawName = args[1];
 	
 	if (!type || !rawName) {
-		console.error("Usage: mr-md g <ch|lesson|quiz|sim> <name>");
+		console.error("Usage: md g <ch|lesson|quiz|sim> <name>");
 		process.exit(1);
 	}
 	
@@ -76,7 +76,9 @@ if (import.meta.main) {
 			
 			fs.mkdirSync(lessonPath, { recursive: true });
 			fs.mkdirSync(path.join(lessonPath, "sims"), { recursive: true });
-			fs.mkdirSync(path.join(lessonPath, "quizes"), { recursive: true });
+			fs.mkdirSync(path.join(lessonPath, "media"), { recursive: true });
+			fs.mkdirSync(path.join(lessonPath, "quizzes"), { recursive: true });
+			fs.mkdirSync(path.join(lessonPath, "content"), { recursive: true });
 			
 			const lessonTitle = rawName.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
 			const varName = name.replace(/-([a-z0-9])/g, g => g[1].toUpperCase());
@@ -108,12 +110,18 @@ export const ${varName}Lesson = lesson("${lessonTitle}", { contentBase: import.m
 				
 				if (chapterCall) {
 					const args = chapterCall.getArguments();
-					const callback = args.find((a: any) => a.getKind() === SyntaxKind.ArrowFunction);
+					const callback = args.find((a: any) => a.getKind() === SyntaxKind.ArrowFunction || a.getKind() === SyntaxKind.FunctionExpression);
 					if (callback) {
-						const body = callback.asKind(SyntaxKind.ArrowFunction)?.getBody();
+						const arrow = callback.asKind(SyntaxKind.ArrowFunction);
+						const func = callback.asKind(SyntaxKind.FunctionExpression);
+						const body = arrow ? arrow.getBody() : func ? func.getBody() : null;
 						if (body && body.getKind() === SyntaxKind.Block) {
 							body.asKind(SyntaxKind.Block)?.addStatements(`ctx.lesson(${varName}Lesson);`);
+						} else {
+							console.warn("  ⚠ Could not auto-import: chapter callback must use { } block syntax.");
 						}
+					} else {
+						console.warn("  ⚠ Could not auto-import: could not find chapter callback.");
 					}
 				}
 				
@@ -124,10 +132,10 @@ export const ${varName}Lesson = lesson("${lessonTitle}", { contentBase: import.m
 		}
 		case "quiz": {
 			// Assume we are in a lesson directory
-			const quizesDir = path.join(cwd, "quizes");
-			if (!fs.existsSync(quizesDir)) fs.mkdirSync(quizesDir, { recursive: true });
+			const quizzesDir = path.join(cwd, "quizzes");
+			if (!fs.existsSync(quizzesDir)) fs.mkdirSync(quizzesDir, { recursive: true });
 			
-			const quizPath = path.join(quizesDir, `${name}.json`);
+			const quizPath = path.join(quizzesDir, `${name}.json`);
 			
 			const content = `{
 	"questions": [
@@ -140,7 +148,7 @@ export const ${varName}Lesson = lesson("${lessonTitle}", { contentBase: import.m
 }
 `;
 			fs.writeFileSync(quizPath, content, "utf-8");
-			console.log(`Generated Quiz: quizes/${name}.json`);
+			console.log(`Generated Quiz: quizzes/${name}.json`);
 			
 			// Auto import into lesson.ts
 			const lessonFile = path.join(cwd, "lesson.ts");
@@ -154,12 +162,18 @@ export const ${varName}Lesson = lesson("${lessonTitle}", { contentBase: import.m
 				
 				if (lessonCall) {
 					const args = lessonCall.getArguments();
-					const callback = args.find((a: any) => a.getKind() === SyntaxKind.ArrowFunction);
+					const callback = args.find((a: any) => a.getKind() === SyntaxKind.ArrowFunction || a.getKind() === SyntaxKind.FunctionExpression);
 					if (callback) {
-						const body = callback.asKind(SyntaxKind.ArrowFunction)?.getBody();
+						const arrow = callback.asKind(SyntaxKind.ArrowFunction);
+						const func = callback.asKind(SyntaxKind.FunctionExpression);
+						const body = arrow ? arrow.getBody() : func ? func.getBody() : null;
 						if (body && body.getKind() === SyntaxKind.Block) {
-							body.asKind(SyntaxKind.Block)?.addStatements(`ctx.quiz("quizes/${name}.json");`);
+							body.asKind(SyntaxKind.Block)?.addStatements(`ctx.quiz("quizzes/${name}.json");`);
+						} else {
+							console.warn("  ⚠ Could not auto-import quiz: lesson callback must use { } block syntax.");
 						}
+					} else {
+						console.warn("  ⚠ Could not auto-import quiz: could not find lesson callback.");
 					}
 				}
 				

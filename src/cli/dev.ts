@@ -1,6 +1,5 @@
 import * as fs from "fs";
 import * as path from "path";
-import { watch } from "fs";
 import { exec } from "child_process";
 
 declare const Bun: any;
@@ -11,15 +10,20 @@ export async function runDev(args: string[]) {
 	
 	console.log(`Starting dev server for directory: ${dir}`);
 
+	let server: any;
+
 	const rebuild = () => {
 		console.log("Rebuilding...");
 		const entryPoints = ["chapter.ts", "index.ts", "lesson.ts"];
 		for (const entry of entryPoints) {
 			const entryPath = path.join(dir, entry);
 			if (fs.existsSync(entryPath)) {
-				exec(`bun ${entryPath}`, (err, stdout, stderr) => {
+				exec(`NODE_ENV=development bun ${entryPath}`, (err, stdout, stderr) => {
 					if (err) console.error("Build failed:", stderr);
-					else console.log("Build successful.");
+					else {
+						console.log("Build successful.");
+						server?.publish("livereload", "reload");
+					}
 				});
 				return;
 			}
@@ -43,17 +47,41 @@ export async function runDev(args: string[]) {
 		console.log(`Watching ${dir} for changes...`);
 	}
 
-	Bun.serve({
+	server = Bun.serve({
 		port: 3000,
-		fetch(req: any) {
+		async fetch(req: any, srv: any) {
+			if (srv.upgrade(req)) return;
+
 			const url = new URL(req.url);
 			let filePath = path.join(outDir, url.pathname);
 			
 			if (filePath.endsWith("/")) {
-				filePath += "index.html";
+				const files = fs.existsSync(outDir) ? fs.readdirSync(outDir) : [];
+				const htmlFiles = files.filter(f => f.endsWith(".html"));
+				if (htmlFiles.includes("index.html")) {
+					filePath = path.join(outDir, "index.html");
+				} else {
+					const chapterFile = htmlFiles.find(f => f.includes("chapter"));
+					if (chapterFile) {
+						filePath = path.join(outDir, chapterFile);
+					} else if (htmlFiles.length > 0) {
+						filePath = path.join(outDir, htmlFiles[0]);
+					} else {
+						filePath += "index.html";
+					}
+				}
 			}
 
 			if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+				if (filePath.endsWith(".html")) {
+					const file = Bun.file(filePath);
+					let text = await file.text();
+					text = text.replace("</body>", `<script>
+						const ws = new WebSocket("ws://localhost:3000/");
+						ws.onmessage = (e) => { if (e.data === "reload") location.reload(); };
+					</script></body>`);
+					return new Response(text, { headers: { "Content-Type": "text/html" } });
+				}
 				return new Response(Bun.file(filePath));
 			}
 
@@ -62,16 +90,12 @@ export async function runDev(args: string[]) {
 				return new Response(Bun.file(srcPath));
 			}
 
-			if (url.pathname === "/" || url.pathname.endsWith(".html")) {
-				const files = fs.existsSync(outDir) ? fs.readdirSync(outDir) : [];
-				const htmlFiles = files.filter(f => f.endsWith(".html"));
-				if (htmlFiles.length > 0) {
-					return new Response(Bun.file(path.join(outDir, htmlFiles[0])));
-				}
-			}
-
 			return new Response("Not found", { status: 404 });
 		},
+		websocket: {
+			message() {},
+			open(ws: any) { ws.subscribe("livereload"); }
+		}
 	});
 
 	console.log(`Dev server listening on http://localhost:3000`);

@@ -1,10 +1,10 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
 const args = process.argv.slice(2);
 const command = args[0];
 
 if (!command) {
-	console.error("Usage: mr-md <command> [args]");
+	console.error("Usage: md <command> [args]");
 	console.error("Commands:");
 	console.error("  init       Scaffold a new mr-md project");
 	console.error("  g          Generate resources (ch, lesson, quiz)");

@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 export async function runInit() {
-	console.log("Initializing mr-md project structure...");
+	console.log("Initializing md project structure...");
 
 	const dirs = [
 		"chapters",
@@ -11,7 +11,8 @@ export async function runInit() {
 		"chapters/01-chapter/lessons/01-lesson",
 		"chapters/01-chapter/lessons/01-lesson/sims",
 		"chapters/01-chapter/lessons/01-lesson/media",
-		"chapters/01-chapter/lessons/01-lesson/quizes",
+		"chapters/01-chapter/lessons/01-lesson/quizzes",
+		"chapters/01-chapter/lessons/01-lesson/content",
 	];
 
 	for (const dir of dirs) {
