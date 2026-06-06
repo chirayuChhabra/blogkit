@@ -77,7 +77,7 @@ function renderBlockInner(
 			const navItems: NavItem[] = headings.map(h => ({
 				id: h.id,
 				label: h.text,
-				kind: h.level === 2 ? "heading" : "section"
+				kind: h.level === 1 ? "heading" : "section"
 			}));
 			return { html: `<div class="bk-markdown">${html}</div>`, navItems: navItems.length > 0 ? navItems : undefined };
 		}

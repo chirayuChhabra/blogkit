@@ -48,7 +48,7 @@ function renderPage(
 	bodyHtml: string,
 	opts: BuildOptions,
 ): string {
-	const theme = opts.theme ?? "light";
+	const theme = opts.theme ?? "auto";
 	const schemeAttr = `data-theme="${theme}"`;
 	const preset = opts.preset ?? {};
 	const layout = preset.layout ?? "lesson";
@@ -68,9 +68,9 @@ ${lesson.meta.description ? `<meta name="description" content="${escHtml(lesson.
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.47/dist/katex.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css">
 ${opts.head ?? ""}
+<link rel="stylesheet" href="assets/theme.css">
 <style>
 ${opts.font ? `:root { --font-sans: ${opts.font}, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }` : ""}
-${pageCSS()}
 </style>
 </head>
 <body class="bk-layout-${layout} bk-density-${density} bk-tone-${tone}">
@@ -95,6 +95,9 @@ ${pageCSS()}
             <div class="bk-segmented-control" id="bk-theme-icons">
                <button type="button" class="bk-segment-btn ${theme === "light" ? "active" : ""}" data-theme="light" title="Light" aria-label="Light theme">
                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+               </button>
+               <button type="button" class="bk-segment-btn ${theme === "auto" ? "active" : (!theme ? "active" : "")}" data-theme="auto" title="System" aria-label="System theme">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
                </button>
                <button type="button" class="bk-segment-btn ${theme === "dark" ? "active" : ""}" data-theme="dark" title="Dark" aria-label="Dark theme">
                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
@@ -137,26 +140,26 @@ ${pageCSS()}
     </article>
   </main>
 </div>
-<script>
-${clientScript()}
-</script>
+<script src="assets/app.js"></script>
 </body>
 </html>`;
 }
 
-// ─── CSS ──────────────────────────────────────────────────────────────────────
+// ─── Core Assets ────────────────────────────────────────────────────────────────
 
-function pageCSS(): string {
-	return fs.readFileSync(
-		path.join(__dirname, "../styles/theme.css"),
-		"utf-8",
-	);
+function copyCoreAssets(outDir: string): void {
+	const assetsDir = path.join(outDir, "assets");
+	if (!fs.existsSync(assetsDir)) fs.mkdirSync(assetsDir, { recursive: true });
+
+	const cssPath = path.join(__dirname, "../styles/theme.css");
+	if (fs.existsSync(cssPath)) {
+		fs.copyFileSync(cssPath, path.join(assetsDir, "theme.css"));
+	}
+
+	const jsPath = path.join(__dirname, "../client/app.js");
+	if (fs.existsSync(jsPath)) {
+		fs.copyFileSync(jsPath, path.join(assetsDir, "app.js"));
+	}
 }
 
-// ─── Client-side script ───────────────────────────────────────────────────────
-
-function clientScript(): string {
-	return fs.readFileSync(path.join(__dirname, "../client/app.js"), "utf-8");
-}
-
-export { clientScript, pageCSS, renderNavItem, renderPage };
+export { copyCoreAssets, renderNavItem, renderPage };
