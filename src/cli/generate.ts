@@ -28,7 +28,7 @@ export async function runGenerate(args: string[]) {
 	const rawName = args[1];
 	
 	if (!type || !rawName) {
-		console.error("Usage: md g <ch|lesson|quiz|sim> <name>");
+		console.error("Usage: md g <ch|l|q|chapter|lesson|quiz> <name>");
 		process.exit(1);
 	}
 	
@@ -65,6 +65,7 @@ if (import.meta.main) {
 			console.log(`Generated Chapter: chapters/${chapterDirName}`);
 			break;
 		}
+		case "l":
 		case "lesson": {
 			// Assume we are in a chapter directory
 			const lessonsDir = path.join(cwd, "lessons");
@@ -130,6 +131,7 @@ export const ${varName}Lesson = lesson("${lessonTitle}", { contentBase: import.m
 			}
 			break;
 		}
+		case "q":
 		case "quiz": {
 			// Assume we are in a lesson directory
 			const quizzesDir = path.join(cwd, "quizzes");

@@ -35,6 +35,7 @@ When inside a chapter folder (or at the root, if appropriately structured), you 
 ```bash
 bunx mr-md g lesson introduction
 ```
+*(You can also use `bunx mr-md g l introduction`)*
 
 This creates a new lesson directory (e.g., `lessons/01-introduction`) complete with a `lesson.ts` and standard subfolders (`content`, `sims`, `media`, `quizzes`). The generator also automatically attempts to import and link the new lesson to the parent `chapter.ts`.
 
@@ -43,6 +44,7 @@ This creates a new lesson directory (e.g., `lessons/01-introduction`) complete w
 ```bash
 bunx mr-md g quiz knowledge-check
 ```
+*(You can also use `bunx mr-md g q knowledge-check`)*
 
 This creates a new `quizzes/knowledge-check.json` filled with a sample multiple-choice question. It will also automatically inject `ctx.quiz("quizzes/knowledge-check.json")` into your current `lesson.ts`!
 
