@@ -1,7 +1,0 @@
-{
-  "props": { "fieldType": "electron", "excitation": 5 },
-  "tunables": {
-    "fieldType": { "label": "Field Type", "options": ["electron", "photon", "quark", "higgs"] },
-    "excitation": { "label": "Excitation Level", "min": 0, "max": 10, "step": 1 }
-  }
-}

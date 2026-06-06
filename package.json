@@ -19,14 +19,9 @@
     "dist",
     "src"
   ],
-  "directories": {
-    "demo": "demo"
-  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && mkdir -p dist/styles dist/client && cp -r src/styles/* dist/styles/ && cp -r src/client/* dist/client/",
     "prepublishOnly": "bun run build",
-    "build:example": "bun demo/chapters/01-chp/chapter.ts",
-    "serve:example": "bunx serve demo/chapters/01-chp/out",
     "build:docs": "bun docs-site/build.ts",
     "serve:docs": "bunx serve docs-site/out",
     "typecheck": "bunx tsc --noEmit",
