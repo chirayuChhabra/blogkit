@@ -147,17 +147,27 @@ ${clientScript()}
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 
+let cachedCSS: string | undefined;
+
 function pageCSS(): string {
-	return fs.readFileSync(
-		path.join(__dirname, "../styles/theme.css"),
-		"utf-8",
-	);
+	if (cachedCSS === undefined) {
+		cachedCSS = fs.readFileSync(
+			path.join(__dirname, "../styles/theme.css"),
+			"utf-8",
+		);
+	}
+	return cachedCSS;
 }
 
 // ─── Client-side script ───────────────────────────────────────────────────────
 
+let cachedScript: string | undefined;
+
 function clientScript(): string {
-	return fs.readFileSync(path.join(__dirname, "../client/app.js"), "utf-8");
+	if (cachedScript === undefined) {
+		cachedScript = fs.readFileSync(path.join(__dirname, "../client/app.js"), "utf-8");
+	}
+	return cachedScript;
 }
 
 export { clientScript, pageCSS, renderNavItem, renderPage };

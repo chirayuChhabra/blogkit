@@ -24,7 +24,7 @@
 		"prepublishOnly": "bun run build",
 		"build:example": "bun demo/demo-1/course.ts",
 		"serve:example": "bunx serve demo/demo-1/out",
-		"typecheck": "bunx tsc --noEmit",
+		"typecheck": "bun x tsc --noEmit",
 		"test": "bun test && bun run typecheck",
 		"test:watch": "bun test --watch",
 		"lint": "biome lint .",
