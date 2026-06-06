@@ -61,7 +61,7 @@ function mdToHtml(md: string): { html: string; title: string; headings: { id: st
 	const renderer = new marked.Renderer();
 	renderer.heading = ({ tokens, depth, text }) => {
 		const id = `bk-heading-${headingIdCounter++}`;
-		if (depth === 2 || depth === 3) {
+		if (depth === 1 || depth === 2) {
 			const plainText = text.replace(/<[^>]+>/g, "");
 			headings.push({ id, text: plainText, level: depth });
 		}
