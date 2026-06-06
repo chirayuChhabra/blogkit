@@ -51,6 +51,8 @@ function resolveContent(
 	return src;
 }
 
+const assetCache = new Map<string, string>();
+
 function resolveAssetSrc(src: string, options: BuildOptions): string {
 	if (/^(https?:|data:)/.test(src)) return src;
 
@@ -60,6 +62,11 @@ function resolveAssetSrc(src: string, options: BuildOptions): string {
 	const filePath = path.isAbsolute(src) 
 		? src 
 		: path.resolve(options.contentBase ?? ".", src);
+
+	if (assetCache.has(filePath)) {
+		return assetCache.get(filePath)!;
+	}
+
 	if (!fs.existsSync(filePath)) {
 		if (options.strict !== false)
 			throw new Error(`Missing media asset: ${filePath}`);
@@ -90,7 +97,10 @@ function resolveAssetSrc(src: string, options: BuildOptions): string {
 												? "audio/wav"
 												: "application/octet-stream";
 
-	return `data:${mime};base64,${fs.readFileSync(filePath).toString("base64")}`;
+	const base64Data = fs.readFileSync(filePath).toString("base64");
+	const result = `data:${mime};base64,${base64Data}`;
+	assetCache.set(filePath, result);
+	return result;
 }
 
 export { resolveAssetSrc, resolveContent };
