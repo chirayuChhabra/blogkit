@@ -155,7 +155,7 @@ function bkWireThemeControls() {
 	const themeBtns = document.querySelectorAll("#bk-theme-icons button");
 	const paletteBtns = document.querySelectorAll("#bk-palette-icons button");
 	let savedTheme = localStorage.getItem("bk-theme");
-	if (savedTheme === "auto") savedTheme = "light";
+	if (!savedTheme) savedTheme = "auto";
 	const savedPalette = localStorage.getItem("bk-palette");
 
 	function updateThemeBtn(val) {

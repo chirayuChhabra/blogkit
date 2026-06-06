@@ -70,8 +70,6 @@ html[data-palette="ember"] {
 	--accent-soft: #f2dfdd;
 }
 
-
-
 :root[data-theme="dark"] {
 	color-scheme: dark;
 	--bg: #11100f;
@@ -91,6 +89,77 @@ html[data-palette="ember"] {
 	--wrong-bg: #351f20;
 	--wrong-line: #d56c60;
 	--shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+}
+
+html[data-palette="field"][data-theme="dark"] {
+	--bg: #121613;
+	--paper: #1a201c;
+	--panel: #232a25;
+	--panel-strong: #2e3831;
+	--ink: #eaf0eb;
+	--muted: #9ab3a0;
+	--line: #37453b;
+	--line-strong: #546b5a;
+	--accent-soft: #193026;
+}
+
+html[data-palette="ember"][data-theme="dark"] {
+	--bg: #171311;
+	--paper: #1e1916;
+	--panel: #261f1c;
+	--panel-strong: #332a25;
+	--ink: #f0e7df;
+	--muted: #b99e8c;
+	--line: #3d322c;
+	--line-strong: #665348;
+	--accent-soft: #361f1d;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		color-scheme: dark;
+		--bg: #11100f;
+		--paper: #191817;
+		--panel: #22201d;
+		--panel-strong: #2b2824;
+		--ink: #f4efe7;
+		--muted: #b8aa99;
+		--faint: #887b6d;
+		--line: #36312c;
+		--line-strong: #5b5046;
+		--code-bg: #0b0d10;
+		--text-code: #f1f1f1;
+		--accent-soft: #1a2a36;
+		--correct-bg: #173329;
+		--correct-line: #61b58d;
+		--wrong-bg: #351f20;
+		--wrong-line: #d56c60;
+		--shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+	}
+
+	html[data-palette="field"]:not([data-theme="light"]) {
+		--bg: #121613;
+		--paper: #1a201c;
+		--panel: #232a25;
+		--panel-strong: #2e3831;
+		--ink: #eaf0eb;
+		--muted: #9ab3a0;
+		--line: #37453b;
+		--line-strong: #546b5a;
+		--accent-soft: #193026;
+	}
+
+	html[data-palette="ember"]:not([data-theme="light"]) {
+		--bg: #171311;
+		--paper: #1e1916;
+		--panel: #261f1c;
+		--panel-strong: #332a25;
+		--ink: #f0e7df;
+		--muted: #b99e8c;
+		--line: #3d322c;
+		--line-strong: #665348;
+		--accent-soft: #361f1d;
+	}
 }
 
 * {
@@ -500,8 +569,7 @@ body {
 }
 
 .bk-markdown h1,
-.bk-section h1,
-.bk-section h2 {
+.bk-section h1 {
 	font-family: var(--font-display);
 	font-size: 34px;
 	font-weight: 700;
@@ -516,14 +584,14 @@ body {
 	margin-top: 16px;
 }
 .bk-markdown h2,
-.bk-section h3 {
+.bk-section h2 {
 	font-size: 23px;
 	font-weight: 650;
 	margin: 32px 0 16px;
 	letter-spacing: 0;
 }
 .bk-markdown h3,
-.bk-section h4 {
+.bk-section h3 {
 	font-size: 18px;
 	font-weight: 600;
 	margin: 24px 0 12px;
