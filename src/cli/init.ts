@@ -23,9 +23,14 @@ export async function runInit() {
 		}
 	}
 
-	const chapterTsPath = path.resolve(process.cwd(), "chapters/01-chapter/chapter.ts");
+	const chapterTsPath = path.resolve(
+		process.cwd(),
+		"chapters/01-chapter/chapter.ts",
+	);
 	if (!fs.existsSync(chapterTsPath)) {
-		fs.writeFileSync(chapterTsPath, `import { chapter } from "mr-md";
+		fs.writeFileSync(
+			chapterTsPath,
+			`import { chapter } from "mr-md";
 import { firstLesson } from "./lessons/01-lesson/lesson.js";
 
 export const firstChapter = chapter("First Chapter", ctx => {
@@ -35,20 +40,31 @@ export const firstChapter = chapter("First Chapter", ctx => {
 if (import.meta.main) {
 	firstChapter.build();
 }
-`, "utf-8");
+`,
+			"utf-8",
+		);
 		console.log("  Created: chapters/01-chapter/chapter.ts");
 	}
 
-	const lessonTsPath = path.resolve(process.cwd(), "chapters/01-chapter/lessons/01-lesson/lesson.ts");
+	const lessonTsPath = path.resolve(
+		process.cwd(),
+		"chapters/01-chapter/lessons/01-lesson/lesson.ts",
+	);
 	if (!fs.existsSync(lessonTsPath)) {
-		fs.writeFileSync(lessonTsPath, `import { lesson } from "mr-md";
+		fs.writeFileSync(
+			lessonTsPath,
+			`import { lesson } from "mr-md";
 
 export const firstLesson = lesson("First Lesson", { contentBase: import.meta.dir }, ctx => {
 	ctx.markdown("Welcome to your first lesson!");
 });
-`, "utf-8");
+`,
+			"utf-8",
+		);
 		console.log("  Created: chapters/01-chapter/lessons/01-lesson/lesson.ts");
 	}
 
-	console.log("Done! You can now run `bun chapters/01-chapter/chapter.ts` to build your project.");
+	console.log(
+		"Done! You can now run `bun chapters/01-chapter/chapter.ts` to build your project.",
+	);
 }

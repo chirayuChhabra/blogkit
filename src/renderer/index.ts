@@ -45,8 +45,8 @@ export function renderChapter(
 <div class="bk-chapter-path-wrapper" style="margin-top: 3rem;">
   <div class="bk-chapter-path">
     ${chapter.lessons
-		.map(
-			(lesson, idx) => `
+			.map(
+				(lesson, idx) => `
       <a href="${escAttr(lesson.meta.slug)}.html" class="bk-lesson-card bk-status-${lesson.meta.status ?? "unread"}">
         <div class="bk-lesson-number">${String(idx + 1).padStart(2, "0")}</div>
         <div class="bk-lesson-content">
@@ -57,29 +57,33 @@ export function renderChapter(
           <span class="bk-lesson-action">${lesson.meta.status === "read" ? "Read again" : "Start Lesson"} <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
         </div>
       </a>
-      ${idx < chapter.lessons.length - 1 ? `
+      ${
+				idx < chapter.lessons.length - 1
+					? `
       <div class="bk-path-connector ${chapter.lessons[idx + 1].meta.status === "read" ? "bk-connector-read" : "bk-connector-unread"}">
         <div class="bk-connector-line"></div>
         <div class="bk-connector-arrow">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
         </div>
-      </div>` : `
+      </div>`
+					: `
       <div class="bk-path-connector ${lesson.meta.status === "read" ? "bk-connector-read" : "bk-connector-unread"}">
         <div class="bk-connector-line"></div>
         <div class="bk-connector-arrow">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
         </div>
       </div>
-      <a href="${(chapter.meta as any).nextSlug ? escAttr((chapter.meta as any).nextSlug) + '.html' : '#'}" class="bk-path-terminal bk-terminal-next">
-        <span class="bk-terminal-text">${(chapter.meta as any).nextTitle ? `Next: ${escHtml((chapter.meta as any).nextTitle)}` : 'Next Chapter'}</span>
+      <a href="${(chapter.meta as { nextSlug?: string }).nextSlug ? `${escAttr((chapter.meta as { nextSlug?: string }).nextSlug || "")}.html` : "#"}" class="bk-path-terminal bk-terminal-next">
+        <span class="bk-terminal-text">${(chapter.meta as { nextTitle?: string }).nextTitle ? `Next: ${escHtml((chapter.meta as { nextTitle?: string }).nextTitle || "")}` : "Next Chapter"}</span>
         <div class="bk-terminal-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </div>
       </a>
-      `}
+      `
+			}
     `,
-		)
-		.join("")}
+			)
+			.join("")}
   </div>
 </div>
 <script>
@@ -436,7 +440,7 @@ ${chapterStyles}
                <button type="button" class="bk-segment-btn ${theme === "light" ? "active" : ""}" data-theme="light" title="Light" aria-label="Light theme">
                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
                </button>
-               <button type="button" class="bk-segment-btn ${theme === "auto" ? "active" : (!theme ? "active" : "")}" data-theme="auto" title="System" aria-label="System theme">
+               <button type="button" class="bk-segment-btn ${theme === "auto" ? "active" : !theme ? "active" : ""}" data-theme="auto" title="System" aria-label="System theme">
                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
                </button>
                <button type="button" class="bk-segment-btn ${theme === "dark" ? "active" : ""}" data-theme="dark" title="Dark" aria-label="Dark theme">

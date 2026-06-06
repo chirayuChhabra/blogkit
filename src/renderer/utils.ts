@@ -1,7 +1,7 @@
+import { spawnSync } from "child_process";
+import * as crypto from "crypto";
 import * as fs from "fs";
 import * as path from "path";
-import * as crypto from "crypto";
-import { spawnSync } from "child_process";
 import type { BuildOptions } from "../types.js";
 
 export interface NavItem {
@@ -21,7 +21,9 @@ function resolveContent(
 
 	if (/^https?:\/\//.test(src)) {
 		if (options.strict !== false) {
-			throw new Error(`Remote URLs are not yet supported for content files: ${src}`);
+			throw new Error(
+				`Remote URLs are not yet supported for content files: ${src}`,
+			);
 		}
 		return src;
 	}
@@ -48,12 +50,20 @@ function resolveContent(
 	if (fs.existsSync(filePath)) {
 		const stat = fs.statSync(filePath);
 		if (stat.isFile()) {
-			if (expectedType === "js" && (filePath.endsWith(".js") || filePath.endsWith(".ts") || filePath.endsWith(".jsx") || filePath.endsWith(".tsx"))) {
+			if (
+				expectedType === "js" &&
+				(filePath.endsWith(".js") ||
+					filePath.endsWith(".ts") ||
+					filePath.endsWith(".jsx") ||
+					filePath.endsWith(".tsx"))
+			) {
 				const out = spawnSync("bun", ["build", "--target=browser", filePath]);
 				if (out.status === 0) {
 					return out.stdout.toString("utf-8");
 				} else {
-					console.warn(`\n  ⚠ Bun build failed for ${filePath}:\n${out.stderr.toString("utf-8")}`);
+					console.warn(
+						`\n  ⚠ Bun build failed for ${filePath}:\n${out.stderr.toString("utf-8")}`,
+					);
 					// fallback to reading raw
 				}
 			}
@@ -76,8 +86,8 @@ function resolveAssetSrc(src: string, options: BuildOptions): string {
 
 	let isWebAbsolute = src.startsWith("/") && !fs.existsSync(src);
 
-	let filePath = path.isAbsolute(src) 
-		? src 
+	let filePath = path.isAbsolute(src)
+		? src
 		: path.resolve(options.contentBase ?? ".", src);
 
 	if (src.startsWith("/") && !fs.existsSync(filePath)) {
@@ -103,7 +113,11 @@ function resolveAssetSrc(src: string, options: BuildOptions): string {
 	}
 
 	// Create a safe filename with hash to avoid collisions
-	const hash = crypto.createHash("md5").update(filePath).digest("hex").substring(0, 8);
+	const hash = crypto
+		.createHash("md5")
+		.update(filePath)
+		.digest("hex")
+		.substring(0, 8);
 	const ext = path.extname(filePath);
 	const filename = `${path.basename(filePath, ext)}-${hash}${ext}`;
 	const outPath = path.join(assetsDir, filename);

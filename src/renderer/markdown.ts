@@ -1,20 +1,26 @@
+import hljs from "highlight.js";
 import katex from "katex";
 import { marked } from "marked";
 import { markedHighlight } from "marked-highlight";
-import hljs from "highlight.js";
 import type { Block } from "../types.js";
 
-marked.use(markedHighlight({
-	langPrefix: 'hljs language-',
-	highlight(code, lang) {
-		const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-		return hljs.highlight(code, { language }).value;
-	}
-}));
+marked.use(
+	markedHighlight({
+		langPrefix: "hljs language-",
+		highlight(code, lang) {
+			const language = hljs.getLanguage(lang) ? lang : "plaintext";
+			return hljs.highlight(code, { language }).value;
+		},
+	}),
+);
 
 // ─── Markdown Rendering (using Marked + KaTeX) ───────────────────────────────
 
-function mdToHtml(md: string): { html: string; title: string; headings: { id: string; text: string; level: number }[] } {
+function mdToHtml(md: string): {
+	html: string;
+	title: string;
+	headings: { id: string; text: string; level: number }[];
+} {
 	let title = "";
 
 	// Extract first H1 or H2 as title
@@ -59,7 +65,7 @@ function mdToHtml(md: string): { html: string; title: string; headings: { id: st
 	let headingIdCounter = 0;
 
 	const renderer = new marked.Renderer();
-	renderer.heading = ({ tokens, depth, text }) => {
+	renderer.heading = ({ depth, text }) => {
 		const id = `bk-heading-${headingIdCounter++}`;
 		if (depth === 1 || depth === 2) {
 			const plainText = text.replace(/<[^>]+>/g, "");
@@ -125,9 +131,13 @@ function blockChrome(
     <div class="bk-object-header">
       <span class="bk-object-kicker">${escHtml(kind)}</span>
       ${label ? `<span class="bk-object-title">${escHtml(label)}</span>` : ""}
-      ${allowMaximize ? `<button type="button" class="bk-object-maximize" aria-label="Maximize" title="Maximize">
+      ${
+				allowMaximize
+					? `<button type="button" class="bk-object-maximize" aria-label="Maximize" title="Maximize">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-      </button>` : ""}
+      </button>`
+					: ""
+			}
     </div>
     ${body}
     ${caption ? `<figcaption class="bk-caption">${mdInline(caption)}</figcaption>` : ""}

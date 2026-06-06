@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
-import { render, renderChapter } from "./renderer/index.js";
 import { copyCoreAssets } from "./renderer/html.js";
+import { render, renderChapter } from "./renderer/index.js";
 import type {
 	AnimationBlock,
 	AnimationOptions,
@@ -41,7 +41,8 @@ function getCallerDir(): string | undefined {
 
 	for (let i = 1; i < stack.length; i++) {
 		const line = stack[i];
-		const match = line.match(/\((.*?):\d+:\d+\)/) || line.match(/at (.*?):\d+:\d+/);
+		const match =
+			line.match(/\((.*?):\d+:\d+\)/) || line.match(/at (.*?):\d+:\d+/);
 		if (match) {
 			let p = match[1];
 			if (p.startsWith("file://")) {
@@ -50,16 +51,16 @@ function getCallerDir(): string | undefined {
 			if (p.startsWith("/") && p[2] === ":") {
 				p = p.substring(1); // Handle Windows paths like /C:/
 			}
-			
+
 			if (!builderFilePath) {
 				builderFilePath = p;
 				continue;
 			}
-			
+
 			if (p === builderFilePath) {
 				continue;
 			}
-			
+
 			return path.dirname(p);
 		}
 	}
@@ -76,7 +77,7 @@ export class LessonBuilder {
 
 	constructor(title: string, options: BuildOptions = {}, callerDir?: string) {
 		this._rawOptions = options;
-		
+
 		let slug = title
 			.toLowerCase()
 			.replace(/[^a-z0-9]+/g, "-")
@@ -88,7 +89,8 @@ export class LessonBuilder {
 			slug,
 		};
 		this.options = {
-			outDir: options.outDir ?? (callerDir ? path.join(callerDir, "out") : "./out"),
+			outDir:
+				options.outDir ?? (callerDir ? path.join(callerDir, "out") : "./out"),
 			contentBase: options.contentBase ?? callerDir ?? ".",
 			theme: options.theme ?? "light",
 			palette: options.palette ?? "ink",
@@ -157,7 +159,9 @@ export class LessonBuilder {
 	_inheritOptions(parentOpts: BuildOptions, parentRawOpts?: BuildOptions) {
 		this.options = {
 			outDir:
-				this._rawOptions.outDir ?? (parentRawOpts?.outDir || parentOpts.outDir) ?? this.options.outDir,
+				this._rawOptions.outDir ??
+				(parentRawOpts?.outDir || parentOpts.outDir) ??
+				this.options.outDir,
 			contentBase:
 				this._rawOptions.contentBase ??
 				parentRawOpts?.contentBase ??
@@ -232,12 +236,12 @@ export class LessonBuilder {
 		if (lower.endsWith(".md") || lower.endsWith(".mdx"))
 			return this.markdown(src);
 		if (lower.endsWith(".json")) return this.quiz(src, opts);
-		
+
 		if (lower.endsWith(".js") || lower.endsWith(".ts")) {
 			throw new Error(
 				`Ambiguous use of .add("${src}"). ` +
-				`Please use .code("${src}") to display the source code, ` +
-				`or .lab("${src}") to mount it as an interactive simulation.`
+					`Please use .code("${src}") to display the source code, ` +
+					`or .lab("${src}") to mount it as an interactive simulation.`,
 			);
 		}
 
@@ -273,7 +277,7 @@ export class LessonBuilder {
 		return this;
 	}
 
-	/** 
+	/**
 	 * Alias for `markdown()`. Keeps authoring readable in long lessons.
 	 * @example lesson.content("content/intro.md")
 	 */
@@ -292,7 +296,7 @@ export class LessonBuilder {
 		return this;
 	}
 
-	/** 
+	/**
 	 * Adds an 'Important' highlighted callout.
 	 * @example lesson.important("Do not touch the exposed wire.")
 	 */
@@ -301,7 +305,7 @@ export class LessonBuilder {
 		return this;
 	}
 
-	/** 
+	/**
 	 * Adds a 'Warning' highlighted callout.
 	 * @example lesson.warning("This is deprecated.")
 	 */
@@ -310,7 +314,7 @@ export class LessonBuilder {
 		return this;
 	}
 
-	/** 
+	/**
 	 * Adds a 'Tip' highlighted callout.
 	 */
 	tip(src: string): this {
@@ -318,7 +322,7 @@ export class LessonBuilder {
 		return this;
 	}
 
-	/** 
+	/**
 	 * Adds a 'Note' highlighted callout.
 	 */
 	note(src: string): this {
@@ -516,7 +520,7 @@ export class LessonBuilder {
 export function lesson(
 	title: string,
 	optionsOrSetup?: BuildOptions | ((ctx: LessonBuilder) => void),
-	setup?: (ctx: LessonBuilder) => void
+	setup?: (ctx: LessonBuilder) => void,
 ): LessonBuilder {
 	let options: BuildOptions = {};
 	let cb: ((ctx: LessonBuilder) => void) | undefined = setup;
@@ -664,7 +668,8 @@ export class ChapterBuilder {
 			slug,
 		};
 		this.options = {
-			outDir: options.outDir ?? (callerDir ? path.join(callerDir, "out") : "./out"),
+			outDir:
+				options.outDir ?? (callerDir ? path.join(callerDir, "out") : "./out"),
 			contentBase: options.contentBase ?? callerDir ?? ".",
 			theme: options.theme ?? "light",
 			palette: options.palette ?? "ink",
@@ -756,7 +761,7 @@ export class ChapterBuilder {
  * Starts building a new chapter that groups multiple lessons together.
  * @param title The display title for the chapter.
  * @param options Shared build configuration that cascades to all child lessons.
- * @example 
+ * @example
  * chapter("Mechanics")
  *   .lesson(kinematicsLesson)
  *   .lesson(dynamicsLesson)
@@ -765,7 +770,7 @@ export class ChapterBuilder {
 export function chapter(
 	title: string,
 	optionsOrSetup?: BuildOptions | ((ctx: ChapterBuilder) => void),
-	setup?: (ctx: ChapterBuilder) => void
+	setup?: (ctx: ChapterBuilder) => void,
 ): ChapterBuilder {
 	let options: BuildOptions = {};
 	let cb: ((ctx: ChapterBuilder) => void) | undefined = setup;

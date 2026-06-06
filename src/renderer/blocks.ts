@@ -1,3 +1,4 @@
+import hljs from "highlight.js";
 import katex from "katex";
 import type { Block, BuildOptions, QuizFile, QuizQuestion } from "../types.js";
 import {
@@ -7,7 +8,6 @@ import {
 	mdToHtml,
 	renderSimulationControls,
 } from "./markdown.js";
-import hljs from "highlight.js";
 import { type NavItem, resolveAssetSrc, resolveContent } from "./utils.js";
 
 // HTML escaping utility needed by blocks
@@ -63,7 +63,12 @@ function renderBlockInner(
 		case "heading": {
 			const md = resolveContent(block.src, options, "md");
 			const { html, title } = mdToHtml(md);
-			const label = block.title || title || (typeof block.src === "string" && !block.src.includes(".md") ? block.src : "Heading");
+			const label =
+				block.title ||
+				title ||
+				(typeof block.src === "string" && !block.src.includes(".md")
+					? block.src
+					: "Heading");
 			const id = `heading-${idx}`;
 			return {
 				html: `<section id="${id}" class="bk-section bk-heading">${html}</section>`,
@@ -74,18 +79,26 @@ function renderBlockInner(
 		case "markdown": {
 			const md = resolveContent(block.src, options, "md");
 			const { html, headings } = mdToHtml(md);
-			const navItems: NavItem[] = headings.map(h => ({
+			const navItems: NavItem[] = headings.map((h) => ({
 				id: h.id,
 				label: h.text,
-				kind: h.level === 1 ? "heading" : "section"
+				kind: h.level === 1 ? "heading" : "section",
 			}));
-			return { html: `<div class="bk-markdown">${html}</div>`, navItems: navItems.length > 0 ? navItems : undefined };
+			return {
+				html: `<div class="bk-markdown">${html}</div>`,
+				navItems: navItems.length > 0 ? navItems : undefined,
+			};
 		}
 
 		case "section": {
 			const md = resolveContent(block.src, options, "md");
 			const { html, title } = mdToHtml(md);
-			const label = block.label || title || (typeof block.src === "string" && !block.src.includes(".md") ? block.src : "Section");
+			const label =
+				block.label ||
+				title ||
+				(typeof block.src === "string" && !block.src.includes(".md")
+					? block.src
+					: "Section");
 			const id = `section-${idx}`;
 			return {
 				html: `<section id="${id}" class="bk-section bk-subsection">${html}</section>`,
@@ -119,18 +132,22 @@ function renderBlockInner(
 
 		case "code": {
 			const raw = resolveContent(block.src, options, "text"); // Could be file or inline
-			const isInlineCode = typeof block.src === "string" && (block.src.includes("\n") || block.src.includes(" "));
+			const isInlineCode =
+				typeof block.src === "string" &&
+				(block.src.includes("\n") || block.src.includes(" "));
 			const lang =
 				block.lang ??
-				(typeof block.src === "string" && !isInlineCode && block.src.includes(".")
+				(typeof block.src === "string" &&
+				!isInlineCode &&
+				block.src.includes(".")
 					? (block.src.split(".").pop() ?? "")
 					: "");
-            let highlighted = escHtml(raw);
-            if (lang && hljs.getLanguage(lang)) {
-                highlighted = hljs.highlight(raw, { language: lang }).value;
-            } else {
-                highlighted = hljs.highlightAuto(raw).value;
-            }
+			let highlighted = escHtml(raw);
+			if (lang && hljs.getLanguage(lang)) {
+				highlighted = hljs.highlight(raw, { language: lang }).value;
+			} else {
+				highlighted = hljs.highlightAuto(raw).value;
+			}
 			return {
 				html: `<div class="bk-code-block">
           ${block.label ? `<div class="bk-code-header"><span class="bk-code-label">${escHtml(block.label)}</span><span class="bk-code-lang">${lang}</span></div>` : ""}
@@ -144,7 +161,11 @@ function renderBlockInner(
 		case "simulation": {
 			const propsJson = escapeScriptJson(block.props ?? {});
 			const simSrc = resolveContent(block.src, options, "js");
-			const simConfig = { js: simSrc, loop: false, dependencies: block.dependencies };
+			const simConfig = {
+				js: simSrc,
+				loop: false,
+				dependencies: block.dependencies,
+			};
 			const id = `sim-${idx}`;
 			const label = block.label || "Interactive Simulation";
 			return {
@@ -165,7 +186,7 @@ function renderBlockInner(
           <script type="application/json" class="bk-sim-config">${escapeScriptJson(simConfig)}</script>`,
 					block.accent ?? "blue",
 					true,
-					id
+					id,
 				),
 				navItems: [{ id, label, kind: "simulation" }],
 			};
@@ -250,7 +271,7 @@ function renderBlockInner(
 					block.caption,
 					`<div class="${block.display === false ? "bk-latex-inline" : "bk-latex-block"}">${rendered}</div>`,
 					"violet",
-					false
+					false,
 				),
 			};
 		}
@@ -280,7 +301,7 @@ function renderBlockInner(
 							.join("")}
           </div>`,
 					"neutral",
-					false
+					false,
 				),
 			};
 		}
@@ -315,11 +336,13 @@ function renderBlockInner(
             ${quiz.questions.map((q, qi) => renderQuestion(q, `quiz-${idx}`, qi)).join("\n")}
           </div>
         </div>`,
-				navItems: [{
-					id: `quiz-${idx}`,
-					label: block.label ?? "Questions",
-					kind: "quiz",
-				}],
+				navItems: [
+					{
+						id: `quiz-${idx}`,
+						label: block.label ?? "Questions",
+						kind: "quiz",
+					},
+				],
 			};
 		}
 
@@ -355,8 +378,15 @@ function renderQuestion(q: QuizQuestion, quizId: string, qi: number): string {
 }
 
 // Wraps a JS string in a minimal iframe document
-function iframeDoc(js: string, props: string, loop?: boolean, dependencies?: string[]): string {
-	const scriptTags = (dependencies ?? []).map((url) => `<script src="${escAttr(url)}"></script>`).join("\\n");
+function iframeDoc(
+	js: string,
+	props: string,
+	loop?: boolean,
+	dependencies?: string[],
+): string {
+	const scriptTags = (dependencies ?? [])
+		.map((url) => `<script src="${escAttr(url)}"></script>`)
+		.join("\\n");
 	const doc = `<!DOCTYPE html><html><head>
 ${scriptTags}
 <style>

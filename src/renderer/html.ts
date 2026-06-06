@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 import type { BuildOptions, Lesson } from "../types.js";
 import { escHtml } from "./blocks.js";
 import type { NavItem } from "./utils.js";
@@ -27,18 +28,26 @@ function renderEndNav(lesson: Lesson): string {
 	if (!prevSlug && !nextSlug) return "";
 
 	return `<nav class="bk-end-nav" aria-label="Lesson navigation" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
-    ${prevSlug ? `
+    ${
+			prevSlug
+				? `
     <a class="bk-end-link bk-end-link--prev" href="${prevSlug}.html">
       <span>Previous Lesson</span>
       <strong>${escHtml(prevTitle || "Previous")}</strong>
     </a>
-    ` : `<div class="bk-end-link" style="visibility:hidden"></div>`}
-    ${nextSlug ? `
+    `
+				: `<div class="bk-end-link" style="visibility:hidden"></div>`
+		}
+    ${
+			nextSlug
+				? `
     <a class="bk-end-link bk-end-link--next" href="${nextSlug}.html">
       <span>Next Lesson</span>
       <strong>${escHtml(nextTitle || "Next")}</strong>
     </a>
-    ` : `<div class="bk-end-link" style="visibility:hidden"></div>`}
+    `
+				: `<div class="bk-end-link" style="visibility:hidden"></div>`
+		}
   </nav>`;
 }
 
@@ -96,7 +105,7 @@ ${opts.font ? `:root { --font-sans: ${opts.font}, -apple-system, BlinkMacSystemF
                <button type="button" class="bk-segment-btn ${theme === "light" ? "active" : ""}" data-theme="light" title="Light" aria-label="Light theme">
                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
                </button>
-               <button type="button" class="bk-segment-btn ${theme === "auto" ? "active" : (!theme ? "active" : "")}" data-theme="auto" title="System" aria-label="System theme">
+               <button type="button" class="bk-segment-btn ${theme === "auto" ? "active" : !theme ? "active" : ""}" data-theme="auto" title="System" aria-label="System theme">
                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
                </button>
                <button type="button" class="bk-segment-btn ${theme === "dark" ? "active" : ""}" data-theme="dark" title="Dark" aria-label="Dark theme">
