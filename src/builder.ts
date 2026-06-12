@@ -90,7 +90,7 @@ export class LessonBuilder {
 		this.options = {
 			outDir: options.outDir ?? (callerDir ? path.join(callerDir, "out") : "./out"),
 			contentBase: options.contentBase ?? callerDir ?? ".",
-			theme: options.theme ?? "light",
+			theme: options.theme ?? "auto",
 			palette: options.palette ?? "ink",
 			strict: options.strict ?? process.env.NODE_ENV !== "development",
 			preset: {
@@ -666,7 +666,7 @@ export class ChapterBuilder {
 		this.options = {
 			outDir: options.outDir ?? (callerDir ? path.join(callerDir, "out") : "./out"),
 			contentBase: options.contentBase ?? callerDir ?? ".",
-			theme: options.theme ?? "light",
+			theme: options.theme ?? "auto",
 			palette: options.palette ?? "ink",
 			strict: options.strict ?? process.env.NODE_ENV !== "development",
 			preset: {
