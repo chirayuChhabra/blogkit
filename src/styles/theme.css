@@ -51,6 +51,33 @@ html[data-palette="ember"] {
 	--accent-soft: rgba(234, 88, 12, 0.1);
 }
 
+html[data-palette="elixir"] {
+	--bg: #f8f5fc;
+	--paper: #ffffff;
+	--line: #ede5f6;
+	--line-strong: #d8b4fe;
+	--accent: #a855f7;
+	--accent-soft: rgba(168, 85, 247, 0.1);
+}
+
+html[data-palette="trunk"] {
+	--bg: #fdfaf8;
+	--paper: #ffffff;
+	--line: #f4ece4;
+	--line-strong: #d6bfa8;
+	--accent: #78350f;
+	--accent-soft: rgba(120, 53, 15, 0.1);
+}
+
+html[data-palette="lava"] {
+	--bg: #fff5f5;
+	--paper: #ffffff;
+	--line: #fce8e8;
+	--line-strong: #fca5a5;
+	--accent: #ef4444;
+	--accent-soft: rgba(239, 68, 68, 0.1);
+}
+
 :root[data-theme="dark"] {
 	color-scheme: dark;
 	--bg: #07090c;
@@ -94,6 +121,33 @@ html[data-palette="ember"][data-theme="dark"] {
 	--line-strong: #362822;
 	--accent: #fb923c;
 	--accent-soft: rgba(251, 146, 60, 0.1);
+}
+
+html[data-palette="elixir"][data-theme="dark"] {
+	--bg: #0b0a0e;
+	--paper: #121212;
+	--line: #1c1a24;
+	--line-strong: #2d263b;
+	--accent: #c084fc;
+	--accent-soft: rgba(192, 132, 252, 0.1);
+}
+
+html[data-palette="trunk"][data-theme="dark"] {
+	--bg: #0c0a09;
+	--paper: #121212;
+	--line: #201a17;
+	--line-strong: #332822;
+	--accent: #d4a373;
+	--accent-soft: rgba(212, 163, 115, 0.1);
+}
+
+html[data-palette="lava"][data-theme="dark"] {
+	--bg: #0f0808;
+	--paper: #121212;
+	--line: #241414;
+	--line-strong: #3c1e1e;
+	--accent: #f87171;
+	--accent-soft: rgba(248, 113, 113, 0.1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -140,6 +194,33 @@ html[data-palette="ember"][data-theme="dark"] {
 		--line-strong: #362822;
 		--accent: #fb923c;
 		--accent-soft: rgba(251, 146, 60, 0.1);
+	}
+
+	html[data-palette="elixir"]:not([data-theme="light"]) {
+		--bg: #0b0a0e;
+		--paper: #121212;
+		--line: #1c1a24;
+		--line-strong: #2d263b;
+		--accent: #c084fc;
+		--accent-soft: rgba(192, 132, 252, 0.1);
+	}
+
+	html[data-palette="trunk"]:not([data-theme="light"]) {
+		--bg: #0c0a09;
+		--paper: #121212;
+		--line: #201a17;
+		--line-strong: #332822;
+		--accent: #d4a373;
+		--accent-soft: rgba(212, 163, 115, 0.1);
+	}
+
+	html[data-palette="lava"]:not([data-theme="light"]) {
+		--bg: #0f0808;
+		--paper: #121212;
+		--line: #241414;
+		--line-strong: #3c1e1e;
+		--accent: #f87171;
+		--accent-soft: rgba(248, 113, 113, 0.1);
 	}
 }
 
