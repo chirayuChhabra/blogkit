@@ -1,6 +1,6 @@
 import type { BuildOptions, Chapter, Lesson } from "../types.js";
 import { escAttr, escHtml, renderBlock } from "./blocks.js";
-import { renderPage } from "./html.js";
+import { clientScript, pageCSS, renderPage } from "./html.js"; // Used in renderChapter
 import type { NavItem } from "./utils.js";
 
 // ─── Main render function ─────────────────────────────────────────────────────
@@ -26,13 +26,14 @@ export function renderChapter(
 	chapter: Chapter,
 	opts: BuildOptions = {},
 ): string {
-	const theme = opts.theme ?? "auto";
+	const theme = opts.theme ?? "light";
 	const schemeAttr = `data-theme="${theme}"`;
 	const preset = opts.preset ?? {};
 	const layout = preset.layout ?? "lesson";
 	const density = preset.density ?? "comfortable";
 	const tone = preset.tone ?? "scholarly";
 	const palette = opts.palette ?? "ink";
+	const ui = opts.ui ?? "standard";
 
 	const navHtml = chapter.lessons
 		.map(
@@ -42,41 +43,19 @@ export function renderChapter(
 		.join("\n");
 
 	const timelineHtml = `
-<div class="bk-chapter-path-wrapper" style="margin-top: 3rem;">
-  <div class="bk-chapter-path">
+<div class="bk-chapter-timeline-wrapper">
+  <div class="bk-chapter-timeline">
     ${chapter.lessons
 		.map(
 			(lesson, idx) => `
-      <a href="${escAttr(lesson.meta.slug)}.html" class="bk-lesson-card bk-status-${lesson.meta.status ?? "unread"}">
-        <div class="bk-lesson-number">${String(idx + 1).padStart(2, "0")}</div>
-        <div class="bk-lesson-content">
-          <h3 class="bk-lesson-title" style="view-transition-name: title-${escAttr(lesson.meta.slug)}">${escHtml(lesson.meta.title)}</h3>
-          ${lesson.meta.description ? `<p class="bk-lesson-desc">${escHtml(lesson.meta.description)}</p>` : ""}
-        </div>
-        <div class="bk-lesson-footer">
-          <span class="bk-lesson-action">${lesson.meta.status === "read" ? "Read again" : "Start Lesson"} <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
+      <a href="${escAttr(lesson.meta.slug)}.html" class="bk-timeline-card bk-status-${lesson.meta.status ?? "unread"}">
+        <div class="bk-timeline-node"></div>
+        <div class="bk-timeline-content">
+          <h3 class="bk-timeline-title" style="view-transition-name: title-${escAttr(lesson.meta.slug)}">${escHtml(lesson.meta.title)}</h3>
+          ${lesson.meta.description ? `<p class="bk-timeline-desc">${escHtml(lesson.meta.description)}</p>` : ""}
+          <span class="bk-timeline-action">${lesson.meta.status === "read" ? "Read again" : "Start Lesson"} <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></span>
         </div>
       </a>
-      ${idx < chapter.lessons.length - 1 ? `
-      <div class="bk-path-connector ${chapter.lessons[idx + 1].meta.status === "read" ? "bk-connector-read" : "bk-connector-unread"}">
-        <div class="bk-connector-line"></div>
-        <div class="bk-connector-arrow">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
-        </div>
-      </div>` : `
-      <div class="bk-path-connector ${lesson.meta.status === "read" ? "bk-connector-read" : "bk-connector-unread"}">
-        <div class="bk-connector-line"></div>
-        <div class="bk-connector-arrow">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
-        </div>
-      </div>
-      <a href="${(chapter.meta as any).nextSlug ? escAttr((chapter.meta as any).nextSlug) + '.html' : '#'}" class="bk-path-terminal bk-terminal-next">
-        <span class="bk-terminal-text">${(chapter.meta as any).nextTitle ? `Next: ${escHtml((chapter.meta as any).nextTitle)}` : 'Next Chapter'}</span>
-        <div class="bk-terminal-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </div>
-      </a>
-      `}
     `,
 		)
 		.join("")}
@@ -96,7 +75,7 @@ export function renderChapter(
       },
       { threshold: 0.1 }
     );
-    document.querySelectorAll('.bk-lesson-card, .bk-path-connector, .bk-path-terminal').forEach((el) => {
+    document.querySelectorAll('.bk-timeline-card').forEach((el) => {
       el.classList.add('js-hidden');
       observer.observe(el);
     });
@@ -104,314 +83,251 @@ export function renderChapter(
 </script>`;
 
 	const chapterStyles = `
-.bk-chapter-path-wrapper {
+.bk-chapter-timeline-wrapper {
   position: relative;
   width: 100%;
-  padding: 1rem 0 4rem 0;
+  padding: 1rem 0;
   z-index: 1;
 }
 
-.bk-chapter-path {
+.bk-chapter-timeline {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 3rem;
+  padding: 3rem 0;
   position: relative;
-  max-width: 700px;
+  max-width: 800px;
   margin: 0 auto;
 }
 
-.bk-path-terminal {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.25rem 2.5rem;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: 50px;
-  color: var(--ink);
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1.2rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-  z-index: 2;
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-.bk-terminal-next {
-  color: var(--accent);
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 5%, var(--paper));
-  text-decoration: none !important;
-  cursor: pointer;
-}
-
-.bk-terminal-next:hover {
-  transform: translateY(-2px);
-  background: var(--accent);
-  color: var(--paper);
-  box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 30%, transparent);
-}
-
-.bk-terminal-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.bk-lesson-card {
-  width: 100%;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 2.5rem;
-  display: flex;
-  flex-direction: column;
-  text-decoration: none !important;
-  color: inherit;
-  position: relative;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.01);
-  overflow: hidden;
-}
-
-.bk-lesson-card:hover {
-  transform: translateY(-4px) scale(1.01);
-  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
-  box-shadow: 0 20px 40px rgba(0,0,0,0.06);
-}
-
-/* Subtle glow effect behind card on hover */
-.bk-lesson-card::after {
+/* Minimalist vertical connecting line */
+.bk-chapter-timeline::before {
   content: '';
   position: absolute;
-  inset: 0;
-  border-radius: 16px;
-  box-shadow: inset 0 0 0 1px var(--accent);
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  pointer-events: none;
-}
-.bk-lesson-card:hover::after {
-  opacity: 0.1;
-}
-
-.bk-lesson-number {
-  position: absolute;
-  top: -1.5rem;
-  right: 1.5rem;
-  font-family: var(--font-display);
-  font-size: 8rem;
-  font-weight: 800;
-  color: var(--line-strong);
-  opacity: 0.05;
-  line-height: 1;
-  transition: all 0.4s ease;
-  letter-spacing: -0.05em;
-  pointer-events: none;
+  left: 20px;
+  top: 3rem;
+  bottom: 3rem;
+  width: 1px;
+  background: var(--line);
   z-index: 0;
+  transform: translateX(-50%);
 }
 
-.bk-lesson-card:hover .bk-lesson-number {
-  color: var(--accent);
-  opacity: 0.1;
-  transform: translateY(8px);
-}
-
-.bk-lesson-content {
+.bk-timeline-card {
+  display: flex;
+  align-items: stretch;
+  gap: 2rem;
+  text-decoration: none !important;
+  border: none !important;
+  color: inherit;
   position: relative;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  opacity: 1;
+  transform: none;
 }
 
-.bk-lesson-title {
-  font-family: var(--font-display);
-  font-size: 1.6rem;
-  font-weight: 600;
-  color: var(--ink);
-  margin: 0;
-  line-height: 1.3;
-  transition: color 0.3s ease;
-  padding-right: 4rem;
-}
-
-.bk-lesson-card:hover .bk-lesson-title {
-  color: var(--accent);
-}
-
-.bk-lesson-desc {
-  color: var(--muted);
-  line-height: 1.6;
-  font-size: 1.1rem;
-  margin: 0;
-  max-width: 90%;
-}
-
-.bk-lesson-footer {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--line);
-  display: flex;
-  align-items: center;
-  position: relative;
-  z-index: 1;
-  transition: border-color 0.3s ease;
-}
-
-.bk-lesson-card:hover .bk-lesson-footer {
-  border-color: color-mix(in srgb, var(--accent) 20%, transparent);
-}
-
-.bk-lesson-action {
-  font-weight: 600;
-  color: var(--accent);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.05rem;
-  transition: gap 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.bk-lesson-card:hover .bk-lesson-action {
-  gap: 0.8rem;
-}
-
-/* Status variants */
-.bk-status-unread {
-  opacity: 0.85;
-}
-.bk-status-unread .bk-lesson-title {
-  color: color-mix(in srgb, var(--ink) 80%, transparent);
-}
-.bk-status-unread .bk-lesson-desc {
-  color: color-mix(in srgb, var(--muted) 80%, transparent);
-}
-.bk-status-unread .bk-lesson-action {
-  color: var(--muted);
-}
-.bk-status-unread:hover .bk-lesson-title {
-  color: var(--ink);
-}
-.bk-status-unread:hover .bk-lesson-action {
-  color: var(--accent);
-}
-
-/* Path Connector */
-.bk-path-connector {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0.5rem 0;
-}
-
-.bk-connector-line {
-  width: 2px;
-  height: 40px;
-  background: var(--line-strong);
-  border-radius: 2px;
-}
-
-.bk-connector-arrow {
-  color: var(--line-strong);
-  margin-top: -6px;
-  background: var(--paper);
-  border-radius: 50%;
-  padding: 4px;
-}
-
-.bk-connector-read .bk-connector-line {
-  background: var(--accent);
-}
-.bk-connector-read .bk-connector-arrow {
-  color: var(--accent);
-}
-
-.bk-connector-unread {
-  opacity: 0.4;
-}
-.bk-connector-unread .bk-connector-line {
-  background: repeating-linear-gradient(to bottom, var(--line-strong) 0, var(--line-strong) 6px, transparent 6px, transparent 12px);
-}
-
-/* Scroll-driven animations */
+/* Subtle scroll-driven animations */
 @media (prefers-reduced-motion: no-preference) {
   @supports ((animation-timeline: view()) and (animation-range: entry)) {
-    .bk-lesson-card, .bk-path-connector, .bk-path-terminal {
-      animation: slide-fade-in both cubic-bezier(0.16, 1, 0.3, 1);
+    .bk-timeline-card {
+      animation-name: slide-fade-in;
+      animation-fill-mode: both;
+      animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
       animation-timeline: view(block);
-      animation-range: entry 5% cover 15%;
+      animation-range: entry 5% cover 20%;
     }
     @keyframes slide-fade-in {
-      0% { opacity: 0; transform: translateY(40px) scale(0.98); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
   }
 }
 
-/* Fallback animation */
-.bk-lesson-card.js-hidden, .bk-path-connector.js-hidden, .bk-path-terminal.js-hidden {
+/* Fallback for browsers without animation-timeline support */
+.bk-timeline-card.js-hidden {
   opacity: 0;
-  transform: translateY(30px) scale(0.98);
+  transform: translateY(20px);
 }
-.bk-lesson-card.js-visible, .bk-path-connector.js-visible, .bk-path-terminal.js-visible {
+.bk-timeline-card.js-visible {
   opacity: 1;
-  transform: translateY(0) scale(1);
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(0);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Dark theme specific adjustments */
-:root[data-theme="dark"] .bk-path-terminal {
-  background: var(--panel);
+.bk-timeline-node {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 1px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
-:root[data-theme="dark"] .bk-terminal-next {
-  background: color-mix(in srgb, var(--accent) 15%, var(--panel));
-}
-:root[data-theme="dark"] .bk-terminal-next:hover {
+.bk-timeline-node::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
   background: var(--accent);
-  color: var(--panel);
+  transition: all 0.3s ease;
 }
-:root[data-theme="dark"] .bk-lesson-card {
+.bk-timeline-card:hover .bk-timeline-node {
+  background: var(--accent);
+}
+.bk-timeline-card:hover .bk-timeline-node::after {
+  background: var(--paper);
+}
+
+.bk-timeline-content {
+  background: var(--paper);
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  flex: 1;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+}
+.bk-timeline-card:hover .bk-timeline-content {
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
+
+.bk-timeline-title {
+  margin: 0 0 0.5rem 0;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  color: var(--ink);
+  width: fit-content;
+  transition: color 0.2s ease;
+}
+.bk-timeline-card:hover .bk-timeline-title {
+  color: var(--accent);
+}
+
+.bk-timeline-desc {
+  margin: 0 0 1.5rem 0;
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 1.05rem;
+}
+
+.bk-timeline-action {
+  font-weight: 500;
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+  align-self: flex-start;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid transparent;
+}
+.bk-timeline-card:hover .bk-timeline-action {
+  gap: 0.6rem;
+  border-bottom-color: var(--accent);
+}
+
+.bk-status-unread .bk-timeline-node {
+  border: 1px solid var(--line-strong);
+}
+.bk-status-unread .bk-timeline-node::after {
+  background: var(--line-strong);
+  transform: scale(0.8);
+}
+.bk-status-unread .bk-timeline-content {
+  background: transparent;
+  box-shadow: none;
+  border: 1px solid transparent;
+}
+.bk-status-unread .bk-timeline-title {
+  color: var(--muted);
+}
+.bk-status-unread .bk-timeline-desc {
+  color: color-mix(in srgb, var(--muted) 80%, transparent);
+}
+.bk-status-unread .bk-timeline-action {
+  color: var(--muted);
+}
+.bk-status-unread:hover .bk-timeline-node {
+  border-color: var(--ink);
+  background: var(--paper);
+}
+.bk-status-unread:hover .bk-timeline-node::after {
+  background: var(--ink);
+  transform: scale(1);
+}
+.bk-status-unread:hover .bk-timeline-content {
+  background: var(--paper);
+  border-color: var(--line);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+.bk-status-unread:hover .bk-timeline-title {
+  color: var(--ink);
+}
+.bk-status-unread:hover .bk-timeline-action {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+
+
+
+:root[data-theme="dark"] .bk-timeline-content {
   background: var(--panel);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
-:root[data-theme="dark"] .bk-status-unread {
-  background: color-mix(in srgb, var(--panel) 50%, transparent);
+:root[data-theme="dark"] .bk-status-unread .bk-timeline-content {
+  background: transparent;
 }
-:root[data-theme="dark"] .bk-status-unread:hover {
-  background: var(--panel);
-}
-:root[data-theme="dark"] .bk-connector-arrow {
+:root[data-theme="dark"] .bk-status-unread:hover .bk-timeline-content {
   background: var(--panel);
 }
 
 @media (max-width: 600px) {
-  .bk-lesson-card {
+  .bk-chapter-timeline::before {
+    left: 16px;
+  }
+  .bk-timeline-card {
+    gap: 1.5rem;
+  }
+  .bk-timeline-node {
+    width: 32px;
+    height: 32px;
+  }
+  .bk-timeline-node::after {
+    width: 8px;
+    height: 8px;
+  }
+  .bk-timeline-content {
     padding: 1.5rem;
+    border-radius: 10px;
   }
-  .bk-lesson-number {
-    font-size: 5rem;
-    top: -0.5rem;
-    right: 1rem;
-  }
-  .bk-lesson-title {
-    padding-right: 0;
+  .bk-timeline-title {
+    font-size: 1.4rem;
   }
 }
 `;
 
 	return `<!DOCTYPE html>
-<html lang="en" data-palette="${palette}" ${schemeAttr}>
+<html lang="en" data-palette="${palette}" data-ui="${ui}" ${schemeAttr}>
 <head>
 <meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,760&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escHtml(chapter.meta.title)}</title>
 ${chapter.meta.description ? `<meta name="description" content="${escHtml(chapter.meta.description)}">` : ""}
 ${opts.head ?? ""}
-<link rel="stylesheet" href="assets/theme.css">
 <style>
 ${opts.font ? `:root { --font-sans: ${opts.font}, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }` : ""}
+${pageCSS()}
 ${chapterStyles}
 </style>
 </head>
@@ -458,6 +374,20 @@ ${chapterStyles}
                </button>
             </div>
           </div>
+          <div class="bk-theme-row">
+            <span>UI</span>
+            <div class="bk-segmented-control" id="bk-ui-icons">
+               <button type="button" class="bk-segment-btn ${ui === 'standard' ? 'active' : ''}" data-ui="standard" title="Standard" aria-label="Standard UI">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4" ry="4"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+               </button>
+               <button type="button" class="bk-segment-btn ${ui === 'neo' ? 'active' : ''}" data-ui="neo" title="Neo Brutalist" aria-label="Neo UI">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="3" width="18" height="18"></rect><path d="M3 10h18"></path><path d="M10 10v11"></path></svg>
+               </button>
+               <button type="button" class="bk-segment-btn ${ui === 'playful' ? 'active' : ''}" data-ui="playful" title="Playful" aria-label="Playful UI">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="6" ry="6"></rect><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"></circle><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"></circle></svg>
+               </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -479,7 +409,9 @@ ${chapterStyles}
     </article>
   </main>
 </div>
-<script src="assets/app.js"></script>
+<script>
+${clientScript()}
+</script>
 </body>
 </html>`;
 }

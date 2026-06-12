@@ -169,10 +169,12 @@ function bkWireThemeControls() {
 	const button = document.getElementById("bk-settings-button");
 	const panel = document.getElementById("bk-theme-panel");
 	const themeBtns = document.querySelectorAll("#bk-theme-icons button");
-	const paletteBtns = document.querySelectorAll("#bk-palette-icons button");
+		const paletteBtns = document.querySelectorAll("#bk-palette-icons button");
+	const uiBtns = document.querySelectorAll("#bk-ui-icons button");
 	let savedTheme = localStorage.getItem("bk-theme");
 	if (!savedTheme) savedTheme = "auto";
 	const savedPalette = localStorage.getItem("bk-palette");
+	const savedUi = localStorage.getItem("bk-ui");
 
 	function updateThemeBtn(val) {
 		themeBtns.forEach(b => {
@@ -214,14 +216,22 @@ function bkWireThemeControls() {
 		});
 	}
 
+		function updateUiBtn(val) {
+		uiBtns.forEach(b => {
+			if(b.dataset.ui === val) b.classList.add("active");
+			else b.classList.remove("active");
+		});
+	}
+
 	if (savedTheme) {
 		updateThemeBtn(savedTheme);
-		root.setAttribute("data-theme", savedTheme);
 	}
 	if (savedPalette) {
 		const normalizedPalette = savedPalette === "green" ? "field" : savedPalette;
 		updatePaletteBtn(normalizedPalette);
-		root.setAttribute("data-palette", normalizedPalette);
+	}
+	if (savedUi) {
+		updateUiBtn(savedUi);
 	}
 
 	button &&
@@ -255,7 +265,7 @@ function bkWireThemeControls() {
 		});
 	});
 
-	paletteBtns.forEach(btn => {
+		paletteBtns.forEach(btn => {
 		btn.addEventListener("click", (e) => {
 			const baseVal = btn.dataset.palette;
 			let currentVal = root.getAttribute("data-palette") || "ink";
@@ -276,6 +286,15 @@ function bkWireThemeControls() {
 			localStorage.setItem("bk-palette", newVal);
 			updatePaletteBtn(newVal);
 			root.setAttribute("data-palette", newVal);
+		});
+	});
+
+	uiBtns.forEach(btn => {
+		btn.addEventListener("click", () => {
+			const val = btn.dataset.ui;
+			localStorage.setItem("bk-ui", val);
+			updateUiBtn(val);
+			root.setAttribute("data-ui", val);
 		});
 	});
 }

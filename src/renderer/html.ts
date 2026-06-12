@@ -48,56 +48,43 @@ function renderPage(
 	bodyHtml: string,
 	opts: BuildOptions,
 ): string {
-	const theme = opts.theme ?? "auto";
+	const theme = opts.theme ?? "light";
 	const schemeAttr = `data-theme="${theme}"`;
 	const preset = opts.preset ?? {};
 	const layout = preset.layout ?? "lesson";
 	const density = preset.density ?? "comfortable";
 	const tone = preset.tone ?? "scholarly";
 	const palette = opts.palette ?? "ink";
+	const ui = opts.ui ?? "standard";
 	const navHtml = navItems.map(renderNavItem).join("\n");
 	const endNavHtml = renderEndNav(lesson);
 
 	return `<!DOCTYPE html>
-<html lang="en" data-palette="${palette}" ${schemeAttr}>
+<html lang="en" data-palette="${palette}" data-ui="${ui}" ${schemeAttr}>
 <head>
+<script>
+(function() {
+	var t = localStorage.getItem("bk-theme");
+	var p = localStorage.getItem("bk-palette");
+	var u = localStorage.getItem("bk-ui");
+	var root = document.documentElement;
+	if (t) root.setAttribute("data-theme", t);
+	if (p) root.setAttribute("data-palette", p === "green" ? "field" : p);
+	if (u) root.setAttribute("data-ui", u);
+})();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escHtml(lesson.meta.title)}</title>
 ${lesson.meta.description ? `<meta name="description" content="${escHtml(lesson.meta.description)}">` : ""}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,760&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.47/dist/katex.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,760&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css">
 ${opts.head ?? ""}
-<link rel="stylesheet" href="assets/theme.css">
 <style>
 ${opts.font ? `:root { --font-sans: ${opts.font}, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }` : ""}
+${pageCSS()}
 </style>
-<script type="speculationrules">
-{
-  "prefetch": [{
-    "where": { "href_matches": "/*" },
-    "eagerness": "eager"
-  }],
-  "prerender": [{
-    "where": { "href_matches": "/*" },
-    "eagerness": "moderate"
-  }]
-}
-</script>
-<link rel="expect" href="#bk-content" blocking="render">
-<script blocking="render">
-  const savedTheme = localStorage.getItem("bk-theme");
-  const savedPalette = localStorage.getItem("bk-palette");
-  if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
-  if (savedPalette) {
-    const normalizedPalette = savedPalette === "green" ? "field" : savedPalette;
-    document.documentElement.setAttribute("data-palette", normalizedPalette);
-  }
-</script>
 </head>
 <body class="bk-layout-${layout} bk-density-${density} bk-tone-${tone}">
 <div class="bk-shell">
@@ -144,6 +131,20 @@ ${opts.font ? `:root { --font-sans: ${opts.font}, -apple-system, BlinkMacSystemF
                </button>
             </div>
           </div>
+          <div class="bk-theme-row">
+            <span>UI</span>
+            <div class="bk-segmented-control" id="bk-ui-icons">
+               <button type="button" class="bk-segment-btn ${ui === 'standard' ? 'active' : ''}" data-ui="standard" title="Standard" aria-label="Standard UI">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4" ry="4"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+               </button>
+               <button type="button" class="bk-segment-btn ${ui === 'neo' ? 'active' : ''}" data-ui="neo" title="Neo Brutalist" aria-label="Neo UI">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="3" width="18" height="18"></rect><path d="M3 10h18"></path><path d="M10 10v11"></path></svg>
+               </button>
+               <button type="button" class="bk-segment-btn ${ui === 'playful' ? 'active' : ''}" data-ui="playful" title="Playful" aria-label="Playful UI">
+                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="6" ry="6"></rect><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"></circle><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"></circle></svg>
+               </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -155,7 +156,7 @@ ${opts.font ? `:root { --font-sans: ${opts.font}, -apple-system, BlinkMacSystemF
     <button class="bk-sidebar-expand" id="bk-sidebar-expand" type="button" aria-label="Expand sidebar">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
     </button>
-    <article class="bk-content" id="bk-content">
+    <article class="bk-content">
       <header class="bk-hero">
         <p class="bk-eyebrow">Interactive Lesson</p>
         <h1 style="view-transition-name: title-${lesson.meta.slug}">${escHtml(lesson.meta.title)}</h1>
@@ -166,26 +167,26 @@ ${opts.font ? `:root { --font-sans: ${opts.font}, -apple-system, BlinkMacSystemF
     </article>
   </main>
 </div>
-<script src="assets/app.js" defer></script>
+<script>
+${clientScript()}
+</script>
 </body>
 </html>`;
 }
 
-// ─── Core Assets ────────────────────────────────────────────────────────────────
+// ─── CSS ──────────────────────────────────────────────────────────────────────
 
-function copyCoreAssets(outDir: string): void {
-	const assetsDir = path.join(outDir, "assets");
-	if (!fs.existsSync(assetsDir)) fs.mkdirSync(assetsDir, { recursive: true });
-
-	const cssPath = path.join(__dirname, "../styles/theme.css");
-	if (fs.existsSync(cssPath)) {
-		fs.copyFileSync(cssPath, path.join(assetsDir, "theme.css"));
-	}
-
-	const jsPath = path.join(__dirname, "../client/app.js");
-	if (fs.existsSync(jsPath)) {
-		fs.copyFileSync(jsPath, path.join(assetsDir, "app.js"));
-	}
+function pageCSS(): string {
+	return fs.readFileSync(
+		path.join(__dirname, "../styles/theme.css"),
+		"utf-8",
+	);
 }
 
-export { copyCoreAssets, renderNavItem, renderPage };
+// ─── Client-side script ───────────────────────────────────────────────────────
+
+function clientScript(): string {
+	return fs.readFileSync(path.join(__dirname, "../client/app.js"), "utf-8");
+}
+
+export { clientScript, pageCSS, renderNavItem, renderPage };
