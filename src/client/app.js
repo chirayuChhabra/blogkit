@@ -132,6 +132,22 @@ function bkWireInteractiveFrames() {
 	document.querySelectorAll(".bk-embed-interactive").forEach((frame) => {
 		obs.observe(frame);
 	});
+
+	document.addEventListener('contentvisibilityautostatechange', (e) => {
+		const frame = e.target;
+		if (frame && frame.classList && frame.classList.contains('bk-embed-interactive')) {
+			const iframe = frame.querySelector('iframe');
+			if (!iframe || !iframe.contentWindow) return;
+			
+			if (e.skipped) {
+				iframe.contentWindow.postMessage({ type: "bk:pause" }, "*");
+			} else {
+				if (frame.dataset.isAnimation === "true" || frame.classList.contains("is-interactive")) {
+					iframe.contentWindow.postMessage({ type: "bk:play" }, "*");
+				}
+			}
+		}
+	}, { capture: true });
 }
 
 function bkWireSidebarToggle() {

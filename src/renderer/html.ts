@@ -65,6 +65,10 @@ function renderPage(
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escHtml(lesson.meta.title)}</title>
 ${lesson.meta.description ? `<meta name="description" content="${escHtml(lesson.meta.description)}">` : ""}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,760&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.47/dist/katex.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css">
 ${opts.head ?? ""}
@@ -72,6 +76,28 @@ ${opts.head ?? ""}
 <style>
 ${opts.font ? `:root { --font-sans: ${opts.font}, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }` : ""}
 </style>
+<script type="speculationrules">
+{
+  "prefetch": [{
+    "where": { "href_matches": "/*" },
+    "eagerness": "eager"
+  }],
+  "prerender": [{
+    "where": { "href_matches": "/*" },
+    "eagerness": "moderate"
+  }]
+}
+</script>
+<link rel="expect" href="#bk-content" blocking="render">
+<script blocking="render">
+  const savedTheme = localStorage.getItem("bk-theme");
+  const savedPalette = localStorage.getItem("bk-palette");
+  if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
+  if (savedPalette) {
+    const normalizedPalette = savedPalette === "green" ? "field" : savedPalette;
+    document.documentElement.setAttribute("data-palette", normalizedPalette);
+  }
+</script>
 </head>
 <body class="bk-layout-${layout} bk-density-${density} bk-tone-${tone}">
 <div class="bk-shell">
@@ -129,7 +155,7 @@ ${opts.font ? `:root { --font-sans: ${opts.font}, -apple-system, BlinkMacSystemF
     <button class="bk-sidebar-expand" id="bk-sidebar-expand" type="button" aria-label="Expand sidebar">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
     </button>
-    <article class="bk-content">
+    <article class="bk-content" id="bk-content">
       <header class="bk-hero">
         <p class="bk-eyebrow">Interactive Lesson</p>
         <h1 style="view-transition-name: title-${lesson.meta.slug}">${escHtml(lesson.meta.title)}</h1>
@@ -140,7 +166,7 @@ ${opts.font ? `:root { --font-sans: ${opts.font}, -apple-system, BlinkMacSystemF
     </article>
   </main>
 </div>
-<script src="assets/app.js"></script>
+<script src="assets/app.js" defer></script>
 </body>
 </html>`;
 }
