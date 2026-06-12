@@ -123,53 +123,72 @@ class Neuron {
     
     const isResting = this.state === "resting";
     const isFiring = this.state === "firing";
+    const ui = bkUi();
+    const isLight = bkThemeMode() === "light";
     
     // 1. Draw Dendrites
-    ctx.strokeStyle = isResting ? "rgba(0, 150, 200, 0.25)" : 
-                      isFiring ? "rgba(100, 255, 255, 0.6)" : 
-                      "rgba(120, 30, 80, 0.2)";
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
+    if (isLight) {
+      ctx.strokeStyle = isResting ? "rgba(0, 100, 150, 0.4)" : 
+                        isFiring ? "rgba(0, 150, 200, 0.8)" : 
+                        "rgba(120, 30, 80, 0.4)";
+    } else {
+      ctx.strokeStyle = isResting ? "rgba(0, 150, 200, 0.25)" : 
+                        isFiring ? "rgba(100, 255, 255, 0.6)" : 
+                        "rgba(120, 30, 80, 0.2)";
+    }
+    
+    ctx.lineCap = ui === "neo" ? "square" : "round";
+    ctx.lineJoin = ui === "neo" ? "miter" : "round";
     
     for (const d of this.dendrites) {
       // Main branch
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = ui === "neo" ? 2 : 1.5;
       const bx = this.x + Math.cos(d.angle) * d.length;
       const by = this.y + Math.sin(d.angle) * d.length;
       
       ctx.beginPath();
       ctx.moveTo(this.x, this.y);
-      drawBezierCurve(ctx, this.x, this.y, bx, by, 0.2);
+      if (ui === "neo") {
+        ctx.lineTo(bx, this.y);
+        ctx.lineTo(bx, by);
+      } else {
+        drawBezierCurve(ctx, this.x, this.y, bx, by, 0.2);
+      }
       ctx.stroke();
       
       // Sub branches
-      ctx.lineWidth = 0.8;
+      ctx.lineWidth = ui === "neo" ? 1.5 : 0.8;
       for (const sub of d.branches) {
         const sx = bx + Math.cos(sub.angle) * sub.length;
         const sy = by + Math.sin(sub.angle) * sub.length;
         ctx.beginPath();
         ctx.moveTo(bx, by);
-        drawBezierCurve(ctx, bx, by, sx, sy, 0.2);
+        if (ui === "neo") {
+          ctx.lineTo(sx, by);
+          ctx.lineTo(sx, sy);
+        } else {
+          drawBezierCurve(ctx, bx, by, sx, sy, 0.2);
+        }
         ctx.stroke();
       }
     }
 
     // 2. Bioluminescent Glow
-    ctx.globalCompositeOperation = "screen";
+    ctx.globalCompositeOperation = isLight ? "multiply" : "screen";
     const glowRadius = isFiring ? SOMA_RADIUS * 6 : SOMA_RADIUS * 3;
     const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowRadius);
     
     if (isResting) {
       const breath = Math.sin(time * 2 + this.breathOffset) * 0.1 + 0.9;
-      grad.addColorStop(0, `rgba(0, 255, 200, ${0.4 * breath})`);
-      grad.addColorStop(1, "rgba(0, 100, 150, 0)");
+      grad.addColorStop(0, isLight ? `rgba(0, 100, 150, ${0.4 * breath})` : `rgba(0, 255, 200, ${0.4 * breath})`);
+      grad.addColorStop(1, isLight ? "rgba(0, 50, 100, 0)" : "rgba(0, 100, 150, 0)");
     } else if (isFiring) {
-      grad.addColorStop(0, "rgba(255, 255, 255, 1)");
-      grad.addColorStop(0.2, "rgba(100, 255, 255, 0.8)");
-      grad.addColorStop(1, "rgba(0, 100, 255, 0)");
+      grad.addColorStop(0, isLight ? "rgba(0, 0, 50, 1)" : "rgba(255, 255, 255, 1)");
+      grad.addColorStop(0.2, isLight ? "rgba(0, 50, 100, 0.8)" : "rgba(100, 255, 255, 0.8)");
+      grad.addColorStop(1, isLight ? "rgba(0, 50, 100, 0)" : "rgba(0, 100, 255, 0)");
     } else { // Refractory
-      grad.addColorStop(0, "rgba(150, 0, 100, 0.4)");
-      grad.addColorStop(1, "rgba(50, 0, 50, 0)");
+      grad.addColorStop(0, isLight ? "rgba(100, 0, 50, 0.4)" : "rgba(150, 0, 100, 0.4)");
+      grad.addColorStop(1, isLight ? "rgba(50, 0, 50, 0)" : "rgba(50, 0, 50, 0)");
     }
     
     ctx.fillStyle = grad;
@@ -180,14 +199,30 @@ class Neuron {
     // 3. Organic Cell Body (Soma)
     ctx.globalCompositeOperation = "source-over";
     ctx.beginPath();
-    for (let i = 0; i < this.bodyShape.length; i++) {
-      const pt = this.bodyShape[i];
-      // breathing deformation
-      const breathR = pt.r + Math.sin(time * 3 + pt.angle + this.breathOffset) * 1.5;
-      const px = this.x + Math.cos(pt.angle) * breathR;
-      const py = this.y + Math.sin(pt.angle) * breathR;
-      if (i === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
+    
+    if (ui === "neo") {
+      // Hexagon
+      for(let i=0; i<6; i++) {
+        const a = (Math.PI * 2 / 6) * i;
+        const px = this.x + Math.cos(a) * SOMA_RADIUS * 1.2;
+        const py = this.y + Math.sin(a) * SOMA_RADIUS * 1.2;
+        if (i===0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+    } else if (ui === "playful") {
+      // Bouncy circle
+      const scale = isFiring ? 1.3 : (isResting ? 1.0 + Math.sin(time * 3 + this.breathOffset) * 0.1 : 0.9);
+      ctx.arc(this.x, this.y, SOMA_RADIUS * scale, 0, Math.PI * 2);
+    } else {
+      // Standard organic shape
+      for (let i = 0; i < this.bodyShape.length; i++) {
+        const pt = this.bodyShape[i];
+        const breathR = pt.r + Math.sin(time * 3 + pt.angle + this.breathOffset) * 1.5;
+        const px = this.x + Math.cos(pt.angle) * breathR;
+        const py = this.y + Math.sin(pt.angle) * breathR;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
     }
     ctx.closePath();
     
@@ -250,17 +285,24 @@ class Signal {
   }
 
   draw(ctx) {
+    const isLight = bkThemeMode() === "light";
     ctx.save();
-    ctx.globalCompositeOperation = "screen";
+    ctx.globalCompositeOperation = isLight ? "multiply" : "screen";
     
     // Main Pulse
     const pos = getBezierPoint(this.progress, this.source.x, this.source.y, this.cx, this.cy, this.target.x, this.target.y);
     
     const pulseRadius = 15;
     const grad = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, pulseRadius * 2);
-    grad.addColorStop(0, "rgba(255, 255, 255, 1)");
-    grad.addColorStop(0.2, "rgba(100, 255, 255, 0.8)");
-    grad.addColorStop(1, "rgba(0, 150, 255, 0)");
+    if (isLight) {
+      grad.addColorStop(0, "rgba(0, 0, 50, 1)");
+      grad.addColorStop(0.2, "rgba(0, 100, 150, 0.8)");
+      grad.addColorStop(1, "rgba(0, 50, 100, 0)");
+    } else {
+      grad.addColorStop(0, "rgba(255, 255, 255, 1)");
+      grad.addColorStop(0.2, "rgba(100, 255, 255, 0.8)");
+      grad.addColorStop(1, "rgba(0, 150, 255, 0)");
+    }
     
     ctx.beginPath();
     ctx.arc(pos.x, pos.y, pulseRadius * 2, 0, Math.PI * 2);
@@ -413,20 +455,27 @@ function draw(ctx, logicalW, logicalH) {
 
   // Draw Background
   ctx.globalCompositeOperation = "source-over";
-  ctx.fillStyle = "#010308";
+  ctx.fillStyle = bkColor('bg');
   ctx.fillRect(0, 0, logicalW, logicalH);
   
   // Subtle organic vignette / noise overlay could go here
 
   // Draw Axons
   ctx.save();
+  const ui = bkUi();
   for (const n1 of neurons) {
     for (const conn of n1.connections) {
       const target = conn.target;
       
       ctx.beginPath();
       ctx.moveTo(n1.x, n1.y);
-      ctx.quadraticCurveTo(conn.cx, conn.cy, target.x, target.y);
+      if (ui === "neo") {
+        ctx.lineTo(conn.cx, n1.y);
+        ctx.lineTo(conn.cx, target.y);
+        ctx.lineTo(target.x, target.y);
+      } else {
+        ctx.quadraticCurveTo(conn.cx, conn.cy, target.x, target.y);
+      }
       
       ctx.lineWidth = 1;
       
@@ -462,8 +511,8 @@ function draw(ctx, logicalW, logicalH) {
   
   // Instructions
   ctx.save();
-  ctx.globalCompositeOperation = "screen";
-  ctx.fillStyle = "rgba(0, 255, 200, 0.5)";
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = bkColor('text-light');
   ctx.font = "14px monospace";
   ctx.fillText("Click any soma to trigger an action potential", 20, 30);
   ctx.restore();

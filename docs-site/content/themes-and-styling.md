@@ -11,6 +11,7 @@ export const myLesson = lesson("My Lesson", {
   contentBase: import.meta.dir,
   theme: "auto",
   palette: "ink",
+  ui: "standard",
   preset: { layout: "lab", tone: "scholarly" },
   font: "Inter, sans-serif"
 }, ctx => {
@@ -21,7 +22,8 @@ export const myLesson = lesson("My Lesson", {
 ### Supported Options:
 
 - **`theme`**: `"auto"` (respects OS preference), `"light"`, or `"dark"`.
-- **`palette`**: `"ink"` (default grayscale/blue), `"field"` (green accent), or `"ember"` (orange/red accent).
+- **`palette`**: `"ink"` (grayscale/blue), `"field"` (green accent), or `"ember"` (orange/red accent).
+- **`ui`**: Structural aesthetic style. `"standard"` (sleek/minimalist), `"neo"` (neo-brutalist sharp shadows/borders), or `"playful"` (soft, bouncy, rounded).
 - **`font`**: Override the default typography. You can provide any valid CSS font stack (e.g., `"Comic Sans MS", "Chalkboard SE", sans-serif`).
 
 ## Dark Mode in Content

@@ -265,7 +265,7 @@ function draw(ctx, logicalW, logicalH) {
   time += 0.05;
 
   // Background
-  ctx.fillStyle = "#050515";
+  ctx.fillStyle = bkColor('bg');
   ctx.fillRect(0, 0, logicalW, logicalH);
 
   // Draw Grid
@@ -276,10 +276,10 @@ function draw(ctx, logicalW, logicalH) {
       let y = r * cellH;
       
       // Base cell
-      ctx.fillStyle = "#0d0d20";
+      ctx.fillStyle = bkColor('paper');
       
       if (node.wall) {
-        ctx.fillStyle = "#1a1a3a";
+        ctx.fillStyle = bkColor('line');
       } else if (path.includes(node) && node !== startNode && node !== endNode) {
         // We pulse the path
         ctx.fillStyle = "rgba(255, 200, 0, 0.4)";
@@ -289,28 +289,68 @@ function draw(ctx, logicalW, logicalH) {
         ctx.fillStyle = "rgba(0, 200, 255, 0.2)";
       }
       
-      // Draw cell rect
-      ctx.fillRect(x + 1, y + 1, cellW - 2, cellH - 2);
+      const ui = bkUi();
       
-      // Wall styling (make them look like physical blocks)
-      if (node.wall) {
-        ctx.fillStyle = "#303060";
-        ctx.fillRect(x + 2, y + 2, cellW - 4, cellH - 4);
+      if (ui === "neo") {
+        if (node.wall) {
+          // Neo Brutalist Wall
+          ctx.fillStyle = bkColor('text');
+          ctx.fillRect(x + 4, y + 4, cellW - 2, cellH - 2); // Hard shadow
+          ctx.fillStyle = bkColor('line-strong');
+          ctx.fillRect(x + 1, y + 1, cellW - 2, cellH - 2);
+          ctx.strokeStyle = bkColor('text');
+          ctx.lineWidth = 2;
+          ctx.strokeRect(x + 1, y + 1, cellW - 2, cellH - 2);
+        } else {
+          ctx.fillRect(x + 1, y + 1, cellW - 2, cellH - 2);
+          ctx.strokeStyle = bkColor('line');
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x + 1, y + 1, cellW - 2, cellH - 2);
+        }
+      } else if (ui === "playful") {
+        // Playful Rounded Wall
+        ctx.beginPath();
+        ctx.roundRect(x + 2, y + 2, cellW - 4, cellH - 4, cellW * 0.3);
+        ctx.fill();
+        if (node.wall) {
+          ctx.fillStyle = bkColor('line-strong');
+          ctx.beginPath();
+          ctx.roundRect(x + 4, y + 4, cellW - 8, cellH - 8, cellW * 0.2);
+          ctx.fill();
+        }
+      } else {
+        // Standard sleek style
+        ctx.fillRect(x + 1, y + 1, cellW - 2, cellH - 2);
+        if (node.wall) {
+          ctx.fillStyle = bkColor('line-strong');
+          ctx.fillRect(x + 2, y + 2, cellW - 4, cellH - 4);
+        }
       }
 
       // Draw start / end with glow
       if (node === startNode || node === endNode) {
         ctx.save();
-        ctx.globalCompositeOperation = "screen";
+        ctx.globalCompositeOperation = bkThemeMode() === "dark" ? "screen" : "source-over";
         
         let color = node === startNode ? "0, 255, 100" : "255, 50, 100";
         
         // Pulse animation
         let pulse = 2 + Math.sin(time) * 2;
         
-        // Inner square
+        // Inner shape based on UI
         ctx.fillStyle = `rgba(${color}, 1)`;
-        ctx.fillRect(x + 4, y + 4, cellW - 8, cellH - 8);
+        if (ui === "playful") {
+          ctx.beginPath();
+          ctx.arc(x + cellW/2, y + cellH/2, cellW/2 - 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (ui === "neo") {
+          ctx.fillRect(x + 2, y + 2, cellW - 4, cellH - 4);
+          ctx.strokeStyle = bkColor('text');
+          ctx.lineWidth = 2;
+          ctx.strokeRect(x + 2, y + 2, cellW - 4, cellH - 4);
+        } else {
+          ctx.fillRect(x + 4, y + 4, cellW - 8, cellH - 8);
+        }
         
         // Glow
         const glow = ctx.createRadialGradient(x+cellW/2, y+cellH/2, 0, x+cellW/2, y+cellH/2, cellW * 1.5);
@@ -324,7 +364,7 @@ function draw(ctx, logicalW, logicalH) {
 
       // Hover
       if (c === hoverC && r === hoverR && !node.wall) {
-        ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+        ctx.fillStyle = bkThemeMode() === "dark" ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.1)";
         ctx.fillRect(x + 1, y + 1, cellW - 2, cellH - 2);
       }
     }
@@ -333,9 +373,9 @@ function draw(ctx, logicalW, logicalH) {
   // Draw Path Line (Golden)
   if (algorithmDone && path.length > 0) {
     ctx.save();
-    ctx.globalCompositeOperation = "screen";
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
+    ctx.globalCompositeOperation = bkThemeMode() === "dark" ? "screen" : "source-over";
+    ctx.lineCap = bkUi() === "neo" ? "square" : "round";
+    ctx.lineJoin = bkUi() === "neo" ? "miter" : "round";
     
     // Animate dash to make it look like energy flowing
     ctx.setLineDash([15, 15]);
@@ -367,7 +407,7 @@ function draw(ctx, logicalW, logicalH) {
   // HUD
   ctx.save();
   ctx.globalCompositeOperation = "source-over";
-  ctx.fillStyle = "rgba(200, 200, 255, 0.8)";
+  ctx.fillStyle = bkColor('text');
   ctx.font = "14px monospace";
   ctx.fillText("Drag START (Green) or END (Red). Drag space to draw WALLS.", 10, 20);
   if (noSolution) {

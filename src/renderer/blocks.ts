@@ -372,6 +372,26 @@ ${scriptTags}
 window.__simProps=${props};
 window.__loop=${loop ?? false};
 window.bkSetupCalled = false;
+window.__bkTheme = { colors: {}, theme: "light", palette: "ink", ui: "standard" };
+window.bkColor = function(name) { return window.__bkTheme.colors[name] || "#000000"; };
+window.bkUi = function() { return window.__bkTheme.ui; };
+window.bkThemeMode = function() {
+  const rootTheme = window.__bkTheme.theme;
+  if (rootTheme === "auto") {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light";
+  }
+  return rootTheme;
+};
+window.addEventListener("message", function(e) {
+  if (e.data && e.data.type === "bk:theme-sync") {
+    window.__bkTheme = e.data.state;
+    window.dispatchEvent(new CustomEvent("bk:theme-changed", { detail: window.__bkTheme }));
+  }
+});
+if (window.parent && window.parent !== window) {
+  window.parent.postMessage({ type: "bk:request-theme" }, "*");
+}
+
 window.bkCanvasPoint = function(event, canvas) {
   const c = canvas || event.currentTarget || event.target;
   const rect = c.getBoundingClientRect();

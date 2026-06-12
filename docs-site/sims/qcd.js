@@ -386,15 +386,12 @@ function draw(ctx, logicalW, logicalH) {
   }
 
   // DRAWING PHASE
-  // Premium Modern Dark Mode Background
-  const bg = ctx.createRadialGradient(logicalW/2, logicalH/2, 0, logicalW/2, logicalH/2, logicalW);
-  bg.addColorStop(0, "#1a1a24");
-  bg.addColorStop(1, "#0a0a0f");
-  ctx.fillStyle = bg;
+  // Premium Modern Dark Mode Background (Replaced with theme bg)
+  ctx.fillStyle = bkColor('bg');
   ctx.fillRect(0, 0, logicalW, logicalH);
   
   // Subtle modern grid
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
+  ctx.strokeStyle = bkColor('line');
   ctx.lineWidth = 1;
   for(let x=0; x<logicalW; x+=40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,logicalH); ctx.stroke(); }
   for(let y=0; y<logicalH; y+=40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(logicalW,y); ctx.stroke(); }
@@ -407,9 +404,20 @@ function draw(ctx, logicalW, logicalH) {
   // Draw Proton Shell
   ctx.save();
   const shellRadius = 130;
-  ctx.fillStyle = "rgba(244, 67, 54, 0.05)"; // Red bag
+  ctx.fillStyle = bkThemeMode() === "dark" ? "rgba(244, 67, 54, 0.05)" : "rgba(244, 67, 54, 0.1)"; // Red bag
   ctx.beginPath();
-  ctx.arc(centerPoint.x, centerPoint.y, shellRadius, 0, Math.PI * 2);
+  if (bkUi() === "neo") {
+    for(let i=0; i<8; i++) {
+      const a = (Math.PI * 2 / 8) * i;
+      const px = centerPoint.x + Math.cos(a) * shellRadius;
+      const py = centerPoint.y + Math.sin(a) * shellRadius;
+      if (i===0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+  } else {
+    ctx.arc(centerPoint.x, centerPoint.y, shellRadius, 0, Math.PI * 2);
+  }
   ctx.fill();
   
   ctx.strokeStyle = "rgba(244, 67, 54, 0.4)";
@@ -418,7 +426,7 @@ function draw(ctx, logicalW, logicalH) {
   ctx.stroke();
   
   // Label for proton
-  ctx.fillStyle = "rgba(244, 67, 54, 0.8)";
+  ctx.fillStyle = bkColor('text');
   ctx.font = "bold 20px 'Inter', sans-serif";
   ctx.textAlign = "center";
   ctx.fillText("Proton (+1e)", centerPoint.x, centerPoint.y - shellRadius - 15);
@@ -464,7 +472,7 @@ function draw(ctx, logicalW, logicalH) {
     const cpTarget = cpMap.get(g.target) || centerPoint;
     
     ctx.save();
-    ctx.globalCompositeOperation = "screen";
+    ctx.globalCompositeOperation = bkThemeMode() === "dark" ? "screen" : "source-over";
     ctx.beginPath();
     
     // Draw a streak instead of a circle
@@ -514,11 +522,19 @@ function draw(ctx, logicalW, logicalH) {
     
     const scale = q.isDragging ? 1.15 : (q.hover ? 1.05 : 1.0);
     const radius = QUARK_RADIUS * scale;
+    const ui = bkUi();
     
     // Shadow
-    ctx.shadowColor = "rgba(0,0,0,0.5)";
-    ctx.shadowBlur = 15;
-    ctx.shadowOffsetY = 6;
+    if (ui === "neo") {
+      ctx.fillStyle = bkColor('text');
+      ctx.beginPath();
+      ctx.arc(q.x + 4, q.y + 4, radius, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.shadowColor = bkThemeMode() === "dark" ? "rgba(0,0,0,0.5)" : "rgba(0,0,0,0.2)";
+      ctx.shadowBlur = 15;
+      ctx.shadowOffsetY = 6;
+    }
     
     // Core (Clean Vector in Dark Mode)
     ctx.beginPath();
@@ -526,12 +542,18 @@ function draw(ctx, logicalW, logicalH) {
     ctx.fillStyle = colorStr;
     ctx.fill();
     
-    // Subtle inner highlight
-    ctx.beginPath();
-    ctx.arc(q.x, q.y, radius - 2, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,255,255,0.2)";
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    if (ui === "neo") {
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = bkColor('text');
+      ctx.stroke();
+    } else {
+      // Subtle inner highlight
+      ctx.beginPath();
+      ctx.arc(q.x, q.y, radius - 2, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(255,255,255,0.2)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
     
     // Remove shadow for text
     ctx.shadowColor = "transparent";
@@ -554,14 +576,14 @@ function draw(ctx, logicalW, logicalH) {
 
   // Modern UI Overlay & Color Balance Indicator
   ctx.save();
-  ctx.fillStyle = "#f0f0f0"; // Dark mode light text
+  ctx.fillStyle = bkColor('text'); // Dark mode light text
   ctx.font = "600 22px 'Inter', sans-serif";
   ctx.textAlign = "left";
   ctx.fillText("Proton Structure (uud)", 30, 40);
   
   if (showColorCharge) {
     // Draw the "Color Neutrality" indicator
-    ctx.fillStyle = "#ccc";
+    ctx.fillStyle = bkColor('text-light');
     ctx.font = "500 16px 'Inter', sans-serif";
     ctx.fillText("Color Neutrality:", 30, 80);
     
@@ -616,12 +638,12 @@ function draw(ctx, logicalW, logicalH) {
     }
 
   } else {
-    ctx.fillStyle = "#666";
+    ctx.fillStyle = bkColor('text-light');
     ctx.font = "400 16px 'Inter', sans-serif";
     ctx.fillText("Color Charge Hidden", 30, 70);
   }
   
-  ctx.fillStyle = "#888";
+  ctx.fillStyle = bkColor('text-light');
   ctx.font = "500 16px 'Inter', sans-serif";
   ctx.textAlign = "center";
   ctx.fillText("Drag a quark to stretch the strong force. A new meson will form if the string breaks.", logicalW / 2, logicalH - 30);
@@ -654,7 +676,7 @@ function draw(ctx, logicalW, logicalH) {
     ctx.shadowBlur = 0; // reset
     
     // Text label
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = bkColor('text');
     ctx.font = "bold 14px 'Inter', sans-serif";
     if (currentTensionPercent >= 1.0) {
       ctx.fillText("STRING BROKEN!", logicalW / 2, meterY - 15);

@@ -164,6 +164,47 @@ function bkWireSidebarToggle() {
 		);
 }
 
+function bkBroadcastTheme(targetWindow) {
+	const root = document.documentElement;
+	const styles = getComputedStyle(root);
+	const state = {
+		theme: root.dataset.theme || "light",
+		palette: root.dataset.palette || "ink",
+		ui: root.dataset.ui || "standard",
+		colors: {
+			bg: styles.getPropertyValue('--bg').trim(),
+			paper: styles.getPropertyValue('--paper').trim(),
+			line: styles.getPropertyValue('--line').trim(),
+			'line-strong': styles.getPropertyValue('--line-strong').trim(),
+			text: styles.getPropertyValue('--text').trim(),
+			'text-light': styles.getPropertyValue('--text-light').trim(),
+			accent: styles.getPropertyValue('--accent').trim(),
+			'accent-soft': styles.getPropertyValue('--accent-soft').trim()
+		}
+	};
+	if (targetWindow) {
+		targetWindow.postMessage({ type: "bk:theme-sync", state }, "*");
+	} else {
+		document.querySelectorAll(".bk-embed-interactive iframe").forEach(iframe => {
+			if (iframe.contentWindow) iframe.contentWindow.postMessage({ type: "bk:theme-sync", state }, "*");
+		});
+	}
+}
+
+window.addEventListener("message", function(e) {
+	if (e.data && e.data.type === "bk:request-theme") {
+		// Small delay to ensure CSS has applied if this happens right on load
+		requestAnimationFrame(() => bkBroadcastTheme(e.source));
+	}
+});
+
+// Watch for OS theme changes if on auto
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+	if (document.documentElement.dataset.theme === "auto") {
+		bkBroadcastTheme();
+	}
+});
+
 function bkWireThemeControls() {
 	const root = document.documentElement;
 	const button = document.getElementById("bk-settings-button");
@@ -262,6 +303,7 @@ function bkWireThemeControls() {
 			localStorage.setItem("bk-theme", val);
 			updateThemeBtn(val);
 			root.setAttribute("data-theme", val);
+			bkBroadcastTheme();
 		});
 	});
 
@@ -286,6 +328,7 @@ function bkWireThemeControls() {
 			localStorage.setItem("bk-palette", newVal);
 			updatePaletteBtn(newVal);
 			root.setAttribute("data-palette", newVal);
+			bkBroadcastTheme();
 		});
 	});
 
@@ -295,6 +338,7 @@ function bkWireThemeControls() {
 			localStorage.setItem("bk-ui", val);
 			updateUiBtn(val);
 			root.setAttribute("data-ui", val);
+			bkBroadcastTheme();
 		});
 	});
 }
