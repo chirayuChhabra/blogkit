@@ -200,6 +200,13 @@ export interface BuildOptions {
 	theme?: "light" | "dark" | "auto";
 	/** Visual color palette of the generated page. Default: `'ink'` */
 	palette?: "ink" | "field" | "ember";
+	/**
+	 * Structural layout styling.
+	 * - `standard`: clean, rounded standard aesthetic
+	 * - `neo`: neo-brutalist harsh borders and shadows
+	 * - `playful`: bubbly rounded buttons and bounce transitions
+	 */
+	ui?: "standard" | "neo" | "playful";
 	/** Custom CSS font-family string (e.g. `'Inter, sans-serif'`). */
 	font?: string;
 	/** Path to a favicon. */
