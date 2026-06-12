@@ -224,14 +224,12 @@ export class LessonBuilder {
 			| `${string}.avif`,
 		opts?: Omit<MediaOptions, "kind">,
 	): this;
-	// biome-ignore lint/suspicious/noExplicitAny: Overload signature
-	add(src: string, opts?: any): this;
-	// biome-ignore lint/suspicious/noExplicitAny: Overload implementation
-	add(src: string, opts: any = {}): this {
+	add(src: string, opts?: unknown): this;
+	add(src: string, opts: unknown = {}): this {
 		const lower = src.toLowerCase();
 		if (lower.endsWith(".md") || lower.endsWith(".mdx"))
 			return this.markdown(src);
-		if (lower.endsWith(".json")) return this.quiz(src, opts);
+		if (lower.endsWith(".json")) return this.quiz(src, opts as Pick<QuizBlock, "label" | "caption">);
 		
 		if (lower.endsWith(".js") || lower.endsWith(".ts")) {
 			throw new Error(
@@ -242,11 +240,11 @@ export class LessonBuilder {
 		}
 
 		if (lower.match(/\.(png|jpg|jpeg|gif|webp|avif|svg)$/))
-			return this.image(src, opts);
-		if (lower.match(/\.(mp4|webm|mov)$/)) return this.video(src, opts);
-		if (lower.match(/\.(mp3|wav|ogg|m4a)$/)) return this.audio(src, opts);
+			return this.image(src, opts as Omit<MediaOptions, "kind">);
+		if (lower.match(/\.(mp4|webm|mov)$/)) return this.video(src, opts as Omit<MediaOptions, "kind">);
+		if (lower.match(/\.(mp3|wav|ogg|m4a)$/)) return this.audio(src, opts as Omit<MediaOptions, "kind">);
 		if (lower.includes("youtube.com") || lower.includes("youtu.be"))
-			return this.youtube(src, opts);
+			return this.youtube(src, opts as YouTubeOptions);
 
 		// Fallback to text/markdown if unknown
 		return this.markdown(src);
