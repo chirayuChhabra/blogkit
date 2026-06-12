@@ -1,7 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
 import { render, renderChapter } from "./renderer/index.js";
-import { copyCoreAssets } from "./renderer/html.js";
 import type {
 	AnimationBlock,
 	AnimationOptions,
@@ -495,8 +494,6 @@ export class LessonBuilder {
 		const outPath = path.join(outDir, `${this.meta.slug}.html`);
 		fs.writeFileSync(outPath, html, "utf-8");
 
-		copyCoreAssets(outDir);
-
 		const relPath = path.relative(process.cwd(), outPath);
 		console.log(`  ✓ Built lesson (${this.blocks.length} blocks) → ${relPath}`);
 		return outPath;
@@ -730,8 +727,6 @@ export class ChapterBuilder {
 
 		const outPath = path.join(outDir, `${this.meta.slug}.html`);
 		fs.writeFileSync(outPath, html, "utf-8");
-
-		copyCoreAssets(outDir);
 
 		const relPath = path.relative(process.cwd(), outPath);
 		console.log(
