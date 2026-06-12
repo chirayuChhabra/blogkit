@@ -1367,3 +1367,177 @@ hr.bk-divider {
 		navigation: auto;
 	}
 }
+/* ─── UI THEMES ───────────────────────────────────────────────────────────── */
+
+/* --- NEO BRUTALIST --- */
+html[data-ui="neo"] {
+	--font-sans: "Archivo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	--font-display: "Syne", Georgia, serif;
+	--font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* NO COLOR OVERRIDES FOR NEO! Let palettes do their job. */
+
+html[data-ui="neo"] * {
+	border-radius: 0 !important;
+}
+
+html[data-ui="neo"] .bk-callout,
+html[data-ui="neo"] .bk-object,
+html[data-ui="neo"] .bk-lesson-card,
+html[data-ui="neo"] .bk-path-terminal,
+html[data-ui="neo"] .bk-theme-panel,
+html[data-ui="neo"] .bk-segmented-control,
+html[data-ui="neo"] .bk-icon-btn,
+html[data-ui="neo"] .bk-sidebar-expand,
+html[data-ui="neo"] .bk-brand-mark {
+	border-width: 2px !important;
+	border-style: solid !important;
+	border-color: var(--line-strong, var(--line)) !important;
+}
+
+html[data-ui="neo"] .bk-sidebar {
+	border-top: none !important;
+	border-bottom: none !important;
+	border-left: none !important;
+	border-right: 2px solid var(--line-strong, var(--line)) !important;
+}
+
+html[data-ui="neo"] blockquote {
+	border-left-width: 6px !important;
+}
+
+html[data-ui="neo"] .bk-callout,
+html[data-ui="neo"] .bk-object,
+html[data-ui="neo"] .bk-theme-panel,
+html[data-ui="neo"] .bk-lesson-card,
+html[data-ui="neo"] .bk-sidebar-expand,
+html[data-ui="neo"] .bk-icon-btn {
+	box-shadow: 4px 4px 0px 0px var(--ink) !important;
+	transition: all 0.15s ease-out !important;
+}
+
+html[data-ui="neo"][data-theme="dark"] .bk-callout,
+html[data-ui="neo"][data-theme="dark"] .bk-object,
+html[data-ui="neo"][data-theme="dark"] .bk-theme-panel,
+html[data-ui="neo"][data-theme="dark"] .bk-lesson-card,
+html[data-ui="neo"][data-theme="dark"] .bk-sidebar-expand,
+html[data-ui="neo"][data-theme="dark"] .bk-icon-btn {
+	box-shadow: 4px 4px 0px 0px var(--accent) !important;
+}
+
+html[data-ui="neo"] .bk-lesson-card {
+	padding: 24px;
+}
+
+html[data-ui="neo"] .bk-lesson-card:hover {
+	transform: translate(-2px, -2px) !important;
+	box-shadow: 6px 6px 0px 0px var(--ink) !important;
+}
+
+html[data-ui="neo"][data-theme="dark"] .bk-lesson-card:hover {
+	box-shadow: 6px 6px 0px 0px var(--accent) !important;
+}
+
+
+/* --- PLAYFUL --- */
+html[data-ui="playful"] {
+	--font-sans: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	--font-display: "Nunito", sans-serif;
+	--font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+html[data-ui="playful"] .bk-callout,
+html[data-ui="playful"] .bk-lesson-card,
+html[data-ui="playful"] .bk-object,
+html[data-ui="playful"] .bk-path-terminal,
+html[data-ui="playful"] .bk-theme-panel {
+	border-radius: 24px !important;
+	border-width: 3px !important;
+	border-style: solid !important;
+	border-color: var(--line) !important;
+	box-shadow: 0 6px 0 0 var(--line), 0 16px 30px rgba(0,0,0,0.06) !important;
+	transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+	overflow: hidden;
+	background: var(--paper) !important;
+}
+
+html[data-ui="playful"][data-theme="dark"] .bk-callout,
+html[data-ui="playful"][data-theme="dark"] .bk-lesson-card,
+html[data-ui="playful"][data-theme="dark"] .bk-object,
+html[data-ui="playful"][data-theme="dark"] .bk-path-terminal,
+html[data-ui="playful"][data-theme="dark"] .bk-theme-panel {
+	box-shadow: 0 6px 0 0 var(--line), 0 16px 30px rgba(0,0,0,0.3) !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	html[data-ui="playful"] .bk-lesson-card:hover,
+	html[data-ui="playful"] .bk-icon-btn:hover {
+		transform: translateY(2px) !important;
+		box-shadow: 0 4px 0 0 var(--line), 0 8px 20px rgba(0,0,0,0.1) !important;
+	}
+
+	html[data-ui="playful"][data-theme="dark"] .bk-lesson-card:hover,
+	html[data-ui="playful"][data-theme="dark"] .bk-icon-btn:hover {
+		box-shadow: 0 4px 0 0 var(--line), 0 8px 20px rgba(0,0,0,0.4) !important;
+	}
+}
+
+
+html[data-ui="playful"] .bk-lesson-card:active,
+html[data-ui="playful"] .bk-icon-btn:active {
+	transform: translateY(6px) !important;
+	box-shadow: 0 0px 0 0 var(--line) !important;
+}
+
+html[data-ui="playful"] .bk-object-header {
+	border-bottom: 3px solid var(--line) !important;
+	padding: 16px 20px !important;
+}
+
+html[data-ui="playful"] .bk-sidebar {
+	border-top-right-radius: 32px !important;
+	border-bottom-right-radius: 32px !important;
+	border-right: 3px solid var(--line) !important;
+	box-shadow: 4px 0 24px rgba(0,0,0,0.05) !important;
+}
+
+html[data-ui="playful"][data-theme="dark"] .bk-sidebar {
+	box-shadow: 4px 0 24px rgba(0,0,0,0.3) !important;
+}
+
+html[data-ui="playful"] .bk-segment-btn {
+	border-radius: 16px !important;
+	font-weight: 800 !important;
+}
+
+html[data-ui="playful"] .bk-icon-btn {
+	border-radius: 50% !important;
+	border: 3px solid var(--line) !important;
+	box-shadow: 0 4px 0 0 var(--line) !important;
+	transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+	background: var(--paper) !important;
+}
+
+html[data-ui="playful"] .bk-hero h1 {
+	font-weight: 900;
+	letter-spacing: -0.04em;
+	text-shadow: 3px 3px 0 var(--line-strong);
+}
+
+html[data-ui="playful"] .bk-lesson-card h2 {
+	font-weight: 800;
+}
+
+html[data-ui="playful"] .bk-timeline-node {
+	border-radius: 50% !important;
+	border-width: 3px !important;
+	box-shadow: 0 3px 0 0 var(--line) !important;
+}
+
+html[data-ui="playful"] blockquote {
+	border-left: 6px solid var(--accent) !important;
+	border-radius: 12px;
+	background: var(--accent-soft) !important;
+	padding: 16px 20px !important;
+}
