@@ -1,0 +1,7 @@
+{
+  "props": { "signalSpeed": 2, "refractoryTime": 2 },
+  "tunables": {
+    "signalSpeed": { "label": "Signal Speed", "min": 0.5, "max": 5, "step": 0.5 },
+    "refractoryTime": { "label": "Refractory Period", "min": 0.5, "max": 5, "step": 0.5 }
+  }
+}
