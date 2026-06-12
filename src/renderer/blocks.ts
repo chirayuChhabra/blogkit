@@ -483,6 +483,17 @@ window.bkSetup = function(requestedW, requestedH, loopFn) {
     }
   });
   
+  window.addEventListener("bk:theme-changed", () => {
+    if (!window.__loop && window.innerWidth >= 32 && window.innerHeight >= 32) {
+      if (!loopId) {
+        ctx.save();
+        ctx.scale(cachedFit.scale, cachedFit.scale);
+        loopFn(ctx, cachedFit.width, cachedFit.height);
+        ctx.restore();
+      }
+    }
+  });
+  
   window.addEventListener("message", (event) => {
     if (!event.data) return;
     if (event.data.type === "bk:play") {
