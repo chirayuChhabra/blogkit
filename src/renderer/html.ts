@@ -42,11 +42,13 @@ function renderEndNav(lesson: Lesson): string {
   </nav>`;
 }
 
-function renderPage(
-	lesson: Lesson,
-	navItems: NavItem[],
-	bodyHtml: string,
+export function renderLayout(
+	title: string,
+	description: string | undefined,
+	navHtml: string,
+	contentHtml: string,
 	opts: BuildOptions,
+	extraSidebar: string = "",
 ): string {
 	const theme = opts.theme ?? "light";
 	const schemeAttr = `data-theme="${theme}"`;
@@ -56,8 +58,7 @@ function renderPage(
 	const tone = preset.tone ?? "scholarly";
 	const palette = opts.palette ?? "ink";
 	const ui = opts.ui ?? "standard";
-	const navHtml = navItems.map(renderNavItem).join("\n");
-	const endNavHtml = renderEndNav(lesson);
+	const safeFont = opts.font ? opts.font.replace(/[;{}<>\\]/g, "") : "";
 
 	return `<!DOCTYPE html>
 <html lang="en" data-palette="${palette}" data-ui="${ui}" ${schemeAttr}>
@@ -75,26 +76,21 @@ function renderPage(
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escHtml(lesson.meta.title)}</title>
-${lesson.meta.description ? `<meta name="description" content="${escHtml(lesson.meta.description)}">` : ""}
+<title>${escHtml(title)}</title>
+${description ? `<meta name="description" content="${escHtml(description)}">` : ""}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.47/dist/katex.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,760&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css">
 ${opts.head ?? ""}
-<style>
-${opts.font ? `:root { --font-sans: ${opts.font}, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }` : ""}
-${pageCSS()}
-</style>
+${opts.standalone === false ? `<link rel="stylesheet" href="assets/theme.css?v=${Date.now()}">` : `<style>\n${safeFont ? `:root { --font-sans: ${safeFont}, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }` : ""}\n${pageCSS()}\n</style>`}
 </head>
 <body class="bk-layout-${layout} bk-density-${density} bk-tone-${tone}">
 <div class="bk-shell">
   <aside class="bk-sidebar">
     <div class="bk-sidebar-inner">
       <div class="bk-sidebar-header">
-        ${lesson.meta.parentSlug ? `<div style="margin-top: 8px;"><a href="${lesson.meta.parentSlug}.html" class="bk-back-link" aria-label="Back to Chapter" style="margin-bottom: 12px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>Back to Chapter</a></div>` : `<div style="margin-top: 8px;"></div>`}
-        <div class="bk-sidebar-title">${escHtml(lesson.meta.title)}</div>
-        ${lesson.meta.author ? `<div class="bk-sidebar-author">By ${escHtml(lesson.meta.author)}</div>` : ""}
-        ${lesson.meta.tags?.length ? `<div class="bk-tag-row">${lesson.meta.tags.map((tag) => `<span>${escHtml(tag)}</span>`).join("")}</div>` : ""}
+        ${extraSidebar}
+        <div class="bk-sidebar-title">${escHtml(title)}</div>
       </div>
       <nav class="bk-nav">${navHtml}</nav>
       <div class="bk-sidebar-footer">
@@ -156,6 +152,30 @@ ${pageCSS()}
     <button class="bk-sidebar-expand" id="bk-sidebar-expand" type="button" aria-label="Expand sidebar">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
     </button>
+    ${contentHtml}
+  </main>
+</div>
+${opts.standalone === false ? `<script src="assets/app.js?v=${Date.now()}"></script>` : `<script>\n${clientScript()}\n</script>`}
+</body>
+</html>`;
+}
+
+function renderPage(
+	lesson: Lesson,
+	navItems: NavItem[],
+	bodyHtml: string,
+	opts: BuildOptions,
+): string {
+	const navHtml = navItems.map(renderNavItem).join("\n");
+	const endNavHtml = renderEndNav(lesson);
+
+	const extraSidebar = `
+		${lesson.meta.parentSlug ? `<div style="margin-top: 8px;"><a href="${lesson.meta.parentSlug}.html" class="bk-back-link" aria-label="Back to Chapter" style="margin-bottom: 12px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>Back to Chapter</a></div>` : `<div style="margin-top: 8px;"></div>`}
+	`;
+	const authorHtml = lesson.meta.author ? `<div class="bk-sidebar-author">By ${escHtml(lesson.meta.author)}</div>` : "";
+	const tagsHtml = lesson.meta.tags?.length ? `<div class="bk-tag-row">${lesson.meta.tags.map((tag) => `<span>${escHtml(tag)}</span>`).join("")}</div>` : "";
+
+	const contentHtml = `
     <article class="bk-content">
       <header class="bk-hero">
         <p class="bk-eyebrow">Interactive Lesson</p>
@@ -165,13 +185,16 @@ ${pageCSS()}
       ${bodyHtml}
       ${endNavHtml}
     </article>
-  </main>
-</div>
-<script>
-${clientScript()}
-</script>
-</body>
-</html>`;
+	`;
+
+	return renderLayout(
+		lesson.meta.title,
+		lesson.meta.description,
+		navHtml,
+		contentHtml,
+		opts,
+		extraSidebar + authorHtml + tagsHtml
+	);
 }
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────

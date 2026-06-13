@@ -15,11 +15,10 @@ function bkSimDoc(js, props, loop, dependencies) {
 		";window.bkSetupCalled=false;" +
 		'window.bkCanvasPoint=function(e,c){const r=(c||e.currentTarget||e.target).getBoundingClientRect(),w=(c&&c.__bkLogicalW)||800,h=(c&&c.__bkLogicalH)||500;return{x:(e.clientX-r.left)*w/r.width,y:(e.clientY-r.top)*h/r.height}};' +
 		'window.bkFitCanvas=function(c,reqW,reqH,o){if(!c)return{scale:1,width:reqW,height:reqH,cssScale:1};const d=window.devicePixelRatio||1;const w=reqW;const h=reqH;c.__bkLogicalW=w;c.__bkLogicalH=h;c.style.width=w+"px";c.style.height=h+"px";c.style.position="relative";c.style.left="auto";c.style.top="auto";c.style.transformOrigin="center center";const sx=window.innerWidth/w,sy=window.innerHeight/h,cssS=Math.max(sx,sy);c.style.transform="scale("+cssS+")";const pw=Math.max(1,Math.round(w*d)),ph=Math.max(1,Math.round(h*d));if(!o||o.bitmap!==false){if(c.width!==pw||c.height!==ph){c.width=pw;c.height=ph}}return{scale:d,width:w,height:h,cssScale:cssS}};' +
-		'window.bkSetup=function(w,h,f){window.bkSetupCalled=true;const c=document.getElementById("c");if(!c)return;const ctx=c.getContext("2d");let loopId=null;let fit=window.bkFitCanvas(c,w,h);function l(){if(window.innerWidth>=32&&window.innerHeight>=32){ctx.save();ctx.scale(fit.scale,fit.scale);f(ctx,fit.width,fit.height);ctx.restore()}if(window.__loop){loopId=requestAnimationFrame(l)}else{loopId=null}}function i(){if(window.innerWidth>=32&&window.innerHeight>=32){fit=window.bkFitCanvas(c,w,h);l()}else{requestAnimationFrame(i)}}i();window.addEventListener("resize",function(){fit=window.bkFitCanvas(c,w,h);if(!window.__loop&&window.innerWidth>=32&&window.innerHeight>=32&&!loopId){ctx.save();ctx.scale(fit.scale,fit.scale);f(ctx,fit.width,fit.height);ctx.restore()}});window.addEventListener("message",function(event){if(!event.data)return;if(event.data.type==="bk:play"){window.__loop=true;if(!loopId)loopId=requestAnimationFrame(l)}else if(event.data.type==="bk:pause"){window.__loop=false}});};' +
-		'window.addEventListener("message",function(event){if(!event.data||event.data.type!=="bk:set-props")return;window.__simProps=Object.assign({},window.__simProps,event.data.props);window.dispatchEvent(new CustomEvent("bk:props",{detail:window.__simProps}));});' +
+		'window.bkSetup=function(w,h,f){window.bkSetupCalled=true;const c=document.getElementById("c");if(!c)return;const ctx=c.getContext("2d");let loopId=null;let fit=window.bkFitCanvas(c,w,h);function l(){if(window.innerWidth>=32&&window.innerHeight>=32){ctx.save();ctx.scale(fit.scale,fit.scale);f(ctx,fit.width,fit.height);ctx.restore()}if(window.__loop){loopId=requestAnimationFrame(l)}else{loopId=null}}function i(){if(window.innerWidth>=32&&window.innerHeight>=32){fit=window.bkFitCanvas(c,w,h);l()}else{requestAnimationFrame(i)}}i();window.addEventListener("resize",function(){fit=window.bkFitCanvas(c,w,h);if(!window.__loop&&window.innerWidth>=32&&window.innerHeight>=32&&!loopId){ctx.save();ctx.scale(fit.scale,fit.scale);f(ctx,fit.width,fit.height);ctx.restore()}});window.addEventListener("message",function(event){if(event.source!==window.parent)return;if(!event.data)return;if(event.data.type==="bk:play"){window.__loop=true;if(!loopId)loopId=requestAnimationFrame(l)}else if(event.data.type==="bk:pause"){window.__loop=false}else if(event.data.type==="bk:set-props"){window.__simProps=Object.assign({},window.__simProps,event.data.props);window.dispatchEvent(new CustomEvent("bk:props",{detail:window.__simProps}));}});};' +
 		"try{" +
 		js +
-		'}catch(e){console.error("Simulation Error:",e);document.body.innerHTML="<div style=\'padding: 20px; color: red; font-family: monospace;\'>Error: "+e.message+"</div>"}' +
+		'}catch(e){console.error("Simulation Error:",e);const d=document.createElement("div");d.style.cssText="padding:20px;color:red;font-family:monospace";d.textContent="Error: "+e.message;document.body.innerHTML="";document.body.appendChild(d);}' +
 		"if(!window.bkSetupCalled){function fallbackScale(){window.bkFitCanvas(document.getElementById('c'),800,500,{bitmap:false});}fallbackScale();window.addEventListener('resize', fallbackScale);}" +
 		"</" + "script></body></html>"
 	);
@@ -76,27 +75,14 @@ function bkWireMaximizeControls() {
 }
 
 function bkWireInteractiveFrames() {
-	const activate = (e) => {
+	const interactiveHandler = (e) => {
 		const obj = e.target.closest?.(".bk-object");
-		if (!obj) return;
-		const frame = obj.querySelector(".bk-embed-interactive");
-		if (frame) {
-			frame.classList.add("is-interactive");
-			const iframe = frame.querySelector("iframe");
-			if (iframe && iframe.contentWindow) {
-				iframe.contentWindow.postMessage({ type: "bk:play" }, "*");
-			}
-		}
-	};
-	document.addEventListener("pointerdown", activate, { passive: true });
-	document.addEventListener("focusin", activate, { passive: true });
+		const activateFrame = obj ? obj.querySelector(".bk-embed-interactive") : null;
 
-	const exitInteractive = (e) => {
 		document
 			.querySelectorAll(".bk-embed-interactive.is-interactive")
 			.forEach((frame) => {
-				const container = frame.closest(".bk-object") || frame;
-				if (!container.contains(e.target)) {
+				if (frame !== activateFrame) {
 					frame.classList.remove("is-interactive");
 					const iframe = frame.querySelector("iframe");
 					if (iframe && iframe.contentWindow) {
@@ -104,9 +90,17 @@ function bkWireInteractiveFrames() {
 					}
 				}
 			});
+
+		if (activateFrame && !activateFrame.classList.contains("is-interactive")) {
+			activateFrame.classList.add("is-interactive");
+			const iframe = activateFrame.querySelector("iframe");
+			if (iframe && iframe.contentWindow) {
+				iframe.contentWindow.postMessage({ type: "bk:play" }, "*");
+			}
+		}
 	};
-	document.addEventListener("pointerdown", exitInteractive, { passive: true });
-	document.addEventListener("focusin", exitInteractive, { passive: true });
+	document.addEventListener("pointerdown", interactiveHandler, { passive: true });
+	document.addEventListener("focusin", interactiveHandler, { passive: true });
 
 	const obs = new IntersectionObserver((entries) => {
 		entries.forEach((e) => {
@@ -192,6 +186,9 @@ function bkBroadcastTheme(targetWindow) {
 }
 
 window.addEventListener("message", function(e) {
+	const isValidSource = Array.from(document.querySelectorAll("iframe")).some(f => f.contentWindow === e.source);
+	if (!isValidSource) return;
+
 	if (e.data && e.data.type === "bk:request-theme") {
 		// Small delay to ensure CSS has applied if this happens right on load
 		requestAnimationFrame(() => bkBroadcastTheme(e.source));
@@ -266,13 +263,16 @@ function bkWireThemeControls() {
 
 	if (savedTheme) {
 		updateThemeBtn(savedTheme);
+		root.setAttribute("data-theme", savedTheme);
 	}
 	if (savedPalette) {
 		const normalizedPalette = savedPalette === "green" ? "field" : savedPalette;
 		updatePaletteBtn(normalizedPalette);
+		root.setAttribute("data-palette", normalizedPalette);
 	}
 	if (savedUi) {
 		updateUiBtn(savedUi);
+		root.setAttribute("data-ui", savedUi);
 	}
 
 	button &&
@@ -344,15 +344,44 @@ function bkWireThemeControls() {
 }
 
 // Quiz interaction
-// biome-ignore lint/correctness/noUnusedVariables: Used in generated HTML
 function bkAnswer(btn, qid) {
-	// biome-ignore lint/correctness/noUnusedVariables: Kept for clarity
-	const isCorrect = btn.dataset.correct === "true";
 	const question = document.getElementById(qid);
+	if (!question) return;
+	const quiz = question.closest(".bk-quiz");
+	const dataEl = quiz ? quiz.querySelector(".bk-quiz-data") : null;
+	let isCorrect = false;
+	
+	if (dataEl) {
+		try {
+			const answers = JSON.parse(dataEl.textContent || "[]");
+			// qid is format "quiz-IDX-qQI"
+			const match = qid.match(/-q(\d+)$/);
+			if (match) {
+				const qi = parseInt(match[1], 10);
+				const optIdx = parseInt(btn.dataset.optIdx, 10);
+				isCorrect = answers[qi] === optIdx;
+			}
+		} catch(e) {}
+	}
+
 	question.querySelectorAll(".bk-opt").forEach((b) => {
-		if (b.dataset.correct === "true") {
+		b.disabled = true; // Disable buttons for screen readers
+		const optIdx = parseInt(b.dataset.optIdx, 10);
+		// If we know the answer, highlight it
+		if (dataEl) {
+			try {
+				const answers = JSON.parse(dataEl.textContent || "[]");
+				const match = qid.match(/-q(\d+)$/);
+				if (match && answers[parseInt(match[1], 10)] === optIdx) {
+					b.classList.add("correct");
+					return;
+				}
+			} catch(e) {}
+		}
+		
+		if (b === btn && isCorrect) {
 			b.classList.add("correct");
-		} else if (b === btn) {
+		} else if (b === btn && !isCorrect) {
 			b.classList.add("wrong");
 		} else {
 			b.classList.add("disabled");
