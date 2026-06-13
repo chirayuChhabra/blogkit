@@ -234,7 +234,17 @@ function renderBlockInner(
               loading="lazy"
               style="width:100%;height:100%;border:none;display:block;">
             </iframe>
-          </div>`,
+          </div>
+          <script>
+            if (!window._bkYtBlurSetup) {
+              window._bkYtBlurSetup = true;
+              window.addEventListener('mousemove', function() {
+                if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
+                  document.activeElement.blur();
+                }
+              }, { passive: true });
+            }
+          </script>`,
 					"neutral",
 				),
 			};
@@ -264,7 +274,7 @@ function renderBlockInner(
 					block.label,
 					block.caption,
 					`<div class="bk-columns" style="grid-template-columns:${block.columns
-						.map((column) => column.width ?? "minmax(0, 1fr)")
+						.map((column) => escAttr(column.width ?? "minmax(0, 1fr)"))
 						.join(" ")}">
             ${block.columns
 							.map((column) => {
@@ -316,6 +326,7 @@ function renderBlockInner(
           <div class="bk-quiz-body">
             ${quiz.questions.map((q, qi) => renderQuestion(q, `quiz-${idx}`, qi)).join("\n")}
           </div>
+          <script type="application/json" class="bk-quiz-data">${escapeScriptJson(quiz.questions.map(q => q.answer))}</script>
         </div>`,
 				navItems: [{
 					id: `quiz-${idx}`,
@@ -338,7 +349,7 @@ function renderQuestion(q: QuizQuestion, quizId: string, qi: number): string {
 	const options = q.options
 		.map(
 			(opt, oi) => `
-    <button class="bk-opt" data-correct="${oi === q.answer}" onclick="bkAnswer(this,'${qid}')">
+    <button class="bk-opt" data-opt-idx="${oi}" onclick="bkAnswer(this,'${escAttr(qid)}')">
       <span class="bk-opt-dot"></span><span class="bk-opt-text">${mdInline(opt)}</span>
     </button>`,
 		)
@@ -514,7 +525,11 @@ try {
   ${js}
 } catch (e) {
   console.error("Simulation Error:", e);
-  document.body.innerHTML = '<div style="padding:20px;color:red;font-family:monospace">Error: ' + e.message + '</div>';
+  const errDiv = document.createElement('div');
+  errDiv.style.cssText = "padding:20px;color:red;font-family:monospace";
+  errDiv.textContent = 'Error: ' + e.message;
+  document.body.innerHTML = '';
+  document.body.appendChild(errDiv);
 }
 if (!window.bkSetupCalled) {
   function fallbackScale() {
@@ -525,13 +540,7 @@ if (!window.bkSetupCalled) {
 }
 </script>
 </body></html>`;
-	// We use double quotes for the srcdoc attribute, so we must escape them.
-	return doc
-		.replace(/&/g, "&amp;")
-		.replace(/"/g, "&quot;")
-		.replace(/'/g, "&#39;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;");
+	return escAttr(doc);
 }
 
 export { blockChrome, renderBlock, renderBlockInner };

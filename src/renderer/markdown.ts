@@ -56,11 +56,12 @@ function mdToHtml(md: string): { html: string; title: string; headings: { id: st
 	});
 
 	const headings: { id: string; text: string; level: number }[] = [];
+	const idPrefix = Math.random().toString(36).substring(2, 6);
 	let headingIdCounter = 0;
 
 	const renderer = new marked.Renderer();
 	renderer.heading = ({ tokens, depth, text }) => {
-		const id = `bk-heading-${headingIdCounter++}`;
+		const id = `bk-heading-${idPrefix}-${headingIdCounter++}`;
 		if (depth === 1 || depth === 2) {
 			const plainText = text.replace(/<[^>]+>/g, "");
 			headings.push({ id, text: plainText, level: depth });
@@ -161,24 +162,63 @@ function renderSimulationControls(
 	const props = block.props ?? {};
 	const keys = Object.keys(block.tunables ?? props).filter((key) => {
 		const value = props[key];
-		return typeof value === "number" || typeof value === "boolean";
+		return typeof value === "number" || typeof value === "boolean" || typeof value === "string";
 	});
 
 	if (!keys.length || block.controls === "observe") return "";
 
+	const controls = keys.map((key) => {
+		const value = props[key];
+		const control = block.tunables?.[key] ?? {};
+		let type = control.type;
+		if (!type) {
+			if (typeof value === "boolean") type = "boolean";
+			else if (typeof value === "string") type = "text";
+			else type = "range";
+		}
+		const label = escHtml(control.label ?? key.replace(/([A-Z])/g, " $1"));
+		return { key, value, control, type, label };
+	});
+
+	const ranges = controls.filter((c) => c.type === "range");
+	const booleans = controls.filter((c) => c.type === "boolean");
+	const others = controls.filter((c) => c.type === "text" || c.type === "number");
+
+	const sortedControls = [...ranges, ...others, ...booleans];
+
+	let firstBooleanRendered = false;
+
 	return `<div class="bk-sim-controls" aria-label="Simulation controls">
-    ${keys
-			.map((key) => {
-				const value = props[key];
-				const control = block.tunables?.[key] ?? {};
-				const label = escHtml(control.label ?? key.replace(/([A-Z])/g, " $1"));
-				if (typeof value === "boolean") {
-					return `<label class="bk-sim-toggle">
+    ${sortedControls
+			.map(({ key, value, control, type, label }) => {
+				if (type === "boolean") {
+					const isFirst = !firstBooleanRendered;
+					firstBooleanRendered = true;
+					const extraClass = isFirst ? " bk-sim-toggle--first" : "";
+					return `<label class="bk-sim-toggle${extraClass}">
             <input type="checkbox" data-bk-prop="${escAttr(key)}" ${value ? "checked" : ""}>
             <span>${label}</span>
           </label>`;
 				}
 
+				if (type === "text") {
+					return `<label class="bk-sim-text">
+            <span>${label}</span>
+            <input type="text" data-bk-prop="${escAttr(key)}" value="${escAttr(String(value))}">
+          </label>`;
+				}
+
+				if (type === "number") {
+					const min = control.min ?? "";
+					const max = control.max ?? "";
+					const step = control.step ?? "any";
+					return `<label class="bk-sim-number">
+            <span>${label}</span>
+            <input type="number" data-bk-prop="${escAttr(key)}" min="${min}" max="${max}" step="${step}" value="${value}">
+          </label>`;
+				}
+
+				// type === "range"
 				const min = control.min ?? Math.min(0, Number(value));
 				const max = control.max ?? Math.max(10, Number(value) * 2);
 				const step = control.step ?? 1;

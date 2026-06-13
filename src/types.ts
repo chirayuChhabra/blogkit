@@ -199,7 +199,7 @@ export interface BuildOptions {
 	/** Light or dark mode. Default: `'auto'` */
 	theme?: "light" | "dark" | "auto";
 	/** Visual color palette of the generated page. Default: `'ink'` */
-	palette?: "ink" | "field" | "ember";
+	palette?: "ink" | "field" | "ember" | "elixir" | "trunk" | "lava";
 	/**
 	 * Structural layout styling.
 	 * - `standard`: clean, rounded standard aesthetic
@@ -217,6 +217,8 @@ export interface BuildOptions {
 	preset?: LessonPreset;
 	/** If true, throws errors on missing files and invalid blocks to prevent silent failures. Default: `true` */
 	strict?: boolean;
+	/** If true, inlines CSS and JS into a single HTML file. If false, outputs assets to an `assets/` folder. Default: `true` */
+	standalone?: boolean;
 }
 
 /** Configuration for simulation blocks */
@@ -236,6 +238,7 @@ export interface SimulationConfig extends SimulationOptions {
 
 /** Represents a single interactive control in a simulation (e.g., a slider) */
 export interface SimulationControl {
+	type?: "range" | "number" | "text" | "boolean";
 	label?: string;
 	min?: number;
 	max?: number;
