@@ -45,16 +45,25 @@ function resolveContent(
 		}
 	}
 
+	const baseDir = path.resolve(options.contentBase ?? ".");
+	if (!filePath.startsWith(baseDir) && options.strict !== false) {
+		throw new Error(`Security Error: Path traversal attempt outside contentBase: ${filePath}`);
+	}
+
 	if (fs.existsSync(filePath)) {
 		const stat = fs.statSync(filePath);
 		if (stat.isFile()) {
 			if (expectedType === "js" && (filePath.endsWith(".js") || filePath.endsWith(".ts") || filePath.endsWith(".jsx") || filePath.endsWith(".tsx"))) {
-				const out = spawnSync("bun", ["build", "--target=browser", filePath]);
-				if (out.status === 0) {
-					return out.stdout.toString("utf-8");
+				if (!filePath.match(/^[a-zA-Z0-9_\-./\\]+$/)) {
+					console.warn(`\n  ⚠ Invalid characters in file path for bun build: ${filePath}`);
 				} else {
-					console.warn(`\n  ⚠ Bun build failed for ${filePath}:\n${out.stderr.toString("utf-8")}`);
-					// fallback to reading raw
+					const out = spawnSync("bun", ["build", "--target=browser", filePath]);
+					if (out.status === 0) {
+						return out.stdout.toString("utf-8");
+					} else {
+						console.warn(`\n  ⚠ Bun build failed for ${filePath}:\n${out.stderr.toString("utf-8")}`);
+						// fallback to reading raw
+					}
 				}
 			}
 			return fs.readFileSync(filePath, "utf-8");
