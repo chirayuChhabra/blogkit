@@ -426,7 +426,7 @@ function draw(ctx, logicalW, logicalH) {
   ctx.stroke();
   
   // Label for proton
-  ctx.fillStyle = bkColor('text');
+  ctx.fillStyle = bkThemeMode() === "dark" ? "#ffffff" : "#1a1a1a";
   ctx.font = "bold 20px 'Inter', sans-serif";
   ctx.textAlign = "center";
   ctx.fillText("Proton (+1e)", centerPoint.x, centerPoint.y - shellRadius - 15);
@@ -526,7 +526,7 @@ function draw(ctx, logicalW, logicalH) {
     
     // Shadow
     if (ui === "neo") {
-      ctx.fillStyle = bkColor('text');
+      ctx.fillStyle = bkThemeMode() === "dark" ? "#ffffff" : "#1a1a1a";
       ctx.beginPath();
       ctx.arc(q.x + 4, q.y + 4, radius, 0, Math.PI * 2);
       ctx.fill();
@@ -544,7 +544,7 @@ function draw(ctx, logicalW, logicalH) {
     
     if (ui === "neo") {
       ctx.lineWidth = 2;
-      ctx.strokeStyle = bkColor('text');
+      ctx.strokeStyle = bkThemeMode() === "dark" ? "#ffffff" : "#1a1a1a";
       ctx.stroke();
     } else {
       // Subtle inner highlight
@@ -576,14 +576,14 @@ function draw(ctx, logicalW, logicalH) {
 
   // Modern UI Overlay & Color Balance Indicator
   ctx.save();
-  ctx.fillStyle = bkColor('text'); // Dark mode light text
+  ctx.fillStyle = bkThemeMode() === "dark" ? "#ffffff" : "#1a1a1a"; // Dark mode light text
   ctx.font = "600 22px 'Inter', sans-serif";
   ctx.textAlign = "left";
   ctx.fillText("Proton Structure (uud)", 30, 40);
   
   if (showColorCharge) {
     // Draw the "Color Neutrality" indicator
-    ctx.fillStyle = bkColor('text-light');
+    ctx.fillStyle = bkThemeMode() === "dark" ? "#cccccc" : "#666666";
     ctx.font = "500 16px 'Inter', sans-serif";
     ctx.fillText("Color Neutrality:", 30, 80);
     
@@ -638,12 +638,12 @@ function draw(ctx, logicalW, logicalH) {
     }
 
   } else {
-    ctx.fillStyle = bkColor('text-light');
+    ctx.fillStyle = bkThemeMode() === "dark" ? "#cccccc" : "#666666";
     ctx.font = "400 16px 'Inter', sans-serif";
     ctx.fillText("Color Charge Hidden", 30, 70);
   }
   
-  ctx.fillStyle = bkColor('text-light');
+  ctx.fillStyle = bkThemeMode() === "dark" ? "#cccccc" : "#666666";
   ctx.font = "500 16px 'Inter', sans-serif";
   ctx.textAlign = "center";
   ctx.fillText("Drag a quark to stretch the strong force. A new meson will form if the string breaks.", logicalW / 2, logicalH - 30);
@@ -676,7 +676,7 @@ function draw(ctx, logicalW, logicalH) {
     ctx.shadowBlur = 0; // reset
     
     // Text label
-    ctx.fillStyle = bkColor('text');
+    ctx.fillStyle = bkThemeMode() === "dark" ? "#ffffff" : "#1a1a1a";
     ctx.font = "bold 14px 'Inter', sans-serif";
     if (currentTensionPercent >= 1.0) {
       ctx.fillText("STRING BROKEN!", logicalW / 2, meterY - 15);

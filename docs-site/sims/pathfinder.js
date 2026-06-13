@@ -276,17 +276,24 @@ function draw(ctx, logicalW, logicalH) {
       let y = r * cellH;
       
       // Base cell
-      ctx.fillStyle = bkColor('paper');
+      let isDark = bkThemeMode() === "dark";
+      
+      if (isDark) {
+        ctx.fillStyle = bkColor('paper');
+      } else {
+        // In light mode, paper often blends with the background. Add slight tint for empty cells.
+        ctx.fillStyle = "rgba(0, 0, 0, 0.04)"; 
+      }
       
       if (node.wall) {
-        ctx.fillStyle = bkColor('line');
+        ctx.fillStyle = isDark ? bkColor('line') : "rgba(0, 0, 0, 0.15)";
       } else if (path.includes(node) && node !== startNode && node !== endNode) {
         // We pulse the path
-        ctx.fillStyle = "rgba(255, 200, 0, 0.4)";
+        ctx.fillStyle = isDark ? "rgba(255, 200, 0, 0.4)" : "rgba(255, 180, 0, 0.7)";
       } else if (closedSet.includes(node)) {
-        ctx.fillStyle = "rgba(20, 50, 150, 0.2)";
+        ctx.fillStyle = isDark ? "rgba(20, 50, 150, 0.2)" : "rgba(20, 80, 200, 0.25)";
       } else if (openSet.includes(node)) {
-        ctx.fillStyle = "rgba(0, 200, 255, 0.2)";
+        ctx.fillStyle = isDark ? "rgba(0, 200, 255, 0.2)" : "rgba(0, 150, 255, 0.25)";
       }
       
       const ui = bkUi();
@@ -313,7 +320,7 @@ function draw(ctx, logicalW, logicalH) {
         ctx.roundRect(x + 2, y + 2, cellW - 4, cellH - 4, cellW * 0.3);
         ctx.fill();
         if (node.wall) {
-          ctx.fillStyle = bkColor('line-strong');
+          ctx.fillStyle = isDark ? bkColor('line-strong') : "rgba(0, 0, 0, 0.4)";
           ctx.beginPath();
           ctx.roundRect(x + 4, y + 4, cellW - 8, cellH - 8, cellW * 0.2);
           ctx.fill();
@@ -322,7 +329,7 @@ function draw(ctx, logicalW, logicalH) {
         // Standard sleek style
         ctx.fillRect(x + 1, y + 1, cellW - 2, cellH - 2);
         if (node.wall) {
-          ctx.fillStyle = bkColor('line-strong');
+          ctx.fillStyle = isDark ? bkColor('line-strong') : "rgba(0, 0, 0, 0.35)";
           ctx.fillRect(x + 2, y + 2, cellW - 4, cellH - 4);
         }
       }

@@ -1,7 +1,44 @@
 import { chapter, lesson } from "../src/index.js";
 
+const showcase = lesson("Showcase", ctx => {
+  ctx.markdown("content/showcase.md");
+  ctx.divider();
+
+  ctx.heading("Callouts & Notifications", "Callouts");
+  ctx.important("This is an **important** callout. Use it to highlight critical information like breaking changes or security warnings.");
+  ctx.tip("This is a **tip** callout. It's perfect for highlighting best practices or performance optimizations.");
+  ctx.note("This is a **note** callout. It's great for adding background context without distracting from the main lesson.");
+  ctx.warning("This is a **warning** callout. Use it to warn users about deprecated APIs or potential pitfalls.");
+  ctx.divider();
+
+  ctx.heading("Media & Code", "Media & Code");
+  ctx.code('import { chapter, lesson } from "mr-markdown";\n\nconst quickstart = lesson("Quick Start", ctx => {\n  ctx.markdown("Welcome to the quick start guide!");\n});\n\nexport const docsChapter = chapter("Documentation", { outDir: "out" }, ctx => {\n  ctx.lesson(quickstart);\n});', 'typescript', 'chapter.ts');
+  ctx.columns([
+    {
+      markdown: "### Advanced Layouts\n\nCreate side-by-side columns effortlessly. This is great for putting code or math next to an explanation."
+    },
+    {
+      latex: "e^{i\\pi} + 1 = 0"
+    }
+  ]);
+  ctx.image("media/nature.jpg", { alt: "Moraine Lake natural landscape", caption: "A beautiful landscape image embedded with `.image()`" });
+  ctx.youtube("https://www.youtube.com/watch?v=riXcZT2ICjA", { caption: "A Khan Academy YouTube video embed using `.youtube()`" });
+  ctx.divider();
+
+  ctx.heading("Live Demonstrations", "Live Demos");
+  ctx.markdown("Mr Markdown supports rich, interactive components. Try out these live simulations and the quiz below!");
+  
+  ctx.lab("sims/qcd.js", { label: "Proton & Quarks", caption: "Interactive QCD string breaking. Drag a quark!" });
+  ctx.lab("sims/pathfinder.js", { label: "Pathfinding Visualizer", caption: "A* Algorithm solving a maze. Drag the green start and red end nodes, or change the maze density." });
+  ctx.quiz("quizzes/sample.json", { label: "Mr Markdown Quiz", caption: "A sample interactive quiz." });
+});
+
 const quickstart = lesson("Quick Start", ctx => {
   ctx.markdown("content/quickstart.md");
+});
+
+const cli = lesson("CLI", ctx => {
+  ctx.markdown("content/cli.md");
 });
 
 const coreBlocks = lesson("Core Blocks", ctx => {
@@ -9,13 +46,13 @@ const coreBlocks = lesson("Core Blocks", ctx => {
   ctx.divider();
   ctx.heading("Live Demonstration", "Live Demo");
   ctx.markdown("Here is how callouts and media look when rendered by **Mr Markdown**. This is extremely useful for highlighting important context to your readers.");
-  ctx.important("This is an **important** callout! Use it for critical warnings, such as reminding students not to touch a high-voltage wire.");
-  ctx.tip("This is a **tip** callout! Great for helpful hints, like performance optimizations.");
-  ctx.note("This is a **note** callout! Ideal for extra context or background information that isn't strictly required.");
-  ctx.warning("This is a **warning**! Something to be careful about, like a deprecated feature.");
+  ctx.important("This is an **important** callout. Use it to highlight critical information like breaking changes or security warnings.");
+  ctx.tip("This is a **tip** callout. It's perfect for highlighting best practices or performance optimizations.");
+  ctx.note("This is a **note** callout. It's great for adding background context without distracting from the main lesson.");
+  ctx.warning("This is a **warning** callout. Use it to warn users about deprecated APIs or potential pitfalls.");
   ctx.markdown("You can also embed beautiful, responsive media using the SDK:");
-  ctx.image("media/wave.png", { alt: "Abstract colorful wave", caption: "A beautiful image embedded with `.image()`" });
-  ctx.youtube("https://www.youtube.com/watch?v=dQw4w9WgXcQ", { caption: "A YouTube embed using `.youtube()`" });
+  ctx.image("media/nature.jpg", { alt: "Moraine Lake natural landscape", caption: "A beautiful landscape image embedded with `.image()`" });
+  ctx.youtube("https://www.youtube.com/watch?v=riXcZT2ICjA", { caption: "A Khan Academy YouTube video embed using `.youtube()`" });
 });
 
 const simulations = lesson("Simulations", ctx => {
@@ -32,10 +69,6 @@ const simulations = lesson("Simulations", ctx => {
   ctx.lab("sims/pathfinder.js", { label: "Pathfinding Visualizer", caption: "A* Algorithm solving a maze. Drag the green start and red end nodes, or change the maze density." });
   ctx.divider();
 
-  ctx.markdown("### Biology: Neural Action Potentials");
-  ctx.markdown("An organic neural network simulation showing electrical impulse cascades. Click a neuron to fire it!");
-  ctx.lab("sims/neuron.js", { label: "Neural Network", caption: "Action potentials propagating through a neural network. Click any soma to fire an impulse." });
-  ctx.divider();
 
   ctx.markdown("content/simulations.md");
 });
@@ -56,18 +89,15 @@ const production = lesson("Production Checks", ctx => {
   ctx.markdown("content/production-checks.md");
 });
 
-const cli = lesson("CLI", ctx => {
-  ctx.markdown("content/cli.md");
-});
-
-export const docsChapter = chapter("Mr Markdown Documentation", { outDir: "docs-site/out", contentBase: import.meta.dir }, ctx => {
+export const docsChapter = chapter("Mr Markdown Documentation", { outDir: "docs-site/out", contentBase: import.meta.dir, standalone: false }, ctx => {
   ctx.slug("index");
+  ctx.lesson(showcase);
   ctx.lesson(quickstart);
+  ctx.lesson(cli);
   ctx.lesson(coreBlocks);
   ctx.lesson(simulations);
   ctx.lesson(quizzes);
   ctx.lesson(themes);
-  ctx.lesson(cli);
   ctx.lesson(production);
 });
 

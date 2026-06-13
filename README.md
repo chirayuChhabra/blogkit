@@ -1,6 +1,6 @@
 # Mr Markdown
 
-Mr Markdown is an opinionated TypeScript SDK for building interactive, single-file learning pages. It is designed for lessons that mix prose, LaTeX, simulations, media, video, and quizzes without making every author build layout and interaction chrome from scratch.
+Mr Markdown is an opinionated TypeScript SDK for building interactive learning pages. It is designed for lessons that mix prose, LaTeX, simulations, media, video, and quizzes without making every author build layout and interaction chrome from scratch.
 
 ## Documentation
 

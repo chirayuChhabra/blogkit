@@ -28,6 +28,7 @@ If you need specific layout semantics (like a new major heading, callouts, or co
 * **`heading(src, title?)`**: Creates a primary section heading (H1) and a corresponding entry in the sidebar navigation.
 * **`section(src, label?)`**: Creates a subsection heading (H2) and a nested entry in the sidebar navigation.
 * **`content(src)` / `markdown(src)`**: Adds standard prose from a markdown file without creating a new sidebar entry.
+* **`code(src, lang?, label?)`**: Displays the source code from a file with syntax highlighting.
 
 ## Callouts & Asides
 

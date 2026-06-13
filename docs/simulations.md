@@ -201,7 +201,56 @@ function draw(ctx, logicalW, logicalH) {
 
 ---
 
-## 5. Summary Checklist for a Perfect Simulation
+## 5. Inherently Themed Simulations
+
+Mr Markdown allows users to fully customize the look and feel of the lesson (Dark Mode, Color Palettes, UI Styles). To ensure your simulations look natively integrated, they should inherently respect the active aesthetic.
+
+Mr Markdown provides three global helper functions injected automatically into your iframe to help you draw responsive graphics:
+
+### `window.bkColor(name)`
+Returns the current active CSS variable color (as a string, e.g. `"#ffffff"` or `"rgba(0,0,0,1)"`). It instantly updates when the user changes their active palette or theme.
+- `"bg"`: The main background color.
+- `"paper"`: Card/Object background color.
+- `"line"` / `"line-strong"`: Border and structural colors.
+- `"text"` / `"text-light"`: Primary and secondary text colors.
+- `"accent"` / `"accent-soft"`: The active brand color (e.g., green for the Field palette, blue for Ink).
+
+```js
+// Instantly draw a background that perfectly matches the site!
+ctx.fillStyle = bkColor('bg');
+ctx.fillRect(0, 0, w, h);
+```
+
+### `window.bkUi()`
+Returns the structural style string (`"standard"`, `"neo"`, or `"playful"`). You can use this to dramatically change how you render shapes.
+```js
+const ui = bkUi();
+if (ui === "neo") {
+  // Draw brutalist rectangles with thick hard borders
+  ctx.strokeRect(x, y, w, h); 
+} else if (ui === "playful") {
+  // Draw bouncy, friendly rounded bubbles
+  ctx.roundRect(x, y, w, h, 15);
+} else {
+  // Standard organic or sleek look
+}
+```
+
+### `window.bkThemeMode()`
+Returns `"light"` or `"dark"`. Very useful for fixing contrast issues with Canvas blending modes (e.g., glowing effects)!
+```js
+// If you are drawing glowing bioluminescence:
+// "screen" looks beautiful in dark mode, but disappears on light backgrounds!
+const isLight = bkThemeMode() === "light";
+ctx.globalCompositeOperation = isLight ? "multiply" : "screen";
+```
+
+> [!TIP]
+> **No page reloads necessary!** Because `bkSetup` runs continuously in `requestAnimationFrame`, your canvas will instantly morph and repaint natively whenever the user clicks a settings button!
+
+---
+
+## 6. Summary Checklist for a Perfect Simulation
 
 1. [ ] **Logic File:** Write your simulation logic inside `my-sim.js`.
 2. [ ] **Logical Space:** Use `window.bkSetup(width, height, drawFn)` to start your loop. Don't worry about screen resolutions; just draw to your logical space.
