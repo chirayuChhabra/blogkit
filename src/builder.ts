@@ -31,6 +31,10 @@ import type {
 	YouTubeOptions,
 } from "./types.js";
 
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 function getCallerDir(): string | undefined {
 	const err = new Error();
 	const stack = err.stack?.split("\n");
@@ -47,22 +51,67 @@ function getCallerDir(): string | undefined {
 				p = p.replace(/^file:\/\//, "");
 			}
 			if (p.startsWith("/") && p[2] === ":") {
-				p = p.substring(1); // Handle Windows paths like /C:/
+				p = p.substring(1);
 			}
-			
 			if (!builderFilePath) {
 				builderFilePath = p;
 				continue;
 			}
-			
 			if (p === builderFilePath) {
 				continue;
 			}
-			
 			return path.dirname(p);
 		}
 	}
 	return undefined;
+}
+
+
+
+function copyAssets(outDir: string) {
+	const assetsDir = path.join(outDir, "assets");
+	if (!fs.existsSync(assetsDir)) fs.mkdirSync(assetsDir, { recursive: true });
+
+	const srcStylesDir = path.join(__dirname, "styles");
+	const srcClientDir = path.join(__dirname, "client");
+	
+	const fallbackStylesDir = path.join(__dirname, "../src/styles");
+	const fallbackClientDir = path.join(__dirname, "../src/client");
+
+	const copyDir = (src: string, dest: string) => {
+		if (!fs.existsSync(src)) return;
+		for (const file of fs.readdirSync(src)) {
+			fs.copyFileSync(path.join(src, file), path.join(dest, file));
+		}
+	};
+
+	if (fs.existsSync(srcStylesDir)) copyDir(srcStylesDir, assetsDir);
+	else copyDir(fallbackStylesDir, assetsDir);
+
+	if (fs.existsSync(srcClientDir)) copyDir(srcClientDir, assetsDir);
+	else copyDir(fallbackClientDir, assetsDir);
+}
+
+function mergeOptions(options: BuildOptions, callerDir?: string): BuildOptions {
+	const merged: BuildOptions = {
+		outDir: options.outDir ?? (callerDir ? path.join(callerDir, "out") : path.join(process.cwd(), "out")),
+		contentBase: options.contentBase ?? callerDir ?? process.cwd(),
+		theme: options.theme ?? "auto",
+		palette: options.palette ?? "ink",
+		strict: options.strict ?? process.env.NODE_ENV !== "development",
+		standalone: options.standalone ?? true,
+	};
+	for (const [k, v] of Object.entries(options)) {
+		if (v !== undefined && k !== "preset") {
+			(merged as any)[k] = v;
+		}
+	}
+	merged.preset = {
+		layout: options.preset?.layout ?? "lesson",
+		density: options.preset?.density ?? "comfortable",
+		tone: options.preset?.tone ?? "scholarly",
+	};
+	return merged;
 }
 
 // ─── LessonBuilder ────────────────────────────────────────────────────────────
@@ -86,20 +135,7 @@ export class LessonBuilder {
 			title,
 			slug,
 		};
-		this.options = {
-			outDir: options.outDir ?? (callerDir ? path.join(callerDir, "out") : "./out"),
-			contentBase: options.contentBase ?? callerDir ?? ".",
-			theme: options.theme ?? "auto",
-			palette: options.palette ?? "ink",
-			strict: options.strict ?? process.env.NODE_ENV !== "development",
-			preset: {
-				layout: "lesson",
-				density: "comfortable",
-				tone: "scholarly",
-				...options.preset,
-			},
-			...options,
-		};
+		this.options = mergeOptions(options, callerDir);
 	}
 
 	// ── Meta setters ────────────────────────────────────────────────────────────
@@ -494,6 +530,10 @@ export class LessonBuilder {
 		const outPath = path.join(outDir, `${this.meta.slug}.html`);
 		fs.writeFileSync(outPath, html, "utf-8");
 
+		if (this.options.standalone === false) {
+			copyAssets(outDir);
+		}
+
 		const relPath = path.relative(process.cwd(), outPath);
 		console.log(`  ✓ Built lesson (${this.blocks.length} blocks) → ${relPath}`);
 		return outPath;
@@ -658,20 +698,7 @@ export class ChapterBuilder {
 			title,
 			slug,
 		};
-		this.options = {
-			outDir: options.outDir ?? (callerDir ? path.join(callerDir, "out") : "./out"),
-			contentBase: options.contentBase ?? callerDir ?? ".",
-			theme: options.theme ?? "auto",
-			palette: options.palette ?? "ink",
-			strict: options.strict ?? process.env.NODE_ENV !== "development",
-			preset: {
-				layout: "lesson",
-				density: "comfortable",
-				tone: "scholarly",
-				...options.preset,
-			},
-			...options,
-		};
+		this.options = mergeOptions(options, callerDir);
 	}
 
 	slug(slug: string): this {
@@ -727,6 +754,10 @@ export class ChapterBuilder {
 
 		const outPath = path.join(outDir, `${this.meta.slug}.html`);
 		fs.writeFileSync(outPath, html, "utf-8");
+
+		if (this.options.standalone === false) {
+			copyAssets(outDir);
+		}
 
 		const relPath = path.relative(process.cwd(), outPath);
 		console.log(
