@@ -80,8 +80,15 @@ function copyAssets(outDir: string) {
 
 	const copyDir = (src: string, dest: string) => {
 		if (!fs.existsSync(src)) return;
+		if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
 		for (const file of fs.readdirSync(src)) {
-			fs.copyFileSync(path.join(src, file), path.join(dest, file));
+			const srcFile = path.join(src, file);
+			const destFile = path.join(dest, file);
+			if (fs.statSync(srcFile).isDirectory()) {
+				copyDir(srcFile, destFile);
+			} else {
+				fs.copyFileSync(srcFile, destFile);
+			}
 		}
 	};
 
@@ -525,9 +532,11 @@ export class LessonBuilder {
 		const html = render(lesson, this.options);
 
 		const outDir = path.resolve(this.options.outDir as string);
-		if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-
 		const outPath = path.join(outDir, `${this.meta.slug}.html`);
+		const outPathDir = path.dirname(outPath);
+		
+		if (!fs.existsSync(outPathDir)) fs.mkdirSync(outPathDir, { recursive: true });
+
 		fs.writeFileSync(outPath, html, "utf-8");
 
 		if (this.options.standalone === false) {
@@ -750,9 +759,11 @@ export class ChapterBuilder {
 		const html = renderChapter(chapterData, this.options);
 
 		const outDir = path.resolve(this.options.outDir as string);
-		if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-
 		const outPath = path.join(outDir, `${this.meta.slug}.html`);
+		const outPathDir = path.dirname(outPath);
+		
+		if (!fs.existsSync(outPathDir)) fs.mkdirSync(outPathDir, { recursive: true });
+
 		fs.writeFileSync(outPath, html, "utf-8");
 
 		if (this.options.standalone === false) {

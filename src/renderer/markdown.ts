@@ -52,7 +52,7 @@ function mdToHtml(md: string): { html: string; title: string; headings: { id: st
 
 	// Restore code blocks
 	codeBlocks.forEach((match, id) => {
-		processedMd = processedMd.replace(`@@BK_CODE_${id}@@`, () => match);
+		processedMd = processedMd.replaceAll(`@@BK_CODE_${id}@@`, () => match);
 	});
 
 	const headings: { id: string; text: string; level: number }[] = [];
@@ -78,12 +78,12 @@ function mdToHtml(md: string): { html: string; title: string; headings: { id: st
 			displayMode: true,
 		});
 		// marked might wrap block placeholders in <p>
-		html = html.replace(
+		html = html.replaceAll(
 			`<p>@@BK_MATH_BLOCK_${id}@@</p>`,
 			() => `<div class="bk-math-block">${rendered}</div>`,
 		);
 		// Fallback if not wrapped in <p>
-		html = html.replace(
+		html = html.replaceAll(
 			`@@BK_MATH_BLOCK_${id}@@`,
 			() => `<div class="bk-math-block">${rendered}</div>`,
 		);
@@ -94,7 +94,7 @@ function mdToHtml(md: string): { html: string; title: string; headings: { id: st
 			throwOnError: false,
 			displayMode: false,
 		});
-		html = html.replace(`@@BK_MATH_INLINE_${id}@@`, () => rendered);
+		html = html.replaceAll(`@@BK_MATH_INLINE_${id}@@`, () => rendered);
 	});
 
 	return { html, title, headings };
@@ -150,7 +150,7 @@ function mdInline(text: string): string {
 			throwOnError: false,
 			displayMode: false,
 		});
-		html = html.replace(`@@BK_MATH_INLINE_${id}@@`, () => rendered);
+		html = html.replaceAll(`@@BK_MATH_INLINE_${id}@@`, () => rendered);
 	});
 
 	return html;

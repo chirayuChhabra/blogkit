@@ -18,7 +18,7 @@ export async function runDev(args: string[]) {
 		for (const entry of entryPoints) {
 			const entryPath = path.join(dir, entry);
 			if (fs.existsSync(entryPath)) {
-				exec(`NODE_ENV=development bun ${entryPath}`, (err, stdout, stderr) => {
+				exec(`NODE_ENV=development bun "${entryPath}"`, (err, stdout, stderr) => {
 					if (err) console.error("Build failed:", stderr);
 					else {
 						console.log("Build successful.");
@@ -53,9 +53,10 @@ export async function runDev(args: string[]) {
 			if (srv.upgrade(req)) return;
 
 			const url = new URL(req.url);
-			let filePath = path.join(outDir, url.pathname);
+			const decodedPath = decodeURIComponent(url.pathname);
+			let filePath = path.resolve(outDir, "." + decodedPath);
 			
-			if (filePath.endsWith("/")) {
+			if (filePath.endsWith(path.sep)) {
 				const files = fs.existsSync(outDir) ? fs.readdirSync(outDir) : [];
 				const htmlFiles = files.filter(f => f.endsWith(".html"));
 				if (htmlFiles.includes("index.html")) {
@@ -67,26 +68,34 @@ export async function runDev(args: string[]) {
 					} else if (htmlFiles.length > 0) {
 						filePath = path.join(outDir, htmlFiles[0]);
 					} else {
-						filePath += "index.html";
+						filePath = path.join(outDir, "index.html");
 					}
 				}
+			}
+
+			if (!filePath.startsWith(outDir + path.sep) && filePath !== outDir) {
+				return new Response("Forbidden", { status: 403 });
 			}
 
 			if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
 				if (filePath.endsWith(".html")) {
 					const file = Bun.file(filePath);
 					let text = await file.text();
-					text = text.replace("</body>", `<script>
+					const lastBodyIndex = text.lastIndexOf("</body>");
+					if (lastBodyIndex !== -1) {
+						text = text.slice(0, lastBodyIndex) + `<script>
 						const ws = new WebSocket("ws://localhost:3000/");
 						ws.onmessage = (e) => { if (e.data === "reload") location.reload(); };
-					</script></body>`);
+					</script></body>` + text.slice(lastBodyIndex + 7);
+					}
 					return new Response(text, { headers: { "Content-Type": "text/html" } });
 				}
 				return new Response(Bun.file(filePath));
 			}
 
-			const srcPath = path.join(process.cwd(), dir, url.pathname);
-			if (fs.existsSync(srcPath) && fs.statSync(srcPath).isFile()) {
+			const baseDir = path.resolve(process.cwd(), dir);
+			const srcPath = path.resolve(baseDir, "." + decodedPath);
+			if (srcPath.startsWith(baseDir + path.sep) && fs.existsSync(srcPath) && fs.statSync(srcPath).isFile()) {
 				return new Response(Bun.file(srcPath));
 			}
 

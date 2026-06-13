@@ -32,7 +32,7 @@ export async function runGenerate(args: string[]) {
 		process.exit(1);
 	}
 	
-	const name = rawName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+	const name = rawName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "item";
 	const cwd = process.cwd();
 	
 	switch (type) {

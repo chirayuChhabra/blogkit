@@ -522,7 +522,7 @@ window.addEventListener("message", (event) => {
   window.dispatchEvent(new CustomEvent("bk:props", { detail: window.__simProps }));
 });
 try {
-  ${js}
+  ${js.replace(/<\/script>/gi, "<\\/script>")}
 } catch (e) {
   console.error("Simulation Error:", e);
   const errDiv = document.createElement('div');

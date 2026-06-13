@@ -54,16 +54,12 @@ function resolveContent(
 		const stat = fs.statSync(filePath);
 		if (stat.isFile()) {
 			if (expectedType === "js" && (filePath.endsWith(".js") || filePath.endsWith(".ts") || filePath.endsWith(".jsx") || filePath.endsWith(".tsx"))) {
-				if (!filePath.match(/^[a-zA-Z0-9_\-./\\]+$/)) {
-					console.warn(`\n  ⚠ Invalid characters in file path for bun build: ${filePath}`);
+				const out = spawnSync("bun", ["build", "--target=browser", filePath]);
+				if (out.status === 0) {
+					return out.stdout.toString("utf-8");
 				} else {
-					const out = spawnSync("bun", ["build", "--target=browser", filePath]);
-					if (out.status === 0) {
-						return out.stdout.toString("utf-8");
-					} else {
-						console.warn(`\n  ⚠ Bun build failed for ${filePath}:\n${out.stderr.toString("utf-8")}`);
-						// fallback to reading raw
-					}
+					console.warn(`\n  ⚠ Bun build failed for ${filePath}:\n${out.stderr.toString("utf-8")}`);
+					// fallback to reading raw
 				}
 			}
 			return fs.readFileSync(filePath, "utf-8");
@@ -83,14 +79,27 @@ function resolveContent(
 function resolveAssetSrc(src: string, options: BuildOptions): string {
 	if (/^(https?:|data:)/.test(src)) return src;
 
-	let isWebAbsolute = src.startsWith("/") && !fs.existsSync(src);
+	const hashIndex = src.indexOf("#");
+	const queryIndex = src.indexOf("?");
+	const breakIndex = hashIndex !== -1 && queryIndex !== -1 
+		? Math.min(hashIndex, queryIndex) 
+		: Math.max(hashIndex, queryIndex);
+	
+	let cleanSrc = src;
+	let suffix = "";
+	if (breakIndex !== -1) {
+		cleanSrc = src.substring(0, breakIndex);
+		suffix = src.substring(breakIndex);
+	}
 
-	let filePath = path.isAbsolute(src) 
-		? src 
-		: path.resolve(options.contentBase ?? ".", src);
+	let isWebAbsolute = cleanSrc.startsWith("/") && !fs.existsSync(cleanSrc);
 
-	if (src.startsWith("/") && !fs.existsSync(filePath)) {
-		const fallbackPath = path.resolve(options.contentBase ?? ".", src.slice(1));
+	let filePath = path.isAbsolute(cleanSrc) 
+		? cleanSrc 
+		: path.resolve(options.contentBase ?? ".", cleanSrc);
+
+	if (cleanSrc.startsWith("/") && !fs.existsSync(filePath)) {
+		const fallbackPath = path.resolve(options.contentBase ?? ".", cleanSrc.slice(1));
 		if (fs.existsSync(fallbackPath)) {
 			filePath = fallbackPath;
 			isWebAbsolute = false; // We found it locally, so don't treat it as a web URL
@@ -121,7 +130,7 @@ function resolveAssetSrc(src: string, options: BuildOptions): string {
 		fs.copyFileSync(filePath, outPath);
 	}
 
-	return `assets/${filename}`;
+	return `assets/${filename}${suffix}`;
 }
 
 export { resolveAssetSrc, resolveContent };
