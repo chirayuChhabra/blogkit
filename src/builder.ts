@@ -48,9 +48,8 @@ function getCallerDir(): string | undefined {
 		if (match) {
 			let p = match[1];
 			if (p.startsWith("file://")) {
-				p = p.replace(/^file:\/\//, "");
-			}
-			if (p.startsWith("/") && p[2] === ":") {
+				p = fileURLToPath(p);
+			} else if (p.startsWith("/") && p[2] === ":") {
 				p = p.substring(1);
 			}
 			if (!builderFilePath) {
@@ -405,7 +404,7 @@ export class LessonBuilder {
 			const base = this.options.contentBase ?? process.cwd();
 			const resolved = path.resolve(base, src);
 			const ext = path.extname(resolved);
-			const configPath = `${resolved.slice(0, -ext.length)}.config.json`;
+			const configPath = `${ext.length > 0 ? resolved.slice(0, -ext.length) : resolved}.config.json`;
 			if (fs.existsSync(configPath)) {
 				return JSON.parse(fs.readFileSync(configPath, "utf-8"));
 			}

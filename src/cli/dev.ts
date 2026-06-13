@@ -36,7 +36,7 @@ export async function runDev(args: string[]) {
 	if (fs.existsSync(dir)) {
 		let timeout: NodeJS.Timeout;
 		fs.watch(dir, { recursive: true }, (eventType, filename) => {
-			if (!filename || filename.includes("out/") || filename.includes(".git/")) return;
+			if (!filename || filename.includes("out/") || filename.includes("out\\") || filename.includes(".git/") || filename.includes(".git\\")) return;
 			
 			clearTimeout(timeout);
 			timeout = setTimeout(() => {
@@ -56,7 +56,7 @@ export async function runDev(args: string[]) {
 			const decodedPath = decodeURIComponent(url.pathname);
 			let filePath = path.resolve(outDir, "." + decodedPath);
 			
-			if (filePath.endsWith(path.sep)) {
+			if (decodedPath.endsWith("/")) {
 				const files = fs.existsSync(outDir) ? fs.readdirSync(outDir) : [];
 				const htmlFiles = files.filter(f => f.endsWith(".html"));
 				if (htmlFiles.includes("index.html")) {
@@ -84,7 +84,7 @@ export async function runDev(args: string[]) {
 					const lastBodyIndex = text.lastIndexOf("</body>");
 					if (lastBodyIndex !== -1) {
 						text = text.slice(0, lastBodyIndex) + `<script>
-						const ws = new WebSocket("ws://localhost:3000/");
+						const ws = new WebSocket(\`ws://\${location.host}/\`);
 						ws.onmessage = (e) => { if (e.data === "reload") location.reload(); };
 					</script></body>` + text.slice(lastBodyIndex + 7);
 					}

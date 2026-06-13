@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import { fileURLToPath } from "url";
 
 export async function runInit() {
 	console.log("Initializing md project structure...");
@@ -77,7 +78,8 @@ export const firstLesson = lesson("First Lesson", { contentBase: import.meta.dir
 	let mrMdVersion = "latest";
 	try {
 		// Find mr-md's own package.json to get its version
-		const __dirname = path.dirname(new URL(import.meta.url).pathname);
+		const __filename = fileURLToPath(import.meta.url);
+		const __dirname = path.dirname(__filename);
 		const ownPkgPath = path.resolve(__dirname, "../../package.json");
 		const ownPkg = JSON.parse(fs.readFileSync(ownPkgPath, "utf-8"));
 		mrMdVersion = ownPkg.version;

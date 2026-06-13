@@ -46,7 +46,7 @@ function resolveContent(
 	}
 
 	const baseDir = path.resolve(options.contentBase ?? ".");
-	if (!filePath.startsWith(baseDir) && options.strict !== false) {
+	if (!filePath.startsWith(baseDir + path.sep) && filePath !== baseDir && options.strict !== false) {
 		throw new Error(`Security Error: Path traversal attempt outside contentBase: ${filePath}`);
 	}
 
