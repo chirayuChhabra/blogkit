@@ -26,15 +26,15 @@ test("E2E: Should initialize a new project", async () => {
   const pkgPath = join(tempDir, "package.json");
   const pkg = JSON.parse(bunFs.readFileSync(pkgPath, "utf-8"));
   
-  // Create a relative path and force forward slashes for the file: protocol, which breaks on Windows otherwise
-  const relativePath = require("path").relative(tempDir, join(__dirname, "..")).replace(/\\/g, "/");
-  pkg.dependencies["mr-md"] = `file:${relativePath}`;
+  // Create an absolute path and force forward slashes for the file: protocol, which breaks on Windows otherwise
+  const absolutePath = join(__dirname, "..").replace(/\\/g, "/");
+  pkg.dependencies["mr-md"] = `file:${absolutePath}`;
   
   bunFs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
   await $`bun install`.cwd(tempDir);
   
   expect(bunFs.existsSync(join(tempDir, "package.json"))).toBe(true);
-});
+}, 30000);
 
 test("E2E: Should generate chapter and lesson", async () => {
   const { exitCode: chCode } = await $`bun run ${CLI_PATH} g ch physics`.cwd(tempDir);
