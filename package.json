@@ -20,7 +20,7 @@
     "src"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && mkdir -p dist/styles dist/client && cp -r src/styles/* dist/styles/ && cp -r src/client/* dist/client/",
+    "build": "tsc -p tsconfig.build.json && bun -e \"import {mkdirSync, cpSync} from 'fs'; mkdirSync('dist/styles', {recursive:true}); mkdirSync('dist/client', {recursive:true}); cpSync('src/styles', 'dist/styles', {recursive:true}); cpSync('src/client', 'dist/client', {recursive:true})\"",
     "prepublishOnly": "bun run build",
     "build:docs": "bun docs-site/build.ts",
     "serve:docs": "bunx serve docs-site/out",
