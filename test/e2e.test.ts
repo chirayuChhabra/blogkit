@@ -25,7 +25,11 @@ test("E2E: Should initialize a new project", async () => {
   const bunFs = require("fs");
   const pkgPath = join(tempDir, "package.json");
   const pkg = JSON.parse(bunFs.readFileSync(pkgPath, "utf-8"));
-  pkg.dependencies["mr-md"] = `file:${join(__dirname, "..")}`;
+  
+  // Create a relative path and force forward slashes for the file: protocol, which breaks on Windows otherwise
+  const relativePath = require("path").relative(tempDir, join(__dirname, "..")).replace(/\\/g, "/");
+  pkg.dependencies["mr-md"] = `file:${relativePath}`;
+  
   bunFs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
   await $`bun install`.cwd(tempDir);
   
@@ -44,9 +48,8 @@ test("E2E: Should generate chapter and lesson", async () => {
 });
 
 test("E2E: Should start dev server and serve files", async () => {
-  const { spawn } = require("child_process");
   // The dev server expects a specific chapter directory to serve its 'out' folder
-  const devProc = spawn("bun", ["run", CLI_PATH, "dev", "chapters/01-chapter"], { cwd: tempDir, env: process.env });
+  const devProc = Bun.spawn(["bun", "run", CLI_PATH, "dev", "chapters/01-chapter"], { cwd: tempDir, env: process.env });
   
   let isReady = false;
   let html = "";
