@@ -1,0 +1,8 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "mr-md": "2.1.2-beta"
+  },
+  "changesets": []
+}
