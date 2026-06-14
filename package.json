@@ -29,8 +29,7 @@
     "test:watch": "bun test --watch",
     "lint": "biome lint .",
     "format": "biome format --write .",
-    "check": "biome check --write .",
-    "changeset": "changeset"
+    "check": "biome check --write ."
   },
   "keywords": [
     "markdown",
@@ -48,7 +47,6 @@
   },
   "license": "ISC",
   "devDependencies": {
-    "@changesets/cli": "^2.31.0",
     "@types/katex": "^0.16.8",
     "@types/node": "^25.9.3",
     "biome": "^0.3.3",
