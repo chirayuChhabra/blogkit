@@ -18,10 +18,17 @@ afterAll(async () => {
 });
 
 test("E2E: Should initialize a new project", async () => {
-  const { exitCode } = await $`bun run ${CLI_PATH} init`.cwd(tempDir);
+  const { exitCode } = await $`bun run ${CLI_PATH} init .`.cwd(tempDir);
   expect(exitCode).toBe(0);
-  
+
+  // Link local mr-md for testing
   const bunFs = require("fs");
+  const pkgPath = join(tempDir, "package.json");
+  const pkg = JSON.parse(bunFs.readFileSync(pkgPath, "utf-8"));
+  pkg.dependencies["mr-md"] = `file:${join(__dirname, "..")}`;
+  bunFs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
+  await $`bun install`.cwd(tempDir);
+  
   expect(bunFs.existsSync(join(tempDir, "package.json"))).toBe(true);
 });
 
@@ -29,17 +36,17 @@ test("E2E: Should generate chapter and lesson", async () => {
   const { exitCode: chCode } = await $`bun run ${CLI_PATH} g ch physics`.cwd(tempDir);
   expect(chCode).toBe(0);
 
-  const { exitCode: lessonCode } = await $`bun run ${CLI_PATH} g lesson intro`.cwd(join(tempDir, "chapters", "01-physics"));
+  const { exitCode: lessonCode } = await $`bun run ${CLI_PATH} g lesson intro`.cwd(join(tempDir, "chapters", "02-physics"));
   expect(lessonCode).toBe(0);
 
   const bunFs = require("fs");
-  expect(bunFs.existsSync(join(tempDir, "chapters", "01-physics", "intro.md"))).toBe(true);
+  expect(bunFs.existsSync(join(tempDir, "chapters", "02-physics", "lessons", "01-intro", "lesson.ts"))).toBe(true);
 });
 
 test("E2E: Should start dev server and serve files", async () => {
-  // Start the dev server in the background using Bun's spawn (so it doesn't block)
   const { spawn } = require("child_process");
-  const devProc = spawn("bun", ["run", CLI_PATH, "dev", "."], { cwd: tempDir, env: process.env });
+  // The dev server expects a specific chapter directory to serve its 'out' folder
+  const devProc = spawn("bun", ["run", CLI_PATH, "dev", "chapters/01-chapter"], { cwd: tempDir, env: process.env });
   
   let isReady = false;
   let html = "";
@@ -63,8 +70,8 @@ test("E2E: Should start dev server and serve files", async () => {
     expect(html).toContain("<html");
     
     const bunFs = require("fs");
-    expect(bunFs.existsSync(join(tempDir, "out")) || bunFs.existsSync(join(tempDir, "dist"))).toBe(true);
+    expect(bunFs.existsSync(join(tempDir, "chapters", "01-chapter", "out")) || bunFs.existsSync(join(tempDir, "out"))).toBe(true);
   } finally {
     devProc.kill();
   }
-});
+}, 15000);

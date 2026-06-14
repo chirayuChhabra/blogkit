@@ -5,7 +5,7 @@ declare const Bun: any;
 
 export function runDev(args: string[]) {
 	const dir = args[0] || ".";
-	const outDir = path.resolve(process.cwd(), dir, "out");
+	let outDir = path.resolve(process.cwd(), dir, "out");
 	
 	console.log(`Starting dev server for directory: ${dir}`);
 
@@ -21,6 +21,7 @@ export function runDev(args: string[]) {
 		for (const entry of entryPoints) {
 			const entryPath = path.join(dir, entry);
 			if (fs.existsSync(entryPath)) {
+				outDir = path.resolve(process.cwd(), path.dirname(entryPath), "out");
 				currentBuild = Bun.spawn([process.execPath, entryPath], {
 					env: { ...process.env, NODE_ENV: "development" },
 					onExit(proc: any, exitCode: number, signalCode: number, error: string) {
