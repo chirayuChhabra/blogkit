@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - "experimental/*"
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
