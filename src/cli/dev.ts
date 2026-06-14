@@ -1,28 +1,35 @@
 import * as fs from "fs";
 import * as path from "path";
-import { exec } from "child_process";
 
 declare const Bun: any;
 
-export async function runDev(args: string[]) {
+export function runDev(args: string[]) {
 	const dir = args[0] || ".";
 	const outDir = path.resolve(process.cwd(), dir, "out");
 	
 	console.log(`Starting dev server for directory: ${dir}`);
 
 	let server: any;
+	let currentBuild: any = null;
 
 	const rebuild = () => {
+		if (currentBuild) {
+			currentBuild.kill();
+		}
 		console.log("Rebuilding...");
-		const entryPoints = ["chapter.ts", "index.ts", "lesson.ts"];
+		const entryPoints = ["chapter.ts", "index.ts", "lesson.ts", "chapters/01-chapter/chapter.ts"];
 		for (const entry of entryPoints) {
 			const entryPath = path.join(dir, entry);
 			if (fs.existsSync(entryPath)) {
-				exec(`NODE_ENV=development bun "${entryPath}"`, (err, stdout, stderr) => {
-					if (err) console.error("Build failed:", stderr);
-					else {
-						console.log("Build successful.");
-						server?.publish("livereload", "reload");
+				currentBuild = Bun.spawn([process.execPath, entryPath], {
+					env: { ...process.env, NODE_ENV: "development" },
+					onExit(proc: any, exitCode: number, signalCode: number, error: string) {
+						if (exitCode === 0) {
+							console.log("Build successful.");
+							server?.publish("livereload", "reload");
+						} else if (exitCode !== null) {
+							console.error(`Build failed with exit code ${exitCode}`);
+						}
 					}
 				});
 				return;
@@ -47,65 +54,76 @@ export async function runDev(args: string[]) {
 		console.log(`Watching ${dir} for changes...`);
 	}
 
-	server = Bun.serve({
-		port: 3000,
-		async fetch(req: any, srv: any) {
-			if (srv.upgrade(req)) return;
+	const basePort = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+	let port = basePort;
+	const maxPort = basePort + 10;
+	
+	const fetchHandler = async (req: any, srv: any) => {
+		if (srv.upgrade(req)) return;
 
-			const url = new URL(req.url);
-			const decodedPath = decodeURIComponent(url.pathname);
-			let filePath = path.resolve(outDir, "." + decodedPath);
-			
-			if (decodedPath.endsWith("/")) {
-				const files = fs.existsSync(outDir) ? fs.readdirSync(outDir) : [];
-				const htmlFiles = files.filter(f => f.endsWith(".html"));
-				if (htmlFiles.includes("index.html")) {
-					filePath = path.join(outDir, "index.html");
-				} else {
-					const chapterFile = htmlFiles.find(f => f.includes("chapter"));
-					if (chapterFile) {
-						filePath = path.join(outDir, chapterFile);
-					} else if (htmlFiles.length > 0) {
-						filePath = path.join(outDir, htmlFiles[0]);
-					} else {
-						filePath = path.join(outDir, "index.html");
-					}
-				}
-			}
-
-			if (!filePath.startsWith(outDir + path.sep) && filePath !== outDir) {
-				return new Response("Forbidden", { status: 403 });
-			}
-
-			if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-				if (filePath.endsWith(".html")) {
-					const file = Bun.file(filePath);
-					let text = await file.text();
-					const lastBodyIndex = text.lastIndexOf("</body>");
-					if (lastBodyIndex !== -1) {
-						text = text.slice(0, lastBodyIndex) + `<script>
-						const ws = new WebSocket(\`ws://\${location.host}/\`);
-						ws.onmessage = (e) => { if (e.data === "reload") location.reload(); };
-					</script></body>` + text.slice(lastBodyIndex + 7);
-					}
-					return new Response(text, { headers: { "Content-Type": "text/html" } });
-				}
-				return new Response(Bun.file(filePath));
-			}
-
-			const baseDir = path.resolve(process.cwd(), dir);
-			const srcPath = path.resolve(baseDir, "." + decodedPath);
-			if (srcPath.startsWith(baseDir + path.sep) && fs.existsSync(srcPath) && fs.statSync(srcPath).isFile()) {
-				return new Response(Bun.file(srcPath));
-			}
-
-			return new Response("Not found", { status: 404 });
-		},
-		websocket: {
-			message() {},
-			open(ws: any) { ws.subscribe("livereload"); }
+		const url = new URL(req.url);
+		const decodedPath = decodeURIComponent(url.pathname);
+		let filePath = path.resolve(outDir, "." + decodedPath);
+		
+		if (decodedPath.endsWith("/")) {
+			filePath = path.join(outDir, "index.html");
 		}
-	});
 
-	console.log(`Dev server listening on http://localhost:3000`);
+		if (!filePath.startsWith(outDir + path.sep) && filePath !== outDir) {
+			return new Response("Forbidden", { status: 403 });
+		}
+
+		if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+			if (filePath.endsWith(".html")) {
+				const file = Bun.file(filePath);
+				let text = await file.text();
+				
+				const script = `<script>
+					const ws = new WebSocket(\`ws://\${location.host}/\`);
+					ws.onmessage = (e) => { if (e.data === "reload") location.reload(); };
+				</script>`;
+
+				const bodyRegex = /<\/body>/i;
+				const match = text.match(bodyRegex);
+				if (match && match.index !== undefined) {
+					text = text.slice(0, match.index) + script + text.slice(match.index);
+				} else {
+					text += script;
+				}
+				return new Response(text, { headers: { "Content-Type": "text/html" } });
+			}
+			return new Response(Bun.file(filePath));
+		}
+
+		return new Response("Not found", { status: 404 });
+	};
+
+	const wsHandler = {
+		message() {},
+		open(ws: any) { ws.subscribe("livereload"); }
+	};
+
+	while (port <= maxPort) {
+		try {
+			server = Bun.serve({
+				port,
+				fetch: fetchHandler,
+				websocket: wsHandler
+			});
+			console.log(`Dev server listening on http://localhost:${server.port}`);
+			break;
+		} catch (err: any) {
+			if (err.code === 'EADDRINUSE') {
+				console.warn(`Port ${port} is in use, trying ${port + 1}...`);
+				port++;
+			} else {
+				throw err;
+			}
+		}
+	}
+	
+	if (!server) {
+		console.error(`Could not find an open port between ${basePort} and ${maxPort}.`);
+		process.exit(1);
+	}
 }

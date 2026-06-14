@@ -54,7 +54,7 @@ function resolveContent(
 		const stat = fs.statSync(filePath);
 		if (stat.isFile()) {
 			if (expectedType === "js" && (filePath.endsWith(".js") || filePath.endsWith(".ts") || filePath.endsWith(".jsx") || filePath.endsWith(".tsx"))) {
-				const out = spawnSync("bun", ["build", "--target=browser", filePath]);
+				const out = spawnSync(process.execPath, ["build", "--target=browser", filePath]);
 				if (out.status === 0) {
 					return out.stdout.toString("utf-8");
 				} else {
@@ -121,7 +121,9 @@ function resolveAssetSrc(src: string, options: BuildOptions): string {
 	}
 
 	// Create a safe filename with hash to avoid collisions
-	const hash = crypto.createHash("md5").update(filePath).digest("hex").substring(0, 8);
+	// Use relative path for hashing to ensure deterministic builds across different machines
+	const relPathForHash = path.relative(options.contentBase ?? process.cwd(), filePath);
+	const hash = crypto.createHash("md5").update(relPathForHash).digest("hex").substring(0, 8);
 	const ext = path.extname(filePath);
 	const filename = `${path.basename(filePath, ext)}-${hash}${ext}`;
 	const outPath = path.join(assetsDir, filename);

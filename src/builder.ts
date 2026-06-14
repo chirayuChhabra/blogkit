@@ -36,31 +36,30 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 function getCallerDir(): string | undefined {
+	const originalPrepareStackTrace = Error.prepareStackTrace;
+	Error.prepareStackTrace = (_, stack) => stack;
 	const err = new Error();
-	const stack = err.stack?.split("\n");
-	if (!stack || stack.length < 2) return undefined;
+	const stack = err.stack as any as NodeJS.CallSite[];
+	Error.prepareStackTrace = originalPrepareStackTrace;
 
-	let builderFilePath: string | undefined;
+	if (!stack || !Array.isArray(stack)) return undefined;
 
-	for (let i = 1; i < stack.length; i++) {
-		const line = stack[i];
-		const match = line.match(/\((.*?):\d+:\d+\)/) || line.match(/at (.*?):\d+:\d+/);
-		if (match) {
-			let p = match[1];
-			if (p.startsWith("file://")) {
-				p = fileURLToPath(p);
-			} else if (p.startsWith("/") && p[2] === ":") {
-				p = p.substring(1);
-			}
-			if (!builderFilePath) {
-				builderFilePath = p;
-				continue;
-			}
-			if (p === builderFilePath) {
-				continue;
-			}
-			return path.dirname(p);
+	for (let i = 0; i < stack.length; i++) {
+		const callSite = stack[i];
+		let p = callSite.getFileName();
+		if (!p) continue;
+		
+		if (p.startsWith("file://")) {
+			p = fileURLToPath(p);
+		} else if (p.startsWith("/") && p[2] === ":") {
+			p = p.substring(1);
 		}
+		
+		const basename = path.basename(p);
+		if (basename === "builder.ts" || basename === "builder.js" || basename === "index.ts" || basename === "index.js") {
+			continue;
+		}
+		return path.dirname(p);
 	}
 	return undefined;
 }
@@ -531,7 +530,7 @@ export class LessonBuilder {
 		const html = render(lesson, this.options);
 
 		const outDir = path.resolve(this.options.outDir as string);
-		const outPath = path.join(outDir, `${this.meta.slug}.html`);
+		const outPath = path.join(outDir, "index.html");
 		const outPathDir = path.dirname(outPath);
 		
 		if (!fs.existsSync(outPathDir)) fs.mkdirSync(outPathDir, { recursive: true });
@@ -758,7 +757,7 @@ export class ChapterBuilder {
 		const html = renderChapter(chapterData, this.options);
 
 		const outDir = path.resolve(this.options.outDir as string);
-		const outPath = path.join(outDir, `${this.meta.slug}.html`);
+		const outPath = path.join(outDir, "index.html");
 		const outPathDir = path.dirname(outPath);
 		
 		if (!fs.existsSync(outPathDir)) fs.mkdirSync(outPathDir, { recursive: true });
