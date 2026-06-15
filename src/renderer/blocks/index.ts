@@ -12,6 +12,7 @@ import { renderMedia } from "./media.js";
 import { renderQuiz } from "./quiz.js";
 import { renderSection } from "./section.js";
 import { renderSimulation } from "./simulation.js";
+import { renderSpacer } from "./spacer.js";
 import { escAttr, escHtml } from "./utils.js";
 import { renderYouTube } from "./youtube.js";
 
@@ -53,6 +54,8 @@ export function renderBlockInner(
 			return renderQuiz(block, idx, options);
 		case "divider":
 			return renderDivider();
+		case "spacer":
+			return renderSpacer(block);
 		default:
 			return { html: "" };
 	}
