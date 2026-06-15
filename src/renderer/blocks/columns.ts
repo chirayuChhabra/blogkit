@@ -1,0 +1,39 @@
+import katex from "katex";
+import type { BuildOptions, ColumnsBlock } from "../../types.js";
+import { blockChrome, mdToHtml, sanitizeHtml } from "../markdown/index.js";
+import { resolveContent } from "../utils.js";
+import { escAttr } from "./utils.js";
+
+export function renderColumns(
+	block: ColumnsBlock,
+	idx: number,
+	options: BuildOptions,
+): { html: string } {
+	return {
+		html: blockChrome(
+			"Columns",
+			block.label,
+			block.caption,
+			`<div class="bk-columns" style="grid-template-columns:${block.columns
+				.map((column) => escAttr(column.width ?? "minmax(0, 1fr)"))
+				.join(" ")}">
+            ${block.columns
+							.map((column) => {
+								const content =
+									column.latex != null
+										? `<div class="bk-latex-block">${sanitizeHtml(katex.renderToString(column.latex, { throwOnError: false, displayMode: true }))}</div>`
+										: mdToHtml(
+												column.markdown ??
+													(column.src
+														? resolveContent(column.src, options, "md")
+														: ""),
+											).html;
+								return `<div class="bk-column">${content}</div>`;
+							})
+							.join("")}
+          </div>`,
+			"neutral",
+			false,
+		),
+	};
+}

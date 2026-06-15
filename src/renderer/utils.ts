@@ -1,7 +1,7 @@
+import { spawnSync } from "child_process";
+import * as crypto from "crypto";
 import * as fs from "fs";
 import * as path from "path";
-import * as crypto from "crypto";
-import { spawnSync } from "child_process";
 import type { BuildOptions } from "../types.js";
 
 export interface NavItem {
@@ -21,7 +21,9 @@ function resolveContent(
 
 	if (/^https?:\/\//.test(src)) {
 		if (options.strict !== false) {
-			throw new Error(`Remote URLs are not yet supported for content files: ${src}`);
+			throw new Error(
+				`Remote URLs are not yet supported for content files: ${src}`,
+			);
 		}
 		return src;
 	}
@@ -46,19 +48,37 @@ function resolveContent(
 	}
 
 	const baseDir = path.resolve(options.contentBase ?? ".");
-	if (!filePath.startsWith(baseDir + path.sep) && filePath !== baseDir && options.strict !== false) {
-		throw new Error(`Security Error: Path traversal attempt outside contentBase: ${filePath}`);
+	if (
+		!filePath.startsWith(baseDir + path.sep) &&
+		filePath !== baseDir &&
+		options.strict !== false
+	) {
+		throw new Error(
+			`Security Error: Path traversal attempt outside contentBase: ${filePath}`,
+		);
 	}
 
 	if (fs.existsSync(filePath)) {
 		const stat = fs.statSync(filePath);
 		if (stat.isFile()) {
-			if (expectedType === "js" && (filePath.endsWith(".js") || filePath.endsWith(".ts") || filePath.endsWith(".jsx") || filePath.endsWith(".tsx"))) {
-				const out = spawnSync(process.execPath, ["build", "--target=browser", filePath]);
+			if (
+				expectedType === "js" &&
+				(filePath.endsWith(".js") ||
+					filePath.endsWith(".ts") ||
+					filePath.endsWith(".jsx") ||
+					filePath.endsWith(".tsx"))
+			) {
+				const out = spawnSync(process.execPath, [
+					"build",
+					"--target=browser",
+					filePath,
+				]);
 				if (out.status === 0) {
 					return out.stdout.toString("utf-8");
 				} else {
-					console.warn(`\n  ⚠ Bun build failed for ${filePath}:\n${out.stderr.toString("utf-8")}`);
+					console.warn(
+						`\n  ⚠ Bun build failed for ${filePath}:\n${out.stderr.toString("utf-8")}`,
+					);
 					// fallback to reading raw
 				}
 			}
@@ -81,10 +101,11 @@ function resolveAssetSrc(src: string, options: BuildOptions): string {
 
 	const hashIndex = src.indexOf("#");
 	const queryIndex = src.indexOf("?");
-	const breakIndex = hashIndex !== -1 && queryIndex !== -1 
-		? Math.min(hashIndex, queryIndex) 
-		: Math.max(hashIndex, queryIndex);
-	
+	const breakIndex =
+		hashIndex !== -1 && queryIndex !== -1
+			? Math.min(hashIndex, queryIndex)
+			: Math.max(hashIndex, queryIndex);
+
 	let cleanSrc = src;
 	let suffix = "";
 	if (breakIndex !== -1) {
@@ -94,12 +115,15 @@ function resolveAssetSrc(src: string, options: BuildOptions): string {
 
 	let isWebAbsolute = cleanSrc.startsWith("/") && !fs.existsSync(cleanSrc);
 
-	let filePath = path.isAbsolute(cleanSrc) 
-		? cleanSrc 
+	let filePath = path.isAbsolute(cleanSrc)
+		? cleanSrc
 		: path.resolve(options.contentBase ?? ".", cleanSrc);
 
 	if (cleanSrc.startsWith("/") && !fs.existsSync(filePath)) {
-		const fallbackPath = path.resolve(options.contentBase ?? ".", cleanSrc.slice(1));
+		const fallbackPath = path.resolve(
+			options.contentBase ?? ".",
+			cleanSrc.slice(1),
+		);
 		if (fs.existsSync(fallbackPath)) {
 			filePath = fallbackPath;
 			isWebAbsolute = false; // We found it locally, so don't treat it as a web URL
@@ -122,8 +146,15 @@ function resolveAssetSrc(src: string, options: BuildOptions): string {
 
 	// Create a safe filename with hash to avoid collisions
 	// Use relative path for hashing to ensure deterministic builds across different machines
-	const relPathForHash = path.relative(options.contentBase ?? process.cwd(), filePath);
-	const hash = crypto.createHash("md5").update(relPathForHash).digest("hex").substring(0, 8);
+	const relPathForHash = path.relative(
+		options.contentBase ?? process.cwd(),
+		filePath,
+	);
+	const hash = crypto
+		.createHash("md5")
+		.update(relPathForHash)
+		.digest("hex")
+		.substring(0, 8);
 	const ext = path.extname(filePath);
 	const filename = `${path.basename(filePath, ext)}-${hash}${ext}`;
 	const outPath = path.join(assetsDir, filename);

@@ -291,6 +291,7 @@ body {
 	background: color-mix(in srgb, var(--paper) 88%, transparent);
 	backdrop-filter: blur(18px);
 	-webkit-backdrop-filter: blur(18px);
+	will-change: transform, opacity;
 	transition:
 		margin-left 0.3s ease,
 		opacity 0.3s ease;
@@ -983,8 +984,6 @@ hr.bk-divider {
 	border-radius: 8px;
 	overflow: hidden;
 	background: #000;
-	content-visibility: auto;
-	contain-intrinsic-size: auto 480px;
 	isolation: isolate;
 	display: flex;
 	justify-content: center;
@@ -1008,6 +1007,7 @@ hr.bk-divider {
 	background: rgba(0, 0, 0, 0.2);
 	backdrop-filter: blur(2px);
 	-webkit-backdrop-filter: blur(2px);
+	transform: translateZ(0);
 	cursor: pointer;
 	transition:
 		opacity 0.2s,
@@ -1028,6 +1028,7 @@ hr.bk-divider {
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 	backdrop-filter: blur(4px);
 	-webkit-backdrop-filter: blur(4px);
+	will-change: transform;
 	transition: transform 0.2s;
 }
 .bk-embed-overlay:hover .bk-embed-overlay-text,
