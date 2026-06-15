@@ -21,6 +21,7 @@ import type {
 	SimulationBlock,
 	SimulationConfig,
 	SimulationOptions,
+	SpacerBlock,
 	YouTubeBlock,
 	YouTubeOptions,
 } from "../types.js";
@@ -243,6 +244,11 @@ export abstract class LessonBlocks {
 
 	divider(): this {
 		this.blocks.push({ type: "divider" } as DividerBlock);
+		return this;
+	}
+
+	space(size = 1): this {
+		this.blocks.push({ type: "spacer", size } as SpacerBlock);
 		return this;
 	}
 }

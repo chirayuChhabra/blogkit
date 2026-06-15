@@ -81,6 +81,10 @@ export class LessonBuilder extends LessonBlocks {
 				this._rawOptions.palette ?? parentOpts.palette ?? this.options.palette,
 			strict:
 				this._rawOptions.strict ?? parentOpts.strict ?? this.options.strict,
+			standalone:
+				this._rawOptions.standalone ??
+				parentOpts.standalone ??
+				this.options.standalone,
 			preset: {
 				...parentOpts.preset,
 				...this._rawOptions.preset,
@@ -118,7 +122,10 @@ export class LessonBuilder extends LessonBlocks {
 		const html = render(lesson, this.options);
 
 		const outDir = path.resolve(this.options.outDir as string);
-		const outPath = path.join(outDir, "index.html");
+		const filename = this.meta.parentSlug
+			? `${this.meta.slug}.html`
+			: "index.html";
+		const outPath = path.join(outDir, filename);
 		const outPathDir = path.dirname(outPath);
 
 		if (!fs.existsSync(outPathDir))
