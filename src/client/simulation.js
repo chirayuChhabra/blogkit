@@ -5,8 +5,7 @@ export function bkReadSimProps(figure) {
 			props[input.dataset.bkProp] = input.checked;
 		} else if (input.type === "range" || input.type === "number") {
 			props[input.dataset.bkProp] = Number(input.value);
-			const output = input.parentElement?.querySelector("output");
-			if (output) output.textContent = input.value;
+			// The synchronization of sibling inputs is handled in the event listener now
 		} else {
 			props[input.dataset.bkProp] = input.value;
 		}
@@ -14,11 +13,56 @@ export function bkReadSimProps(figure) {
 	return props;
 }
 
+function updateSliderTrack(input) {
+	if (input.type !== "range") return;
+	const min = parseFloat(input.min) || 0;
+	const max = parseFloat(input.max) || 100;
+	const val = parseFloat(input.value) || 0;
+	const percent = Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
+	input.style.setProperty("--bk-track-fill", `${percent}%`);
+}
+
 export function bkWireSimControls() {
+	// Initialize all slider tracks
+	document
+		.querySelectorAll('input[type="range"][data-bk-prop]')
+		.forEach(updateSliderTrack);
+
 	const handler = (e) => {
-		const input = e.target.closest?.("[data-bk-prop]");
-		if (!input) return;
-		const figure = input.closest(".bk-object");
+		const target = e.target;
+		let propInput = target.closest?.("[data-bk-prop]");
+		let syncInput = target.closest?.("[data-bk-sync]");
+
+		if (syncInput && !propInput) {
+			const propName = syncInput.dataset.bkSync;
+			propInput = syncInput.parentElement?.querySelector(
+				`[data-bk-prop="${propName}"]`,
+			);
+			if (propInput) {
+				let val = parseFloat(syncInput.value);
+				if (!isNaN(val) && e.type === "change") {
+					const min = parseFloat(syncInput.min);
+					const max = parseFloat(syncInput.max);
+					if (!isNaN(min) && val < min) val = min;
+					if (!isNaN(max) && val > max) val = max;
+					syncInput.value = val;
+				}
+				propInput.value = syncInput.value;
+				updateSliderTrack(propInput);
+			}
+		} else if (propInput) {
+			const propName = propInput.dataset.bkProp;
+			syncInput = propInput.parentElement?.querySelector(
+				`[data-bk-sync="${propName}"]`,
+			);
+			if (syncInput && e.target !== syncInput) {
+				syncInput.value = propInput.value;
+			}
+			updateSliderTrack(propInput);
+		}
+
+		if (!propInput) return;
+		const figure = propInput.closest(".bk-object");
 		if (!figure) return;
 		const iframe = figure.querySelector("iframe");
 		if (!iframe) return;

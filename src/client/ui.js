@@ -156,3 +156,29 @@ export function bkWireScrollSpy() {
 	});
 	setActive(0);
 }
+
+export function bkWireLastLessonTracking() {
+	const path = window.location.pathname;
+	const isChapterPage = document.querySelector(".bk-chapter-timeline") !== null;
+
+	if (!isChapterPage) {
+		if (path && path.endsWith(".html")) {
+			localStorage.setItem("mr-md-last-lesson", path.split("/").pop());
+		}
+	} else {
+		const lastLesson = localStorage.getItem("mr-md-last-lesson");
+		if (lastLesson) {
+			const cards = document.querySelectorAll(".bk-timeline-card");
+			for (const card of cards) {
+				const href = card.getAttribute("href");
+				if (href && (href === lastLesson || href.endsWith("/" + lastLesson))) {
+					setTimeout(() => {
+						card.scrollIntoView({ behavior: "smooth", block: "center" });
+						card.classList.add("bk-last-opened");
+					}, 100);
+					break;
+				}
+			}
+		}
+	}
+}

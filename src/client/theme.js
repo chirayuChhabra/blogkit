@@ -155,6 +155,10 @@ export function bkWireThemeControls() {
 			bkBroadcastTheme();
 		});
 	});
+
+	// Broadcast the initial theme to any iframes already present
+	// We use requestAnimationFrame to ensure CSS variables are fully computed
+	requestAnimationFrame(() => bkBroadcastTheme());
 }
 
 // Global listeners for theme sync

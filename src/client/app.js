@@ -1,15 +1,14 @@
 import { bkWireInteractiveFrames } from "./interactive.js";
+import { bkWireQuizzes } from "./quiz.js";
 import { bkWireSimControls } from "./simulation.js";
 import { bkWireThemeControls } from "./theme.js";
 import {
 	bkWireCodeCopy,
+	bkWireLastLessonTracking,
 	bkWireMaximizeControls,
 	bkWireScrollSpy,
 	bkWireSidebarToggle,
 } from "./ui.js";
-
-// Make sure quiz functions are loaded
-import "./quiz.js";
 
 document.addEventListener("DOMContentLoaded", () => {
 	bkWireMaximizeControls();
@@ -19,4 +18,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	bkWireInteractiveFrames();
 	bkWireCodeCopy();
 	bkWireScrollSpy();
+	bkWireLastLessonTracking();
+	bkWireQuizzes();
 });
