@@ -20,10 +20,9 @@ export function generateChapter(name: string, rawName: string, cwd: string) {
 		.replace(/-/g, " ")
 		.replace(/\b\w/g, (l) => l.toUpperCase());
 
-	const content = `import { chapter } from "mr-md";
+	const content = `import { chapter, type ChapterBuilder } from "mr-md";
 
-export const ${varName}Chapter = chapter("${chapterTitle}", ctx => {
-	// Add lessons here
+export const ${varName}Chapter = chapter("${chapterTitle}", (ctx: ChapterBuilder) => {
 });
 
 if (import.meta.main) {

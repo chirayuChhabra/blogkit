@@ -26,9 +26,9 @@ export async function generateLesson(
 	let varName = name.replace(/-([a-z0-9])/g, (g) => g[1].toUpperCase());
 	if (/^[0-9]/.test(varName)) varName = `_${varName}`;
 
-	const content = `import { lesson } from "mr-md";
+	const content = `import { lesson, type LessonBuilder } from "mr-md";
 
-export const ${varName}Lesson = lesson("${lessonTitle}", { contentBase: import.meta.dir }, ctx => {
+export const ${varName}Lesson = lesson("${lessonTitle}", { contentBase: import.meta.dir }, (ctx: LessonBuilder) => {
 });
 `;
 	fs.writeFileSync(path.join(lessonPath, "lesson.ts"), content, "utf-8");

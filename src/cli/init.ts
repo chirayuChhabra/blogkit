@@ -84,10 +84,10 @@ export async function runInit(args: string[]) {
 	if (!fs.existsSync(chapterTsPath)) {
 		fs.writeFileSync(
 			chapterTsPath,
-			`import { chapter } from "mr-md";
+			`import { chapter, type ChapterBuilder } from "mr-md";
 import { ${lessonVar} } from "./lessons/${lessonDir}/lesson.js";
 
-export const ${chapterVar} = chapter("${chapterTitle}", ctx => {
+export const ${chapterVar} = chapter("${chapterTitle}", (ctx: ChapterBuilder) => {
 	ctx.lesson(${lessonVar});
 });
 
@@ -107,9 +107,9 @@ if (import.meta.main) {
 	if (!fs.existsSync(lessonTsPath)) {
 		fs.writeFileSync(
 			lessonTsPath,
-			`import { lesson } from "mr-md";
+			`import { lesson, type LessonBuilder } from "mr-md";
 
-export const ${lessonVar} = lesson("${lessonTitle}", { contentBase: import.meta.dir }, ctx => {
+export const ${lessonVar} = lesson("${lessonTitle}", { contentBase: import.meta.dir }, (ctx: LessonBuilder) => {
 	ctx.markdown("Welcome to your first lesson!");
 });
 `,
