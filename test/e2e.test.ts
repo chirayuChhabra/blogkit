@@ -18,7 +18,7 @@ afterAll(async () => {
 });
 
 test("E2E: Should initialize a new project", async () => {
-  const { exitCode } = await $`bun run ${CLI_PATH} init .`.cwd(tempDir);
+  const { exitCode } = await $`bun run ${CLI_PATH} init -y .`.cwd(tempDir);
   expect(exitCode).toBe(0);
 
   // Link local mr-md for testing
@@ -49,31 +49,35 @@ test("E2E: Should generate chapter and lesson", async () => {
 
 test("E2E: Should start dev server and serve files", async () => {
   // The dev server expects a specific chapter directory to serve its 'out' folder
-  const devProc = Bun.spawn(["bun", "run", CLI_PATH, "dev", "chapters/01-chapter"], { cwd: tempDir, env: process.env });
+  const devProc = Bun.spawn(["bun", "run", CLI_PATH, "dev", "chapters/01-first-chapter"], { cwd: tempDir, env: { ...process.env, PORT: "3005" }, stdout: "inherit", stderr: "inherit" });
   
   let isReady = false;
   let html = "";
   
+  let lastError = null;
   for (let i = 0; i < 20; i++) {
     await new Promise((resolve) => setTimeout(resolve, 500));
     try {
-      const res = await fetch("http://localhost:3000");
+      const res = await fetch("http://localhost:3005");
       if (res.ok) {
         isReady = true;
         html = await res.text();
         break;
+      } else {
+        lastError = `Status: ${res.status}`;
       }
-    } catch (e) {
-      // Ignore network errors while waiting
+    } catch (e: any) {
+      lastError = e.message;
     }
   }
 
   try {
+    if (!isReady) console.error("Fetch failed with:", lastError);
     expect(isReady).toBe(true);
     expect(html).toContain("<html");
     
     const bunFs = require("fs");
-    expect(bunFs.existsSync(join(tempDir, "chapters", "01-chapter", "out")) || bunFs.existsSync(join(tempDir, "out"))).toBe(true);
+    expect(bunFs.existsSync(join(tempDir, "chapters", "01-first-chapter", "out")) || bunFs.existsSync(join(tempDir, "out"))).toBe(true);
   } finally {
     devProc.kill();
   }

@@ -61,4 +61,16 @@ describe("Renderer Bug Fixes", () => {
 		// Actually katex renders output
 		expect(htmlMath).toContain("katex");
 	});
+
+	test("markdown links with $ in URL or text are not broken by math parser", () => {
+		const mdContent = "Here is [link $x$](http://example.com/?v=$1)";
+		const l = lesson("Test Lesson").markdown(mdContent).toJSON();
+		const html = render(l, { strict: true });
+
+		// The math inside the link text should be parsed
+		expect(html).toContain("katex");
+		
+		// The URL should remain completely intact
+		expect(html).toContain('href="http://example.com/?v=$1"');
+	});
 });
