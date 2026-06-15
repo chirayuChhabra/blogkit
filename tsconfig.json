@@ -8,8 +8,8 @@
 		"strict": true,
 		"esModuleInterop": true,
 		"outDir": "./dist",
-		"rootDir": "./",
+		"rootDir": "./src",
 		"resolveJsonModule": true
 	},
-	"include": ["src/**/*", "example/**/*"]
+	"include": ["src/**/*"]
 }
