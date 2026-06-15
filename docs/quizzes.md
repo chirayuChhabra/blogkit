@@ -1,4 +1,4 @@
-# Quizzes
+## Quizzes
 
 Quizzes in Mr Markdown are an excellent way to keep lessons engaging and self-checking. They provide immediate interactive feedback when a reader selects an answer.
 

@@ -1,4 +1,4 @@
-# Production Checks
+## Production Checks
 
 Mr Markdown has an opinionated philosophy on quality. It enforces strict checks by default during the build process to ensure that your lesson is complete, accessible, and high-quality.
 

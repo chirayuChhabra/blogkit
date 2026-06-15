@@ -1,4 +1,4 @@
-# Simulations & Client Specification
+## Simulations & Client Specification
 
 Simulations in Mr Markdown are standard JavaScript files executed in an isolated iframe, meaning they are completely sandboxed and safe from breaking the rest of your course page.
 
@@ -49,7 +49,7 @@ When a reader adjusts a tunable control (like sliding the "Planet Mass" slider),
 
 **There are two ways Mr Markdown handles this:**
 
-### The Preferred Way (Smooth & Performant)
+## The Preferred Way (Smooth & Performant)
 Your simulation should actively listen to the `bk:props` custom event. This allows you to update your internal variables on the fly without losing the current state of the simulation (like positions, velocities, etc.).
 
 ```js
@@ -71,7 +71,7 @@ window.addEventListener("bk:props", (event) => {
 });
 ```
 
-### The Fallback Way (Silent Failures)
+## The Fallback Way (Silent Failures)
 If your simulation code does not listen for the `bk:props` event, it will not automatically update when the user drags a slider. Mr Markdown does not automatically reload the iframe for you! The new properties will be quietly applied to `window.__simProps`, but your simulation will be stuck using the old values (unless you manually poll `window.__simProps` inside a `requestAnimationFrame` loop).
 
 **This results in broken interactivity where sliders do nothing.** Always implement the `bk:props` listener!
@@ -145,13 +145,13 @@ function draw(ctx, logicalW, logicalH) {
 }
 ```
 
-### Safety Features & Scroll Hijacking
+## Safety Features & Scroll Hijacking
 You might be worried that if you add zooming (`wheel` events) or panning (`pointermove` events), you will accidentally hijack the reader's ability to scroll down the article. 
 
 **Don't worry! Mr Markdown has built-in safety features.**
 Interactive simulations are hidden behind a "Click to interact" overlay by default. The simulation iframe only begins receiving pointer and scroll events *after* the user explicitly clicks the canvas to activate it. If the user clicks anywhere outside the simulation, interactivity is immediately disabled again. 
 
-### Implementing a Movable Space (Camera Panning & Zooming)
+## Implementing a Movable Space (Camera Panning & Zooming)
 Because Mr Markdown protects the main page scroll, you are completely free to implement your own "Movable Space" or camera inside your simulation. 
 
 You can easily add zooming and panning capabilities to your `draw` function. For example, using the Canvas 2D API:
@@ -208,7 +208,7 @@ Mr Markdown allows users to fully customize the look and feel of the lesson (Dar
 
 Mr Markdown provides three global helper functions injected automatically into your iframe to help you draw responsive graphics:
 
-### `window.bkColor(name)`
+## `window.bkColor(name)`
 Returns the current active CSS variable color (as a string, e.g. `"#ffffff"` or `"rgba(0,0,0,1)"`). It instantly updates when the user changes their active palette or theme.
 - `"bg"`: The main background color.
 - `"paper"`: Card/Object background color.
@@ -222,7 +222,7 @@ ctx.fillStyle = bkColor('bg');
 ctx.fillRect(0, 0, w, h);
 ```
 
-### `window.bkUi()`
+## `window.bkUi()`
 Returns the structural style string (`"standard"`, `"neo"`, or `"playful"`). You can use this to dramatically change how you render shapes.
 ```js
 const ui = bkUi();
@@ -237,7 +237,7 @@ if (ui === "neo") {
 }
 ```
 
-### `window.bkThemeMode()`
+## `window.bkThemeMode()`
 Returns `"light"` or `"dark"`. Very useful for fixing contrast issues with Canvas blending modes (e.g., glowing effects)!
 ```js
 // If you are drawing glowing bioluminescence:

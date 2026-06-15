@@ -1,4 +1,4 @@
-# Quick Start
+## Quick Start
 
 Mr Markdown is an opinionated TypeScript SDK for building interactive, single-file learning pages. It is designed for lessons that mix prose, LaTeX, simulations, media, video, and quizzes without making every author build layout and interaction chrome from scratch.
 
@@ -7,7 +7,7 @@ Mr Markdown is an opinionated TypeScript SDK for building interactive, single-fi
 The fastest way to start is to use our built-in CLI to scaffold a new project. Ensure you have a Node.js or Bun environment set up.
 
 ```bash
-# In an empty directory, initialize the project structure
+## In an empty directory, initialize the project structure
 bunx mr-md init
 ```
 

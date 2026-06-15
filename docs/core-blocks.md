@@ -1,4 +1,4 @@
-# Core Blocks
+## Core Blocks
 
 Mr Markdown provides a fluent callback API where you use the `ctx` object inside the `lesson()` builder to add blocks of content sequentially.
 

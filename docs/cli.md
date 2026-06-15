@@ -1,4 +1,4 @@
-# Command Line Interface (CLI)
+## Command Line Interface (CLI)
 
 Mr Markdown includes a powerful built-in CLI to help you scaffold chapters, lessons, and quizzes, and to run a live-reloading development server.
 
@@ -19,7 +19,7 @@ This command will:
 
 To avoid manually creating folders and TypeScript files, you can use the `g` (generate) command. It automatically prefixes your folders with sequential numbers (like `01-`, `02-`) to maintain order.
 
-### Generate a Chapter
+## Generate a Chapter
 
 ```bash
 bun run g chapter my-new-chapter
@@ -28,7 +28,7 @@ bun run g chapter my-new-chapter
 
 This creates a new chapter folder inside `chapters/`, setting up a `chapter.ts` file automatically formatted with the chapter name.
 
-### Generate a Lesson
+## Generate a Lesson
 
 When inside a chapter folder (or at the root, if appropriately structured), you can generate a new lesson:
 
@@ -39,7 +39,7 @@ bun run g lesson introduction
 
 This creates a new lesson directory (e.g., `lessons/01-introduction`) complete with a `lesson.ts` and standard subfolders (`content`, `sims`, `media`, `quizzes`). The generator also automatically attempts to import and link the new lesson to the parent `chapter.ts`.
 
-### Generate a Quiz
+## Generate a Quiz
 
 ```bash
 bun run g quiz knowledge-check
@@ -54,7 +54,7 @@ To preview your content locally with live-reload support:
 
 ```bash
 bun run dev
-# Or, to serve a specific chapter:
+## Or, to serve a specific chapter:
 bun run dev chapters/01-chapter
 ```
 

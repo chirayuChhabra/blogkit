@@ -1,4 +1,4 @@
-# Themes and Styling
+## Themes and Styling
 
 Generated pages include a built-in theme and palette selector. Readers can customize the look of the lesson in the settings panel (which persists their preferences in `localStorage`).
 
@@ -19,7 +19,7 @@ export const myLesson = lesson("My Lesson", {
 });
 ```
 
-### Supported Options:
+## Supported Options:
 
 - **`theme`**: `"auto"` (respects OS preference), `"light"`, or `"dark"`.
 - **`palette`**: The core accent color. Standard palettes include `"ink"` (grayscale/blue), `"field"` (green accent), and `"ember"` (orange/red accent). 

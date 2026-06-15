@@ -1,4 +1,4 @@
-# Mr Markdown Showcase
+## Mr Markdown Showcase
 
 Welcome to **Mr Markdown**, an opinionated TypeScript SDK for building interactive, single-file learning pages. This framework makes it incredibly simple to blend prose, LaTeX math, layouts, code, and fully-interactive simulations seamlessly.
 
