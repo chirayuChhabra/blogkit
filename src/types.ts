@@ -16,7 +16,8 @@ export type BlockType =
 	| "columns"
 	| "quiz"
 	| "divider"
-	| "code";
+	| "code"
+	| "spacer";
 
 export interface BaseBlock {
 	type: BlockType;
@@ -130,6 +131,11 @@ export interface DividerBlock extends BaseBlock {
 	type: "divider";
 }
 
+export interface SpacerBlock extends BaseBlock {
+	type: "spacer";
+	size: number;
+}
+
 export type Block =
 	| HeadingBlock
 	| MarkdownBlock
@@ -143,7 +149,8 @@ export type Block =
 	| LatexBlock
 	| ColumnsBlock
 	| QuizBlock
-	| DividerBlock;
+	| DividerBlock
+	| SpacerBlock;
 
 // ─── Lesson Schema ────────────────────────────────────────────────────────────
 
