@@ -7,7 +7,7 @@ Mr Markdown provides a fluent callback API where you use the `ctx` object inside
 For most use cases, you don't need to memorize specific method names. The universal `ctx.add(src)` method automatically infers the correct block type based on the file extension or URL provided.
 
 * **`ctx.add("file.md")`** → Parses as standard Markdown.
-* **`ctx.add("sim.js")`** → Mounts an Interactive Lab. (JS/TS files are automatically bundled for the browser).
+* **`ctx.add("sim.js")`** → **Throws an error.** (JS/TS files are ambiguous; you must explicitly use `.code()`, `.lab()`, or `.simulation()`).
 * **`ctx.add("questions.json")`** → Renders an Interactive Quiz.
 * **`ctx.add("video.mp4")`** → Embeds a local video.
 * **`ctx.add("image.png")`** → Embeds an image.
@@ -16,7 +16,7 @@ For most use cases, you don't need to memorize specific method names. The univer
 ```ts
 export const myLesson = lesson("My Lesson", { contentBase: import.meta.dir }, ctx => {
   ctx.add("intro.md");
-  ctx.add("sim.js", { label: "Electric field explorer" });
+  ctx.lab("sim.js", { label: "Electric field explorer" });
   ctx.add("questions.json");
 });
 ```

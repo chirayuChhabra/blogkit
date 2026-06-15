@@ -36,7 +36,7 @@ export const myLesson = lesson("Hello World", { contentBase: import.meta.dir }, 
 To see your lesson live in the browser, run the development server from the root of your project:
 
 ```bash
-bunx mr-md dev .
+bun run dev
 ```
 
 The dev server watches your files for changes, re-runs the build script, and automatically refreshes your browser.

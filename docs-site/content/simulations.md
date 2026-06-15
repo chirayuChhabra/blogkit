@@ -71,9 +71,10 @@ window.addEventListener("bk:props", (event) => {
 });
 ```
 
-### The Fallback Way (Janky Hard-Reloads)
-If Mr Markdown detects that your simulation code **does not** contain the string `"bk:props"`, it assumes your simulation is static. Every time the user drags a slider, Mr Markdown will brutally destroy and completely reload the iframe from scratch to apply the new `window.__simProps`. 
-**This results in awful flickering, blank screens, and loss of state.** Always implement the `bk:props` listener!
+### The Fallback Way (Silent Failures)
+If your simulation code does not listen for the `bk:props` event, it will not automatically update when the user drags a slider. Mr Markdown does not automatically reload the iframe for you! The new properties will be quietly applied to `window.__simProps`, but your simulation will be stuck using the old values (unless you manually poll `window.__simProps` inside a `requestAnimationFrame` loop).
+
+**This results in broken interactivity where sliders do nothing.** Always implement the `bk:props` listener!
 
 ---
 

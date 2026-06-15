@@ -25,9 +25,9 @@ export const myLesson = lesson("My Lesson", {
 - **`palette`**: The core accent color. Standard palettes include `"ink"` (grayscale/blue), `"field"` (green accent), and `"ember"` (orange/red accent). 
   - *Easter Egg*: In the UI settings panel, readers can **double-click** a palette color to unlock a special evolution (e.g. Ink -> Elixir, Field -> Trunk, Ember -> Lava)!
 - **`ui`**: Structural aesthetic style. 
-  - `"Clean"`: Sleek and minimalist.
-  - `"NEO"`: Neo-brutalist sharp shadows and heavy borders.
-  - `"TOY"`: Soft, bouncy, rounded, and playful.
+  - `"standard"`: Sleek and minimalist.
+  - `"neo"`: Neo-brutalist sharp shadows and heavy borders.
+  - `"playful"`: Soft, bouncy, rounded, and playful.
 - **`font`**: Override the default typography. You can provide any valid CSS font stack (e.g., `"Comic Sans MS", "Chalkboard SE", sans-serif`).
 
 ## Dark Mode in Content

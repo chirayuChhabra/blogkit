@@ -8,7 +8,7 @@ Strict mode is **enabled by default**. It actively catches:
 
 - Missing lesson titles or slugs
 - Completely empty lessons
-- Broken file references (missing content files or missing media)
+- Simulation, animation, and media blocks that are shorter than 240px
 - Image blocks without `alt` text (for accessibility)
 - `observe`-only simulations without captions (since readers cannot interact with them, they must be explained)
 
