@@ -14,7 +14,7 @@ if (!command) {
 
 switch (command) {
 	case "init":
-		import("./cli/init.js").then((m) => m.runInit());
+		import("./cli/init.js").then((m) => m.runInit(args.slice(1)));
 		break;
 	case "g":
 	case "generate":
