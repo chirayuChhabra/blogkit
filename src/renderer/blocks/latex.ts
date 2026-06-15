@@ -4,8 +4,8 @@ import { blockChrome, sanitizeHtml } from "../markdown/index.js";
 
 export function renderLatex(
 	block: LatexBlock,
-	idx: number,
-	options: BuildOptions,
+	_idx: number,
+	_options: BuildOptions,
 ): { html: string } {
 	const rendered = sanitizeHtml(
 		katex.renderToString(block.tex, {

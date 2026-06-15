@@ -1,5 +1,5 @@
-import type { BuildOptions, Chapter, Lesson } from "../types.js";
-import { escAttr, escHtml, renderBlock } from "./blocks.js";
+import type { BuildOptions, Lesson } from "../types.js";
+import { renderBlock } from "./blocks.js";
 import { renderPage } from "./html.js";
 import type { NavItem } from "./utils.js";
 

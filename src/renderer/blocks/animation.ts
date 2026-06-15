@@ -5,7 +5,7 @@ import { iframeDoc } from "./iframe.js";
 
 export function renderAnimation(
 	block: AnimationBlock,
-	idx: number,
+	_idx: number,
 	options: BuildOptions,
 ): { html: string } {
 	const animSrc = resolveContent(block.src, options, "js");

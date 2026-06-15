@@ -4,7 +4,7 @@ import { resolveContent } from "../utils.js";
 
 export function renderCallout(
 	block: CalloutBlock,
-	idx: number,
+	_idx: number,
 	options: BuildOptions,
 ): { html: string } {
 	const variantMap = {

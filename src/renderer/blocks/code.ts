@@ -5,7 +5,7 @@ import { escHtml } from "./utils.js";
 
 export function renderCode(
 	block: CodeBlock,
-	idx: number,
+	_idx: number,
 	options: BuildOptions,
 ): { html: string } {
 	const raw = resolveContent(block.src, options, "text"); // Could be file or inline

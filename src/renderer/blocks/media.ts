@@ -5,7 +5,7 @@ import { escAttr } from "./utils.js";
 
 export function renderMedia(
 	block: MediaBlock,
-	idx: number,
+	_idx: number,
 	options: BuildOptions,
 ): { html: string } {
 	const src = resolveAssetSrc(block.src, options);

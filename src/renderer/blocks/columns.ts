@@ -6,7 +6,7 @@ import { escAttr } from "./utils.js";
 
 export function renderColumns(
 	block: ColumnsBlock,
-	idx: number,
+	_idx: number,
 	options: BuildOptions,
 ): { html: string } {
 	return {

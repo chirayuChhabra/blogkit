@@ -4,7 +4,7 @@ import { type NavItem, resolveContent } from "../utils.js";
 
 export function renderMarkdown(
 	block: MarkdownBlock,
-	idx: number,
+	_idx: number,
 	options: BuildOptions,
 ): { html: string; navItems?: NavItem[] } {
 	const md = resolveContent(block.src, options, "md");

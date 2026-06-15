@@ -151,6 +151,8 @@ export function bkWireScrollSpy() {
 		},
 	);
 
-	sections.forEach((s) => sectionObs.observe(s.el));
+	sections.forEach((s) => {
+		sectionObs.observe(s.el);
+	});
 	setActive(0);
 }

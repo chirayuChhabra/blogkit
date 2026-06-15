@@ -4,8 +4,8 @@ import { escAttr } from "./utils.js";
 
 export function renderYouTube(
 	block: YouTubeBlock,
-	idx: number,
-	options: BuildOptions,
+	_idx: number,
+	_options: BuildOptions,
 ): { html: string } {
 	const params = new URLSearchParams();
 	params.set("rel", "0");

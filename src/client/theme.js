@@ -1,4 +1,4 @@
-import { proPalettes, proIcons, normalIcons } from "./icons.js";
+import { normalIcons, proIcons, proPalettes } from "./icons.js";
 
 export function bkBroadcastTheme(targetWindow) {
 	const root = document.documentElement;
