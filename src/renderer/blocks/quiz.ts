@@ -13,7 +13,7 @@ function renderQuestion(q: QuizQuestion, quizId: string, qi: number): string {
 	const options = q.options
 		.map(
 			(opt, oi) => `
-    <button class="bk-opt" data-opt-idx="${oi}" onclick="bkAnswer(this,'${escAttr(qid)}')">
+    <button class="bk-opt" data-opt-idx="${oi}">
       <span class="bk-opt-dot"></span><span class="bk-opt-text">${mdInline(opt)}</span>
     </button>`,
 		)

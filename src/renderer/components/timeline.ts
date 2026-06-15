@@ -241,6 +241,18 @@ export const chapterStyles = `
   border-bottom-color: var(--ink);
 }
 
+.bk-timeline-card.bk-last-opened .bk-timeline-content {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+.bk-timeline-card.bk-last-opened .bk-timeline-node {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.bk-timeline-card.bk-last-opened .bk-timeline-node::after {
+  background: var(--paper);
+}
+
 :root[data-theme="dark"] .bk-timeline-content {
   background: var(--panel);
 }

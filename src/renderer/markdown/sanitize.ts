@@ -31,7 +31,7 @@ export function mdToHtml(md: string): {
 	const renderer = new marked.Renderer();
 	renderer.heading = ({ tokens, depth, text }) => {
 		const id = `bk-heading-${idPrefix}-${headingIdCounter++}`;
-		if (depth === 1 || depth === 2) {
+		if (depth === 2 || depth === 3) {
 			const plainText = text.replace(/<[^>]+>/g, "");
 			headings.push({ id, text: plainText, level: depth });
 		}

@@ -75,8 +75,10 @@ export function renderSimulationControls(
 				const step = control.step ?? 1;
 				return `<label class="bk-sim-range">
           <span>${label}</span>
+          <span class="bk-sim-range-bound">${min}</span>
           <input type="range" data-bk-prop="${escAttr(key)}" min="${min}" max="${max}" step="${step}" value="${value}">
-          <output>${value}</output>
+          <span class="bk-sim-range-bound">${max}</span>
+          <input type="number" class="bk-sim-range-input" data-bk-sync="${escAttr(key)}" min="${min}" max="${max}" step="${step}" value="${value}">
         </label>`;
 			})
 			.join("")}

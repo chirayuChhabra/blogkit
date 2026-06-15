@@ -20,7 +20,6 @@ export function renderAnimation(
             </div>
             <iframe srcdoc="${iframeDoc(animSrc, "{}", block.loop)}"
               sandbox="allow-scripts"
-              loading="lazy"
               style="width:100%;height:100%;border:none;display:block;">
             </iframe>
           </div>`,

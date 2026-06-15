@@ -7,7 +7,10 @@ export function renderHeading(
 	idx: number,
 	options: BuildOptions,
 ): { html: string; navItems?: NavItem[] } {
-	const md = resolveContent(block.src, options, "md");
+	let md = resolveContent(block.src, options, "md");
+	if (!md.includes("\n") && !md.startsWith("#")) {
+		md = `## ${md}`;
+	}
 	const { html, title } = mdToHtml(md);
 	const label =
 		block.title ||
