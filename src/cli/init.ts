@@ -120,6 +120,29 @@ export const ${lessonVar} = lesson("${lessonTitle}", { contentBase: import.meta.
 		);
 	}
 
+	const tsconfigPath = path.resolve(process.cwd(), "tsconfig.json");
+	if (!fs.existsSync(tsconfigPath)) {
+		fs.writeFileSync(
+			tsconfigPath,
+			`{
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM"],
+    "module": "ESNext",
+    "target": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "moduleDetection": "force"
+  }
+}
+`,
+			"utf-8",
+		);
+		console.log("  Created: tsconfig.json");
+	}
+
 	const packageJsonPath = path.resolve(process.cwd(), "package.json");
 	let pkg: any = {};
 	if (fs.existsSync(packageJsonPath)) {

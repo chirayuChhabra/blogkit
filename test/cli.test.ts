@@ -37,6 +37,11 @@ describe("CLI Deep Tests", () => {
       expect(existsSync(lessonPath)).toBe(true);
       const lessonContent = readFileSync(lessonPath, "utf-8");
       expect(lessonContent).toContain("First Lesson");
+
+      const tsconfigPath = join(tempDir, "tsconfig.json");
+      expect(existsSync(tsconfigPath)).toBe(true);
+      const tsconfigContent = readFileSync(tsconfigPath, "utf-8");
+      expect(tsconfigContent).toContain('"moduleResolution": "bundler"');
     });
 
     test("Should update existing package.json instead of overwriting", async () => {
