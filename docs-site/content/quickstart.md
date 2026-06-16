@@ -7,8 +7,12 @@ Mr Markdown is an opinionated TypeScript SDK for building interactive, single-fi
 The fastest way to start is to use our built-in CLI to scaffold a new project. Ensure you have a Node.js or Bun environment set up.
 
 ```bash
-# In an empty directory, initialize the project structure
-bunx mr-md init
+# Create a folder and install the package
+mkdir my-course && cd my-course
+bun add mr-md
+
+# Initialize the project structure
+bunx md init
 ```
 
 This command will automatically set up the recommended folder structure, including a sample chapter and lesson.
@@ -36,7 +40,7 @@ export const myLesson = lesson("Hello World", { contentBase: import.meta.dir }, 
 To see your lesson live in the browser, run the development server from the root of your project:
 
 ```bash
-bun run dev
+bunx md dev
 ```
 
 The dev server watches your files for changes, re-runs the build script, and automatically refreshes your browser.

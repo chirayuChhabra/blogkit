@@ -15,15 +15,20 @@ The documentation has been split into dedicated guides. Start with the Quick Sta
 
 ## Quick Start (CLI)
 
-The easiest way to use Mr Markdown is via the CLI which provides a smart scaffold and dev server.
+The easiest way to use Mr Markdown is to install it into your project folder and use `bunx` to run its commands:
 
 ```bash
 mkdir my-course && cd my-course
-bunx mr-md init
-bunx mr-md g ch physics
+bun add mr-md
+
+# Initialize the project structure
+bunx md init
+
+# Generate a chapter and lesson
+bunx md g ch physics
 cd chapters/01-physics
-bunx mr-md g lesson intro
+bunx md g lesson intro
 
 # Start the dev server
-bunx mr-md dev .
+bunx md dev
 ```

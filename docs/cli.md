@@ -7,7 +7,7 @@ Mr Markdown includes a powerful built-in CLI to help you scaffold chapters, less
 If you're starting a new project from scratch, you can scaffold the recommended directory structure automatically:
 
 ```bash
-bunx mr-md init
+bunx md init
 ```
 
 This command will:
@@ -22,9 +22,9 @@ To avoid manually creating folders and TypeScript files, you can use the `g` (ge
 ## Generate a Chapter
 
 ```bash
-bun run g chapter my-new-chapter
+bunx md g chapter my-new-chapter
 ```
-*(You can also use `bun run g ch my-new-chapter`)*
+*(You can also use `bunx md g ch my-new-chapter`)*
 
 This creates a new chapter folder inside `chapters/`, setting up a `chapter.ts` file automatically formatted with the chapter name.
 
@@ -33,18 +33,18 @@ This creates a new chapter folder inside `chapters/`, setting up a `chapter.ts` 
 When inside a chapter folder (or at the root, if appropriately structured), you can generate a new lesson:
 
 ```bash
-bun run g lesson introduction
+bunx md g lesson introduction
 ```
-*(You can also use `bun run g le introduction`)*
+*(You can also use `bunx md g le introduction`)*
 
 This creates a new lesson directory (e.g., `lessons/01-introduction`) complete with a `lesson.ts` and standard subfolders (`content`, `sims`, `media`, `quizzes`). The generator also automatically attempts to import and link the new lesson to the parent `chapter.ts`.
 
 ## Generate a Quiz
 
 ```bash
-bun run g quiz knowledge-check
+bunx md g quiz knowledge-check
 ```
-*(You can also use `bun run g qu knowledge-check`)*
+*(You can also use `bunx md g qu knowledge-check`)*
 
 This creates a new `quizzes/knowledge-check.json` filled with a sample multiple-choice question. It will also automatically inject `ctx.quiz("quizzes/knowledge-check.json")` into your current `lesson.ts`!
 
@@ -53,9 +53,9 @@ This creates a new `quizzes/knowledge-check.json` filled with a sample multiple-
 To preview your content locally with live-reload support:
 
 ```bash
-bun run dev
+bunx md dev chapters/01-first-chapter
 ## Or, to serve a specific chapter:
-bun run dev chapters/01-chapter
+bunx md dev chapters/02-second-chapter
 ```
 
 The dev server will:
