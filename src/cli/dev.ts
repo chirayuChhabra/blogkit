@@ -10,12 +10,8 @@ export function runDev(args: string[]) {
 	console.log(`Starting dev server for directory: ${dir}`);
 
 	let server: any;
-	let currentBuild: any = null;
 
 	const rebuild = () => {
-		if (currentBuild) {
-			currentBuild.kill();
-		}
 		console.log("Rebuilding...");
 		const entryPoints = [
 			"chapter.ts",
@@ -27,22 +23,40 @@ export function runDev(args: string[]) {
 			const entryPath = path.join(dir, entry);
 			if (fs.existsSync(entryPath)) {
 				outDir = path.resolve(process.cwd(), path.dirname(entryPath), "out");
-				currentBuild = Bun.spawn([process.execPath, entryPath], {
-					env: { ...process.env, NODE_ENV: "development" },
-					onExit(
-						_proc: any,
-						exitCode: number,
-						_signalCode: number,
-						_error: string,
-					) {
-						if (exitCode === 0) {
-							console.log("Build successful.");
-							server?.publish("livereload", "reload");
-						} else if (exitCode !== null) {
-							console.error(`Build failed with exit code ${exitCode}`);
+				
+				try {
+					for (const key in require.cache) {
+						if (key.startsWith(process.cwd()) && !key.includes("/node_modules/")) {
+							delete require.cache[key];
 						}
-					},
-				});
+					}
+
+					const mod = require(path.resolve(entryPath));
+					let built = false;
+					for (const key in mod) {
+						if (
+							mod[key] &&
+							typeof mod[key].build === "function" &&
+							mod[key].constructor &&
+							(mod[key].constructor.name === "ChapterBuilder" ||
+								mod[key].constructor.name === "LessonBuilder")
+						) {
+							mod[key].build();
+							built = true;
+						}
+					}
+
+					if (!built) {
+						console.log(
+							`No exported ChapterBuilder or LessonBuilder found in ${entry}. Ensure you export your chapter or lesson (e.g., export const myChapter = chapter(...)).`
+						);
+					} else {
+						console.log("Build successful.");
+						server?.publish("livereload", "reload");
+					}
+				} catch (err: any) {
+					console.error(`Build failed:`, err);
+				}
 				return;
 			}
 		}

@@ -13,5 +13,5 @@ export function pageCSS(): string {
 }
 
 export function clientScript(): string {
-	return fs.readFileSync(path.join(__dirname, "../../client/app.js"), "utf-8");
+	return fs.readFileSync(path.join(__dirname, "../../client/app.bundle.js"), "utf-8");
 }
