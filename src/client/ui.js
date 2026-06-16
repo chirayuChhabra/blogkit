@@ -162,8 +162,9 @@ export function bkWireLastLessonTracking() {
 	const isChapterPage = document.querySelector(".bk-chapter-timeline") !== null;
 
 	if (!isChapterPage) {
-		if (path && path.endsWith(".html")) {
-			localStorage.setItem("mr-md-last-lesson", path.split("/").pop());
+		let lessonPath = path.replace(/\/$/, "").split("/").pop();
+		if (lessonPath) {
+			localStorage.setItem("mr-md-last-lesson", lessonPath.replace(".html", ""));
 		}
 	} else {
 		const lastLesson = localStorage.getItem("mr-md-last-lesson");
@@ -171,11 +172,11 @@ export function bkWireLastLessonTracking() {
 			const cards = document.querySelectorAll(".bk-timeline-card");
 			for (const card of cards) {
 				const href = card.getAttribute("href");
-				if (href && (href === lastLesson || href.endsWith("/" + lastLesson))) {
+				if (href && href.replace(".html", "") === lastLesson) {
 					setTimeout(() => {
 						card.scrollIntoView({ behavior: "smooth", block: "center" });
 						card.classList.add("bk-last-opened");
-					}, 100);
+					}, 300);
 					break;
 				}
 			}
