@@ -28,7 +28,7 @@ export async function generateLesson(
 
 	const content = `import { lesson, type LessonBuilder } from "mr-md";
 
-export const ${varName}Lesson = lesson("${lessonTitle}", { contentBase: import.meta.dir }, (ctx: LessonBuilder) => {
+export const ${varName}Lesson: LessonBuilder = lesson("${lessonTitle}", { contentBase: import.meta.dir }, (ctx: LessonBuilder) => {
 });
 `;
 	fs.writeFileSync(path.join(lessonPath, "lesson.ts"), content, "utf-8");

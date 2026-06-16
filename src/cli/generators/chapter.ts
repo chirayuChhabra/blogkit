@@ -22,7 +22,7 @@ export function generateChapter(name: string, rawName: string, cwd: string) {
 
 	const content = `import { chapter, type ChapterBuilder } from "mr-md";
 
-export const ${varName}Chapter = chapter("${chapterTitle}", (ctx: ChapterBuilder) => {
+export const ${varName}Chapter: ChapterBuilder = chapter("${chapterTitle}", (ctx: ChapterBuilder) => {
 });
 
 if (import.meta.main) {

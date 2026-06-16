@@ -87,7 +87,7 @@ export async function runInit(args: string[]) {
 			`import { chapter, type ChapterBuilder } from "mr-md";
 import { ${lessonVar} } from "./lessons/${lessonDir}/lesson.js";
 
-export const ${chapterVar} = chapter("${chapterTitle}", (ctx: ChapterBuilder) => {
+export const ${chapterVar}: ChapterBuilder = chapter("${chapterTitle}", (ctx: ChapterBuilder) => {
 	ctx.lesson(${lessonVar});
 });
 
@@ -109,7 +109,7 @@ if (import.meta.main) {
 			lessonTsPath,
 			`import { lesson, type LessonBuilder } from "mr-md";
 
-export const ${lessonVar} = lesson("${lessonTitle}", { contentBase: import.meta.dir }, (ctx: LessonBuilder) => {
+export const ${lessonVar}: LessonBuilder = lesson("${lessonTitle}", { contentBase: import.meta.dir }, (ctx: LessonBuilder) => {
 	ctx.markdown("Welcome to your first lesson!");
 });
 `,
@@ -162,9 +162,6 @@ export const ${lessonVar} = lesson("${lessonTitle}", { contentBase: import.meta.
 	pkg.scripts = {
 		...(pkg.scripts || {}),
 		build: `bun chapters/${chapterDir}/chapter.ts`,
-		dev: "md dev",
-		g: "md g",
-		generate: "md generate",
 	};
 
 	let mrMdVersion = "latest";
@@ -192,6 +189,6 @@ export const ${lessonVar} = lesson("${lessonTitle}", { contentBase: import.meta.
 	console.log("  Updated: package.json");
 
 	console.log(
-		"\nDone! You can now run `npm run dev` or `bun run dev` to start the local development server.",
+		"\nDone! You can now run `bunx md dev` to start the local development server.",
 	);
 }
