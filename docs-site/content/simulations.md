@@ -204,41 +204,57 @@ function draw(ctx, logicalW, logicalH) {
 
 ## 5. Inherently Themed Simulations
 
-Mr Markdown allows users to fully customize the look and feel of the lesson (Dark Mode, Color Palettes, UI Styles). To ensure your simulations look natively integrated, they should inherently respect the active aesthetic.
+Mr Markdown allows users to fully customize the look and feel of the lesson by changing the Light/Dark mode (THEME), color palettes (PALETTE), and interface shapes (UI Styles). 
+
+To ensure your simulations look natively integrated, they should inherently respect the active aesthetic. **We highly recommend incorporating all three (Theme, Palette, and UI) into your simulation for complete visual consistency!**
 
 Mr Markdown provides three global helper functions injected automatically into your iframe to help you draw responsive graphics:
 
-### `window.bkColor(name)`
-Returns the current active CSS variable color (as a string, e.g. `"#ffffff"` or `"rgba(0,0,0,1)"`). It instantly updates when the user changes their active palette or theme.
-- `"bg"`: The main background color.
-- `"paper"`: Card/Object background color.
-- `"line"` / `"line-strong"`: Border and structural colors.
-- `"text"` / `"text-light"`: Primary and secondary text colors.
-- `"accent"` / `"accent-soft"`: The active brand color (e.g., green for the Field palette, blue for Ink).
+### `window.bkColor(name)` - Palettes
+The site provides three distinct structural palettes: `"ink"` (Grayscale/Blue), `"field"` (Green), and `"ember"` (Orange/Red). Readers can even unlock "evolved" palettes via easter eggs (like "Elixir", "Trunk", or "Lava"). 
 
+You shouldn't hardcode hex colors. Instead, fetch the active color dynamically. It instantly updates when the user changes their active palette or theme:
 ```js
 // Instantly draw a background that perfectly matches the site!
 ctx.fillStyle = bkColor('bg');
 ctx.fillRect(0, 0, w, h);
+
+// Draw your objects using the active theme's accent color
+ctx.fillStyle = bkColor('accent');
 ```
 
-### `window.bkUi()`
-Returns the structural style string (`"standard"`, `"neo"`, or `"playful"`). You can use this to dramatically change how you render shapes.
+Available color tokens you can request:
+- `"bg"`: The main background canvas color.
+- `"paper"`: A slightly elevated background color for cards/objects.
+- `"line"` / `"line-strong"`: Great for borders, axes, and structural grids.
+- `"text"` / `"text-light"`: Primary and secondary text colors.
+- `"accent"` / `"accent-soft"`: The active brand color (e.g. green for Field, orange for Ember).
+
+### `window.bkUi()` - UI Styles
+The structural UI style fundamentally changes the shape of the website. You should adapt the shapes you draw to match!
+- `"standard"`: A sleek, balanced, slightly rounded organic look.
+- `"neo"`: A brutalist design with hard borders and sharp corners.
+- `"playful"`: A bouncy, friendly design with highly rounded bubbles.
+
 ```js
 const ui = bkUi();
 if (ui === "neo") {
   // Draw brutalist rectangles with thick hard borders
+  ctx.lineWidth = 3;
   ctx.strokeRect(x, y, w, h); 
 } else if (ui === "playful") {
   // Draw bouncy, friendly rounded bubbles
   ctx.roundRect(x, y, w, h, 15);
+  ctx.fill();
 } else {
-  // Standard organic or sleek look
+  // Standard sleek look
+  ctx.roundRect(x, y, w, h, 5);
+  ctx.fill();
 }
 ```
 
-### `window.bkThemeMode()`
-Returns `"light"` or `"dark"`. Very useful for fixing contrast issues with Canvas blending modes (e.g., glowing effects)!
+### `window.bkThemeMode()` - Theme (Light/Dark)
+Returns `"light"` or `"dark"`. This is crucial when rendering effects like glows or shadows that require Canvas blending modes!
 ```js
 // If you are drawing glowing bioluminescence:
 // "screen" looks beautiful in dark mode, but disappears on light backgrounds!

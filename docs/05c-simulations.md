@@ -56,8 +56,14 @@ window.bkSetup(800, 500, draw);
 
 ## Inheriting the Site Theme
 
-Mr Markdown allows readers to switch between Light/Dark mode and change color palettes. To ensure your simulation perfectly matches the active theme, use the global helper function `window.bkColor(name)`.
+Mr Markdown allows readers to switch between Light/Dark mode (THEME), change color palettes (PALETTE), and toggle interface shapes (UI Styles). To ensure your simulation perfectly matches the active theme and provides a natively integrated experience, we highly recommend incorporating all three into your simulation for visual consistency!
 
+Mr Markdown provides three global helper functions to achieve this:
+
+### 1. `window.bkColor(name)` - Palettes
+The site provides three distinct structural palettes: `"ink"` (Grayscale/Blue), `"field"` (Green), and `"ember"` (Orange/Red). Readers can even unlock "evolved" palettes via easter eggs (like "Elixir", "Trunk", or "Lava"). 
+
+You shouldn't hardcode hex colors. Instead, fetch the active color dynamically:
 ```js
 // Instantly draw a background that perfectly matches the site!
 ctx.fillStyle = window.bkColor('bg');
@@ -67,7 +73,43 @@ ctx.fillRect(0, 0, logicalW, logicalH);
 ctx.fillStyle = window.bkColor('accent');
 ```
 
-Available colors: `"bg"`, `"paper"`, `"line"`, `"text"`, `"text-light"`, `"accent"`, `"accent-soft"`.
+Available color tokens you can request: 
+- `"bg"`: The main background canvas color.
+- `"paper"`: A slightly elevated background color for cards/objects.
+- `"line"` / `"line-strong"`: Great for borders, axes, and structural grids.
+- `"text"` / `"text-light"`: Primary and secondary text colors.
+- `"accent"` / `"accent-soft"`: The active brand color (e.g. green for Field, orange for Ember).
+
+### 2. `window.bkUi()` - UI Styles
+The structural UI style fundamentally changes the shape of the website. You should adapt the shapes you draw to match!
+- `"standard"`: A sleek, balanced, slightly rounded organic look.
+- `"neo"`: A brutalist design with hard borders and sharp corners.
+- `"playful"`: A bouncy, friendly design with highly rounded bubbles.
+
+```js
+const ui = window.bkUi();
+if (ui === "neo") {
+  // Draw brutalist rectangles with thick hard borders
+  ctx.lineWidth = 3;
+  ctx.strokeRect(x, y, w, h); 
+} else if (ui === "playful") {
+  // Draw bouncy, friendly rounded bubbles
+  ctx.roundRect(x, y, w, h, 15);
+  ctx.fill();
+} else {
+  // Standard sleek look
+  ctx.roundRect(x, y, w, h, 5);
+  ctx.fill();
+}
+```
+
+### 3. `window.bkThemeMode()` - Theme (Light/Dark)
+Returns `"light"` or `"dark"`. This is crucial when rendering effects like glows or shadows that require Canvas blending modes!
+```js
+const isLight = window.bkThemeMode() === "light";
+// "screen" looks beautiful in dark mode, but disappears on light backgrounds!
+ctx.globalCompositeOperation = isLight ? "multiply" : "screen";
+```
 
 ---
 
