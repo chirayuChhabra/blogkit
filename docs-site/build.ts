@@ -37,7 +37,7 @@ const showcase = lesson("Showcase", { contentBase: root }, ctx => {
 
 const setup = lesson("1. Setup", { contentBase: root }, ctx => {
   ctx.markdown("docs/01a-setup.md");
-  ctx.tip("Alternatively, you can `cd` into the specific chapter folder and simply run `bun run dev`");
+  ctx.tip("Alternatively, you can `cd` into the specific chapter folder and simply run `bunx md dev`");
   ctx.markdown("docs/01b-setup.md");
 });
 
@@ -52,48 +52,53 @@ const coreBlocks = lesson("3. Core Blocks", { contentBase: root }, ctx => {
 });
 
 const mediaAndMath = lesson("4. Media & Math", { contentBase: root }, ctx => {
-  ctx.markdown("docs/04a-media.md");
-  
+  ctx.markdown("docs/04a1-image.md");
+  ctx.markdown("*Live Example:*");
+  ctx.image("docs-site/media/nature.jpg", { alt: "Nature scene", caption: "Local image embed" });
   ctx.space(2);
-  ctx.heading("Live Examples", "Live Examples");
   
-  ctx.markdown("Here is an actual video embedded using `ctx.youtube()`:");
+  ctx.markdown("docs/04a2-video.md");
+  ctx.space(2);
+  
+  ctx.markdown("docs/04a3-youtube.md");
+  ctx.markdown("*Live Example:*");
   ctx.youtube("https://www.youtube.com/watch?v=riXcZT2ICjA", { caption: "YouTube embed demo" });
   ctx.space(2);
   
-  ctx.markdown("Here is a local image embedded using `ctx.image()`:");
-  ctx.image("docs-site/media/nature.jpg", { alt: "Nature scene", caption: "Local image embed" });
-  ctx.space(2);
-
-  ctx.markdown("Here is a standalone LaTeX block embedded using `ctx.latex()`:");
-  ctx.latex("e^{i\\pi} + 1 = 0");
-  
-  ctx.space(2);
   ctx.divider();
 
-  ctx.markdown("docs/04b-math.md");
+  ctx.markdown("docs/04b1-math.md");
+  ctx.markdown("*Live Example:*");
+  ctx.latex("e^{i\\pi} + 1 = 0");
+  ctx.space(2);
+  
+  ctx.markdown("docs/04b2-math.md");
 });
 
 const simulations = lesson("5. Simulations", { contentBase: root }, ctx => {
   ctx.markdown("docs/05a-simulations.md");
+  
+  ctx.markdown("*Live Example:*");
+  ctx.lab("docs-site/sims/qcd.js", { label: "Proton & Quarks", caption: "Interactive QCD string breaking. Drag a quark to pull it out of the proton." });
+  ctx.space(2);
+  
   ctx.note("There is also `ctx.animation()`, which behaves exactly the same but hides the \"Click to interact\" overlay, intended for passive motion demos.");
+  
   ctx.markdown("docs/05b-simulations.md");
   ctx.warning("**CRITICAL: Setting `contentBase`**\n\nFor Mr Markdown to automatically discover your `.config.json` file, you MUST pass the `{ contentBase: import.meta.dir }` option to your `lesson()` definition! Otherwise, the sliders will not render.");
+  
   ctx.markdown("docs/05c-simulations.md");
-  ctx.divider();
-  ctx.heading("Live Example", "Live Example");
-  ctx.markdown("Here is what an interactive lab looks like when embedded using `ctx.lab('sims/qcd.js')`! Go ahead and interact with it:");
-  ctx.lab("docs-site/sims/qcd.js", { label: "Proton & Quarks", caption: "Interactive QCD string breaking. Drag a quark to pull it out of the proton." });
 });
 
 const quizzes = lesson("6. Quizzes", { contentBase: root }, ctx => {
   ctx.markdown("docs/06a-quizzes.md");
+  
+  ctx.markdown("*Live Example:*");
+  ctx.quiz("docs-site/quizzes/sample.json", { label: "Mr Markdown Quiz", caption: "Test your knowledge!" });
+  ctx.space(2);
+  
   ctx.note("You can also use the `ctx.add(\"quizzes/knowledge-check.json\")` smart router, which behaves identically.");
   ctx.markdown("docs/06b-quizzes.md");
-  ctx.divider();
-  ctx.heading("Live Example", "Live Example");
-  ctx.markdown("Here is a live quiz embedded using `ctx.quiz('quizzes/sample.json')`:");
-  ctx.quiz("docs-site/quizzes/sample.json", { label: "Mr Markdown Quiz", caption: "Test your knowledge!" });
 });
 
 const publishing = lesson("7. Publishing", { contentBase: root }, ctx => {

@@ -1,7 +1,7 @@
 
 In Mr Markdown, your course is built by grouping **Lessons** inside **Chapters**.
 
-When you run `bunx mr-md init`, it generates a folder structure based on your answers. Assuming you accepted the defaults ("First Chapter" and "First Lesson"), it generated a folder structure that looks like this:
+When you run `bunx md init`, it generates a folder structure based on your answers. Assuming you accepted the defaults ("First Chapter" and "First Lesson"), it generated a folder structure that looks like this:
 
 ```text
 my-course/
@@ -83,14 +83,14 @@ Instead of manually creating folders and files every time, you can use the CLI g
 #### Generating a Chapter
 Run from the **root of your project**:
 ```bash
-bun run g chapter "My New Chapter"
+bunx md g chapter "My New Chapter"
 ```
 This creates a new folder in `chapters/` with a fresh `chapter.ts`.
 
 #### Generating a Lesson
 Run from inside a specific **chapter directory** (e.g., `cd chapters/01-first-chapter`):
 ```bash
-bun run g lesson "My Second Lesson"
+bunx md g lesson "My Second Lesson"
 ```
 This will:
 1. Create a new `02-my-second-lesson/` directory inside that chapter's `lessons/` folder.
@@ -99,7 +99,7 @@ This will:
 #### Generating a Quiz
 Run from inside a specific **lesson directory** (e.g., `cd chapters/01-first-chapter/lessons/01-first-lesson`):
 ```bash
-bun run g quiz "knowledge-check"
+bunx md g quiz "knowledge-check"
 ```
 This creates a fresh quiz JSON file inside `quizzes/` and automatically injects `ctx.quiz()` into your `lesson.ts`.
 

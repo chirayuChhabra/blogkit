@@ -7,7 +7,8 @@ Ensure you have a Node.js or Bun environment set up.
 The fastest way to start is to use our built-in CLI to scaffold a new project. 
 
 ```bash
-bunx mr-md init
+bun add mr-md
+bunx md init
 ```
 
 ### What does `init` do?
@@ -17,5 +18,5 @@ It will automatically set up the recommended folder structure, including a sampl
 To see your lesson live in the browser, run the development server from the root of your project:
 
 ```bash
-bun run dev
+bunx md dev chapters/01-first-chapter
 ```

@@ -15,3 +15,16 @@ Mr Markdown pages feature a powerful, highly-customizable UI. Try opening the **
 ## Seamless Integration
 
 You can effortlessly compose content blocks using the TypeScript API. Here are a few examples of what you can render out of the box:
+
+```typescript
+export const myLesson = lesson("Showcase", { contentBase: import.meta.dir }, ctx => {
+  // Beautiful syntax-highlighted code
+  ctx.code("npm install mr-md", "bash");
+  
+  // Interactive, animated JavaScript simulations
+  ctx.lab("sims/gravity.js", { caption: "Orbit Simulator" });
+  
+  // Rich math formulas using KaTeX
+  ctx.latex("E = mc^2");
+});
+```
