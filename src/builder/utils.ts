@@ -57,11 +57,11 @@ export function copyAssets(outDir: string) {
 	const assetsDir = path.join(outDir, "assets");
 	if (!fs.existsSync(assetsDir)) fs.mkdirSync(assetsDir, { recursive: true });
 
-	const srcStylesDir = path.join(__dirname, "../styles");
-	const srcClientDir = path.join(__dirname, "../client");
-
-	const fallbackStylesDir = path.join(__dirname, "../../src/styles");
-	const fallbackClientDir = path.join(__dirname, "../../src/client");
+	const packageRoot = path.join(__dirname, "../../");
+	const distStylesDir = path.join(packageRoot, "dist/styles");
+	const srcStylesDir = path.join(packageRoot, "src/styles");
+	const distClientDir = path.join(packageRoot, "dist/client");
+	const srcClientDir = path.join(packageRoot, "src/client");
 
 	const copyDir = (src: string, dest: string) => {
 		if (!fs.existsSync(src)) return;
@@ -77,11 +77,12 @@ export function copyAssets(outDir: string) {
 		}
 	};
 
-	if (fs.existsSync(srcStylesDir)) copyDir(srcStylesDir, assetsDir);
-	else copyDir(fallbackStylesDir, assetsDir);
+	// Copy styles
+	if (fs.existsSync(distStylesDir)) copyDir(distStylesDir, assetsDir);
+	else if (fs.existsSync(srcStylesDir)) copyDir(srcStylesDir, assetsDir);
 
 	// Always try to copy the built client dir first to get app.bundle.js
-	if (fs.existsSync(fallbackClientDir)) copyDir(fallbackClientDir, assetsDir);
+	if (fs.existsSync(distClientDir)) copyDir(distClientDir, assetsDir);
 	// Then overlay src/client if we are running locally inside mr-md
 	if (fs.existsSync(srcClientDir)) copyDir(srcClientDir, assetsDir);
 }

@@ -107,18 +107,26 @@ export function bkWireScrollSpy() {
 	if (!sections.length) return;
 
 	function setActive(idx) {
+		let targetTop = 0;
+		let targetHeight = 0;
+		if (pill && sections[idx]) {
+			targetTop = sections[idx].link.offsetTop;
+			targetHeight = sections[idx].link.offsetHeight;
+		}
+
 		sections.forEach((s, i) => {
 			if (i === idx) {
 				s.link.classList.add("active");
-				if (pill) {
-					pill.style.top = `${s.link.offsetTop}px`;
-					pill.style.height = `${s.link.offsetHeight}px`;
-					pill.style.opacity = "1";
-				}
 			} else {
 				s.link.classList.remove("active");
 			}
 		});
+
+		if (pill && sections[idx]) {
+			pill.style.top = `${targetTop}px`;
+			pill.style.height = `${targetHeight}px`;
+			pill.style.opacity = "1";
+		}
 	}
 
 	function updateActive() {

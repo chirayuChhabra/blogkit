@@ -30,6 +30,21 @@ export function bkWireInteractiveFrames() {
 	});
 	document.addEventListener("focusin", interactiveHandler, { passive: true });
 
+	let scrollTimeout;
+	document.addEventListener(
+		"scroll",
+		() => {
+			if (!document.body.classList.contains("bk-is-scrolling")) {
+				document.body.classList.add("bk-is-scrolling");
+			}
+			clearTimeout(scrollTimeout);
+			scrollTimeout = setTimeout(() => {
+				document.body.classList.remove("bk-is-scrolling");
+			}, 150);
+		},
+		{ passive: true },
+	);
+
 	const obs = new IntersectionObserver(
 		(entries) => {
 			entries.forEach((e) => {
@@ -51,7 +66,7 @@ export function bkWireInteractiveFrames() {
 				}
 			});
 		},
-		{ threshold: 0 },
+		{ threshold: 0, rootMargin: "50% 0px 50% 0px" },
 	);
 
 	document.querySelectorAll(".bk-embed-interactive").forEach((frame) => {

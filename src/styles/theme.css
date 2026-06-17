@@ -1012,7 +1012,6 @@ hr.bk-divider,
 	position: relative;
 	width: 100%;
 	border-radius: 8px;
-	overflow: hidden;
 	background: #000;
 	isolation: isolate;
 	display: flex;
@@ -1022,10 +1021,15 @@ hr.bk-divider,
 }
 .bk-embed-interactive iframe {
 	pointer-events: none;
+	border-radius: inherit;
+	transform: translateZ(0);
 	transition: opacity 0.2s;
 }
 .bk-embed-interactive.is-interactive iframe {
 	pointer-events: auto;
+}
+body.bk-is-scrolling .bk-embed-interactive.is-interactive iframe {
+	pointer-events: none !important;
 }
 .bk-embed-overlay {
 	position: absolute;
@@ -1034,9 +1038,8 @@ hr.bk-divider,
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: rgba(0, 0, 0, 0.2);
-	backdrop-filter: blur(2px);
-	-webkit-backdrop-filter: blur(2px);
+	border-radius: inherit;
+	background: rgba(0, 0, 0, 0.4);
 	transform: translateZ(0);
 	cursor: pointer;
 	transition:

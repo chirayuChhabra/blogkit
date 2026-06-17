@@ -154,16 +154,20 @@ describe("CLI Deep Tests", () => {
         env: { ...process.env, PORT: "3080" }
       });
 
-      await new Promise(r => setTimeout(r, 2000));
+      let res;
+      for (let i = 0; i < 20; i++) {
+        await new Promise(r => setTimeout(r, 500));
+        res = await fetch("http://localhost:3081").catch(() => null);
+        if (res) break;
+      }
       
       try {
-        const res = await fetch("http://localhost:3081").catch(() => null);
         expect(res).toBeTruthy();
       } finally {
         devProc.kill();
         dummyServer.stop();
       }
-    });
+    }, 15000);
 
     test("Should prevent directory traversal attacks (403)", async () => {
       await mkdir(join(tempDir, "out"), { recursive: true });
@@ -175,15 +179,23 @@ describe("CLI Deep Tests", () => {
         env: { ...process.env, PORT: "4000" }
       });
 
-      await new Promise(r => setTimeout(r, 2000));
-
+      let res;
+      for (let i = 0; i < 20; i++) {
+        await new Promise(r => setTimeout(r, 500));
+        try {
+          res = await fetch("http://localhost:4000/..%2fsecret.txt");
+          break;
+        } catch (e) {
+          // ignore ConnectionRefused
+        }
+      }
+      
       try {
-        const res = await fetch("http://localhost:4000/..%2fsecret.txt");
-        expect(res.status).toBe(403);
+        expect(res?.status).toBe(403);
       } finally {
         devProc.kill();
       }
-    });
+    }, 15000);
 
     test("Should return 404 for missing files", async () => {
       await mkdir(join(tempDir, "out"), { recursive: true });
@@ -193,14 +205,22 @@ describe("CLI Deep Tests", () => {
         env: { ...process.env, PORT: "4005" }
       });
 
-      await new Promise(r => setTimeout(r, 2000));
+      let res;
+      for (let i = 0; i < 20; i++) {
+        await new Promise(r => setTimeout(r, 500));
+        try {
+          res = await fetch("http://localhost:4005/non-existent-file.css");
+          break;
+        } catch (e) {
+          // ignore ConnectionRefused
+        }
+      }
 
       try {
-        const res = await fetch("http://localhost:4005/non-existent-file.css");
-        expect(res.status).toBe(404);
+        expect(res?.status).toBe(404);
       } finally {
         devProc.kill();
       }
-    });
+    }, 15000);
   });
 });

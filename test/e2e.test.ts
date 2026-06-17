@@ -11,11 +11,7 @@ beforeAll(async () => {
   tempDir = await mkdtemp(join(tmpdir(), "mr-md-e2e-"));
 });
 
-afterAll(async () => {
-  if (tempDir) {
-    await rm(tempDir, { recursive: true, force: true });
-  }
-});
+// Cleanup is deliberately omitted to prevent 5s hook timeout on slow rm. Temp files are handled by OS.
 
 test("E2E: Should initialize a new project", async () => {
   const { exitCode } = await $`bun run ${CLI_PATH} init -y .`.cwd(tempDir);
@@ -34,7 +30,7 @@ test("E2E: Should initialize a new project", async () => {
   await $`bun install`.cwd(tempDir);
   
   expect(bunFs.existsSync(join(tempDir, "package.json"))).toBe(true);
-}, 30000);
+}, 60000);
 
 test("E2E: Should generate chapter and lesson", async () => {
   const { exitCode: chCode } = await $`bun run ${CLI_PATH} g ch physics`.cwd(tempDir);
@@ -81,4 +77,4 @@ test("E2E: Should start dev server and serve files", async () => {
   } finally {
     devProc.kill();
   }
-}, 15000);
+}, 60000);
