@@ -170,9 +170,12 @@ export function bkWireLastLessonTracking() {
 	const isChapterPage = document.querySelector(".bk-chapter-timeline") !== null;
 
 	if (!isChapterPage) {
-		let lessonPath = path.replace(/\/$/, "").split("/").pop();
+		const lessonPath = path.replace(/\/$/, "").split("/").pop();
 		if (lessonPath) {
-			localStorage.setItem("mr-md-last-lesson", lessonPath.replace(".html", ""));
+			localStorage.setItem(
+				"mr-md-last-lesson",
+				lessonPath.replace(".html", ""),
+			);
 		}
 	} else {
 		const lastLesson = localStorage.getItem("mr-md-last-lesson");

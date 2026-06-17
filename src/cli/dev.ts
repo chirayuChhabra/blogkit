@@ -24,10 +24,13 @@ export function runDev(args: string[]) {
 			const entryPath = path.join(dir, entry);
 			if (fs.existsSync(entryPath)) {
 				outDir = path.resolve(process.cwd(), path.dirname(entryPath), "out");
-				
+
 				try {
 					for (const key in require.cache) {
-						if (key.startsWith(process.cwd()) && !key.includes("/node_modules/")) {
+						if (
+							key.startsWith(process.cwd()) &&
+							!key.includes("/node_modules/")
+						) {
 							delete require.cache[key];
 						}
 					}
@@ -49,7 +52,7 @@ export function runDev(args: string[]) {
 
 					if (!built) {
 						console.log(
-							`No exported ChapterBuilder or LessonBuilder found in ${entry}. Ensure you export your chapter or lesson (e.g., export const myChapter = chapter(...)).`
+							`No exported ChapterBuilder or LessonBuilder found in ${entry}. Ensure you export your chapter or lesson (e.g., export const myChapter = chapter(...)).`,
 						);
 					} else {
 						console.log("Build successful.");
