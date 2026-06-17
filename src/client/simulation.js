@@ -40,11 +40,11 @@ export function bkWireSimControls() {
 			);
 			if (propInput) {
 				let val = parseFloat(syncInput.value);
-				if (!isNaN(val) && e.type === "change") {
+				if (!Number.isNaN(val) && e.type === "change") {
 					const min = parseFloat(syncInput.min);
 					const max = parseFloat(syncInput.max);
-					if (!isNaN(min) && val < min) val = min;
-					if (!isNaN(max) && val > max) val = max;
+					if (!Number.isNaN(min) && val < min) val = min;
+					if (!Number.isNaN(max) && val > max) val = max;
 					syncInput.value = val;
 				}
 				propInput.value = syncInput.value;

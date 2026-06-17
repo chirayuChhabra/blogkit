@@ -38,7 +38,7 @@ jobs:
         run: bun run build
 
       - name: Test
-        run: bun test
+        run: bun run test
 
   publish:
     name: Publish to npm

@@ -6,7 +6,7 @@ import type {
 } from "../../types.js";
 import { escapeScriptJson, mdInline, mdToHtml } from "../markdown/index.js";
 import { type NavItem, resolveContent } from "../utils.js";
-import { escAttr, escHtml } from "./utils.js";
+import { escHtml } from "./utils.js";
 
 function renderQuestion(q: QuizQuestion, quizId: string, qi: number): string {
 	const qid = `${quizId}-q${qi}`;
