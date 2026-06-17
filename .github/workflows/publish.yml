@@ -1,0 +1,51 @@
+name: Publish to npm
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Setup Node.js (for npm publish)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Determine npm tag
+        id: get-tag
+        run: |
+          # Extract the version from the git tag (e.g., v1.0.0-beta.1 -> 1.0.0-beta.1)
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Version is $VERSION"
+          
+          # Determine the npm tag (lane)
+          if [[ $VERSION == *"-"* ]]; then
+            # Extract everything after the first dash, then get the part before the first dot
+            # e.g., beta.1 -> beta
+            LANE=$(echo "$VERSION" | cut -d'-' -f2 | cut -d'.' -f1)
+          else
+            LANE="latest"
+          fi
+          
+          echo "npm tag will be: $LANE"
+          echo "npm_tag=$LANE" >> $GITHUB_ENV
+
+      - name: Publish to npm
+        run: npm publish --tag ${{ env.npm_tag }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
