@@ -1,6 +1,6 @@
 {
   "name": "mr-md",
-  "version": "3.0.0-rc.1",
+  "version": "3.0.0-rc.0",
   "description": "Mr Markdown is an opinionated TypeScript SDK for building interactive learning pages.",
   "type": "module",
   "main": "dist/index.js",
