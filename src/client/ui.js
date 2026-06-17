@@ -23,11 +23,11 @@ export function bkWireSidebarToggle() {
 	const expandBtn = document.getElementById("bk-sidebar-expand");
 	if (collapseBtn)
 		collapseBtn.addEventListener("click", () =>
-			shell.setAttribute("data-collapsed", "true"),
+			shell?.setAttribute("data-collapsed", "true"),
 		);
 	if (expandBtn)
 		expandBtn.addEventListener("click", () =>
-			shell.removeAttribute("data-collapsed"),
+			shell?.removeAttribute("data-collapsed"),
 		);
 }
 

@@ -4,6 +4,7 @@ import * as path from "path";
 declare const Bun: any;
 
 export function runDev(args: string[]) {
+	process.env.NODE_ENV = "development";
 	const dir = args[0] || ".";
 	let outDir = path.resolve(process.cwd(), dir, "out");
 

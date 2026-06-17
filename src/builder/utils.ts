@@ -80,8 +80,10 @@ export function copyAssets(outDir: string) {
 	if (fs.existsSync(srcStylesDir)) copyDir(srcStylesDir, assetsDir);
 	else copyDir(fallbackStylesDir, assetsDir);
 
+	// Always try to copy the built client dir first to get app.bundle.js
+	if (fs.existsSync(fallbackClientDir)) copyDir(fallbackClientDir, assetsDir);
+	// Then overlay src/client if we are running locally inside mr-md
 	if (fs.existsSync(srcClientDir)) copyDir(srcClientDir, assetsDir);
-	else copyDir(fallbackClientDir, assetsDir);
 }
 
 export function mergeOptions(

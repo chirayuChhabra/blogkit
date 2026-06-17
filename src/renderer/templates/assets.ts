@@ -13,5 +13,9 @@ export function pageCSS(): string {
 }
 
 export function clientScript(): string {
-	return fs.readFileSync(path.join(__dirname, "../../client/app.bundle.js"), "utf-8");
+	let bundlePath = path.join(__dirname, "../../client/app.bundle.js");
+	if (!fs.existsSync(bundlePath)) {
+		bundlePath = path.join(__dirname, "../../../dist/client/app.bundle.js");
+	}
+	return fs.readFileSync(bundlePath, "utf-8");
 }

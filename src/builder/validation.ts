@@ -5,7 +5,8 @@ export function validateLesson(
 	blocks: Block[],
 	options: BuildOptions,
 ): void {
-	if (options.strict === false) return;
+	const isStrict = options.strict ?? process.env.NODE_ENV !== "development";
+	if (!isStrict) return;
 
 	const errors: string[] = [];
 

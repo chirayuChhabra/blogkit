@@ -115,7 +115,7 @@ ${opts.standalone === false ? `<link rel="stylesheet" href="assets/theme.css?v=$
     ${contentHtml}
   </main>
 </div>
-${opts.standalone === false ? `<script type="module" src="assets/app.js?v=${Date.now()}"></script>` : `<script type="module">\n${clientScript()}\n</script>`}
+${opts.standalone === false ? `<script type="module" src="assets/app.bundle.js?v=${Date.now()}"></script>` : `<script type="module">\n${clientScript()}\n</script>`}
 </body>
 </html>`;
 }

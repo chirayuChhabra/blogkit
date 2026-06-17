@@ -29,6 +29,8 @@ function resolveContent(
 	}
 
 	const isLikelyFilePath =
+		(expectedType === "js" && /\.(js|ts|jsx|tsx)$/i.test(src)) ||
+		(expectedType === "md" && /\.(md|mdx)$/i.test(src)) ||
 		(expectedType !== "text" && src.endsWith(`.${expectedType}`)) ||
 		src.startsWith("/") ||
 		src.startsWith("./") ||

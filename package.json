@@ -1,6 +1,6 @@
 {
   "name": "mr-md",
-  "version": "2.3.2-beta",
+  "version": "2.3.3-beta",
   "description": "Mr Markdown is an opinionated TypeScript SDK for building interactive learning pages.",
   "type": "module",
   "main": "dist/index.js",
@@ -17,8 +17,7 @@
     "mr-md": "./dist/cli.js"
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
     "build": "bun build.ts",
@@ -61,7 +60,6 @@
     "katex": "^0.17.0",
     "marked": "^18.0.5",
     "marked-highlight": "^2.2.4",
-    "ts-morph": "^28.0.0",
-    "mr-md": "2.2.1-beta"
+    "ts-morph": "^28.0.0"
   }
 }
