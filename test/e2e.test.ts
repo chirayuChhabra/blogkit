@@ -22,8 +22,10 @@ test("E2E: Should initialize a new project", async () => {
   const pkgPath = join(tempDir, "package.json");
   const pkg = JSON.parse(bunFs.readFileSync(pkgPath, "utf-8"));
   
-  // Create an absolute path and force forward slashes for the file: protocol, which breaks on Windows otherwise
-  const absolutePath = join(__dirname, "..").replace(/\\/g, "/");
+  let absolutePath = join(__dirname, "..").replace(/\\/g, "/");
+  if (!absolutePath.startsWith("/")) {
+    absolutePath = "/" + absolutePath;
+  }
   pkg.dependencies["mr-md"] = `file:${absolutePath}`;
   
   bunFs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
