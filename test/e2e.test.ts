@@ -22,7 +22,12 @@ test("E2E: Should initialize a new project", async () => {
   const pkgPath = join(tempDir, "package.json");
   const pkg = JSON.parse(bunFs.readFileSync(pkgPath, "utf-8"));
   
-  let absolutePath = join(__dirname, "..").replace(/\\/g, "/");
+  // Pack the package locally to avoid EBUSY on Windows when bun install tries to copy the active directory
+  const { stdout } = await $`npm pack --quiet`.cwd(join(__dirname, ".."));
+  const tarballName = stdout.toString().trim().split("\n").pop()?.trim();
+  if (!tarballName) throw new Error("Failed to pack mr-md");
+  
+  let absolutePath = join(__dirname, "..", tarballName).replace(/\\/g, "/");
   if (!absolutePath.startsWith("/")) {
     absolutePath = "/" + absolutePath;
   }
