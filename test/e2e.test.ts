@@ -27,11 +27,11 @@ test("E2E: Should initialize a new project", async () => {
   const tarballName = stdout.toString().trim().split("\n").pop()?.trim();
   if (!tarballName) throw new Error("Failed to pack mr-md");
   
-  let absolutePath = join(__dirname, "..", tarballName).replace(/\\/g, "/");
-  if (!absolutePath.startsWith("/")) {
-    absolutePath = "/" + absolutePath;
-  }
-  pkg.dependencies["mr-md"] = `file:${absolutePath}`;
+  const sourceTarball = join(__dirname, "..", tarballName);
+  const destTarball = join(tempDir, "mr-md.tgz");
+  bunFs.copyFileSync(sourceTarball, destTarball);
+  
+  pkg.dependencies["mr-md"] = `file:./mr-md.tgz`;
   
   bunFs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
   await $`bun install`.cwd(tempDir);
