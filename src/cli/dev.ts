@@ -29,7 +29,7 @@ export function runDev(args: string[]) {
 					for (const key in require.cache) {
 						if (
 							key.startsWith(process.cwd()) &&
-							!key.includes("/node_modules/")
+							!key.includes("node_modules")
 						) {
 							delete require.cache[key];
 						}
