@@ -13,7 +13,6 @@
     }
   },
   "bin": {
-    "md": "./dist/cli.js",
     "mr-md": "./dist/cli.js"
   },
   "files": [
@@ -22,8 +21,8 @@
   "scripts": {
     "build": "bun build.ts",
     "prepublishOnly": "bun run build",
-    "build:docs": "bun docs-site/build.ts",
-    "serve:docs": "bunx serve docs-site/out",
+    "build:docs": "bun dist/cli.js build docs-site/chapters/01-docs",
+    "serve:docs": "bunx serve docs-site/chapters/01-docs/out",
     "typecheck": "bunx tsc --noEmit",
     "test": "bun test && bun run typecheck",
     "test:watch": "bun test --watch",
@@ -51,15 +50,18 @@
     "@types/katex": "^0.16.8",
     "@types/node": "^25.9.3",
     "puppeteer": "^25.1.0",
-    "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
   },
   "dependencies": {
+    "boxen": "^8.0.1",
+    "clipboardy": "^5.3.1",
+    "consola": "^3.4.2",
     "highlight.js": "^11.11.1",
     "isomorphic-dompurify": "^3.17.0",
     "katex": "^0.17.0",
     "marked": "^18.0.5",
     "marked-highlight": "^2.2.4",
-    "ts-morph": "^28.0.0"
+    "ora": "^9.4.1",
+    "picocolors": "^1.1.1"
   }
 }
