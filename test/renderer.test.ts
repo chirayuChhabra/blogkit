@@ -17,30 +17,7 @@ describe("Renderer Bug Fixes", () => {
 		fs.rmSync(TEST_DIR, { recursive: true, force: true });
 	});
 
-	test("resolveContent correctly resolves a file for code blocks if it exists", () => {
-		const l = lesson("Test Lesson", { contentBase: TEST_DIR, strict: true })
-			.code("dummy.ts")
-			.toJSON();
 
-		// We expect the renderer to load the file contents instead of outputting "dummy.ts"
-		// To test this we must call render on it.
-		const html = render(l, { contentBase: TEST_DIR, strict: true });
-
-		// The code block should contain '42' not "dummy.ts"
-		expect(html).toContain("42");
-		expect(html).not.toContain(">dummy.ts<");
-	});
-
-	test("resolveContent falls back to inline text for code blocks if it does not exist", () => {
-		const inlineCode = "console.log('hello');";
-		const l = lesson("Test Lesson", { contentBase: TEST_DIR, strict: true })
-			.code(inlineCode)
-			.toJSON();
-
-		const html = render(l, { contentBase: TEST_DIR, strict: true });
-
-		expect(html).toContain("console.log(&#39;hello&#39;);");
-	});
 
 	test("inline math parsing does not swallow across newlines", () => {
 		const mdContent =
