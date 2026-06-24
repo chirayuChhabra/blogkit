@@ -574,74 +574,8 @@ function draw(ctx, logicalW, logicalH) {
     drawQuark(m.q2, Math.min(1.0, m.life));
   }
 
-  // Modern UI Overlay & Color Balance Indicator
+  // Modern UI Overlay
   ctx.save();
-  ctx.fillStyle = bkThemeMode() === "dark" ? "#ffffff" : "#1a1a1a"; // Dark mode light text
-  ctx.font = "600 22px 'Inter', sans-serif";
-  ctx.textAlign = "left";
-  ctx.fillText("Proton Structure (uud)", 30, 40);
-  
-  if (showColorCharge) {
-    // Draw the "Color Neutrality" indicator
-    ctx.fillStyle = bkThemeMode() === "dark" ? "#cccccc" : "#666666";
-    ctx.font = "500 16px 'Inter', sans-serif";
-    ctx.fillText("Color Neutrality:", 30, 80);
-    
-    // Draw a pie chart of the current proton colors
-    const pieX = 190;
-    const pieY = 75;
-    const pieRadius = 12;
-    
-    let redCount = 0, greenCount = 0, blueCount = 0;
-    for (const q of proton) {
-      if (q.color === "red") redCount++;
-      if (q.color === "green") greenCount++;
-      if (q.color === "blue") blueCount++;
-    }
-    
-    // Check if balanced (one of each)
-    const balanced = (redCount === 1 && greenCount === 1 && blueCount === 1);
-    
-    // Draw pie
-    ctx.beginPath();
-    ctx.moveTo(pieX, pieY);
-    ctx.arc(pieX, pieY, pieRadius, 0, Math.PI * 2 / 3);
-    ctx.fillStyle = COLORS.red;
-    ctx.fill();
-    
-    ctx.beginPath();
-    ctx.moveTo(pieX, pieY);
-    ctx.arc(pieX, pieY, pieRadius, Math.PI * 2 / 3, Math.PI * 4 / 3);
-    ctx.fillStyle = COLORS.green;
-    ctx.fill();
-    
-    ctx.beginPath();
-    ctx.moveTo(pieX, pieY);
-    ctx.arc(pieX, pieY, pieRadius, Math.PI * 4 / 3, Math.PI * 2);
-    ctx.fillStyle = COLORS.blue;
-    ctx.fill();
-    
-    // Beautiful glassy overlay on pie chart
-    ctx.beginPath();
-    ctx.arc(pieX, pieY, pieRadius, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255,255,255,0.1)";
-    ctx.fill();
-    ctx.strokeStyle = "rgba(255,255,255,0.2)";
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    
-    ctx.fillStyle = "#4caf50"; // Green success color
-    if (balanced) {
-      ctx.fillText("Balanced (White)", pieX + 25, 80);
-    } else {
-      ctx.fillText("Color Shifting...", pieX + 25, 80);
-    }
-
-  } else {
-    ctx.fillStyle = bkThemeMode() === "dark" ? "#cccccc" : "#666666";
-    ctx.font = "400 16px 'Inter', sans-serif";
-    ctx.fillText("Color Charge Hidden", 30, 70);
-  }
   
   ctx.fillStyle = bkThemeMode() === "dark" ? "#cccccc" : "#666666";
   ctx.font = "500 16px 'Inter', sans-serif";

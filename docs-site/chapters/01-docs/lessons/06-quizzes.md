@@ -1,20 +1,10 @@
 # Quizzes
 
-Quizzes in Mr Markdown are an excellent way to keep lessons engaging and self-checking. They provide immediate interactive feedback when a reader selects an answer.
+## Creating a Quiz
 
-## Usage
+Quizzes are authored in JSON format.
 
-To add a quiz, point the builder to a JSON file containing the questions:
-
-```ts
-.quiz("questions.json", {
-  label: "Review questions",
-  caption: "Immediate feedback keeps the lesson self-checking."
-})
-```
-
-## JSON Format
-
+### JSON Fields Explained
 The JSON file must conform to the following schema:
 
 ```json
@@ -34,3 +24,23 @@ The JSON file must conform to the following schema:
 ```
 
 *Note: The `answer` property is zero-indexed, meaning `0` corresponds to the first option, `1` to the second, and so on.*
+
+## Embedding the Quiz
+To embed a quiz, use the the image syntax tag in your `lesson.md`.
+
+```html
+![Test your knowledge!](../quizzes/sample.json)
+```
+
+*Live Example:*
+
+![Test your knowledge!](../quizzes/sample.json)
+
+<space size="2" />
+
+## Generating Quizzes
+You can also generate them via the CLI.
+
+```bash
+bunx md g quiz "My Quiz"
+```

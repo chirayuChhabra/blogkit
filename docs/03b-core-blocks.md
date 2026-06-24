@@ -72,7 +72,8 @@ ctx.divider();
 ctx.space(2); // Adds 48px of blank space
 ```
 
-> **Note:** You can also type `---` inside your standard `.md` files to achieve the exact same horizontal divider!
+> [!note]
+> You can also type `---` inside your standard `.md` files to achieve the exact same horizontal divider!
 
 ---
 
