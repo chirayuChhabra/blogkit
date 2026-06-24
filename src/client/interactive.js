@@ -1,3 +1,38 @@
+let interactiveObs;
+
+export function bkInitInteractiveFrames() {
+	if (!interactiveObs) {
+		interactiveObs = new IntersectionObserver(
+			(entries) => {
+				entries.forEach((e) => {
+					const frame = e.target;
+					const iframe = frame.querySelector("iframe");
+					if (!e.isIntersecting) {
+						if (frame.classList.contains("is-interactive")) {
+							frame.classList.remove("is-interactive");
+						}
+						if (iframe?.contentWindow) {
+							iframe.contentWindow.postMessage({ type: "bk:pause" }, "*");
+						}
+					} else {
+						if (frame.dataset.isAnimation === "true") {
+							if (iframe?.contentWindow) {
+								iframe.contentWindow.postMessage({ type: "bk:play" }, "*");
+							}
+						}
+					}
+				});
+			},
+			{ threshold: 0, rootMargin: "50% 0px 50% 0px" },
+		);
+	}
+
+	interactiveObs.disconnect();
+	document.querySelectorAll(".bk-embed-interactive").forEach((frame) => {
+		interactiveObs.observe(frame);
+	});
+}
+
 export function bkWireInteractiveFrames() {
 	const interactiveHandler = (e) => {
 		const obj = e.target.closest?.(".bk-object");
@@ -45,33 +80,7 @@ export function bkWireInteractiveFrames() {
 		{ passive: true },
 	);
 
-	const obs = new IntersectionObserver(
-		(entries) => {
-			entries.forEach((e) => {
-				const frame = e.target;
-				const iframe = frame.querySelector("iframe");
-				if (!e.isIntersecting) {
-					if (frame.classList.contains("is-interactive")) {
-						frame.classList.remove("is-interactive");
-					}
-					if (iframe?.contentWindow) {
-						iframe.contentWindow.postMessage({ type: "bk:pause" }, "*");
-					}
-				} else {
-					if (frame.dataset.isAnimation === "true") {
-						if (iframe?.contentWindow) {
-							iframe.contentWindow.postMessage({ type: "bk:play" }, "*");
-						}
-					}
-				}
-			});
-		},
-		{ threshold: 0, rootMargin: "50% 0px 50% 0px" },
-	);
-
-	document.querySelectorAll(".bk-embed-interactive").forEach((frame) => {
-		obs.observe(frame);
-	});
+	bkInitInteractiveFrames();
 
 	document.addEventListener(
 		"contentvisibilityautostatechange",

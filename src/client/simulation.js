@@ -22,12 +22,14 @@ function updateSliderTrack(input) {
 	input.style.setProperty("--bk-track-fill", `${percent}%`);
 }
 
-export function bkWireSimControls() {
+export function bkInitSimControls() {
 	// Initialize all slider tracks
 	document
 		.querySelectorAll('input[type="range"][data-bk-prop]')
 		.forEach(updateSliderTrack);
+}
 
+export function bkWireSimControls() {
 	const handler = (e) => {
 		const target = e.target;
 		let propInput = target.closest?.("[data-bk-prop]");

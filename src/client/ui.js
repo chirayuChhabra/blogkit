@@ -31,7 +31,7 @@ export function bkWireSidebarToggle() {
 		);
 }
 
-export function bkWireCodeCopy() {
+export function bkInitCodeCopy() {
 	document.querySelectorAll("pre > code").forEach((code) => {
 		const pre = code.parentElement;
 		let container = pre.closest(".bk-code-block");
@@ -51,6 +51,9 @@ export function bkWireCodeCopy() {
 			container.style.position = "relative";
 		}
 
+		// Prevent adding multiple buttons if initialized multiple times
+		if (container.querySelector('.bk-copy-btn')) return;
+
 		const btn = document.createElement("button");
 		btn.className = "bk-copy-btn";
 		btn.innerHTML =
@@ -59,7 +62,9 @@ export function bkWireCodeCopy() {
 		btn.title = "Copy code";
 		container.appendChild(btn);
 	});
+}
 
+export function bkWireCodeCopy() {
 	document.addEventListener("click", async (e) => {
 		const btn = e.target.closest?.(".bk-copy-btn");
 		if (!btn) return;
@@ -184,10 +189,8 @@ export function bkWireLastLessonTracking() {
 			for (const card of cards) {
 				const href = card.getAttribute("href");
 				if (href && href.replace(".html", "") === lastLesson) {
-					setTimeout(() => {
-						card.scrollIntoView({ behavior: "smooth", block: "center" });
-						card.classList.add("bk-last-opened");
-					}, 300);
+					card.scrollIntoView({ behavior: "auto", block: "center" });
+					card.classList.add("bk-last-opened");
 					break;
 				}
 			}
