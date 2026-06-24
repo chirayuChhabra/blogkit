@@ -12,12 +12,9 @@ export type BlockType =
 	| "animation"
 	| "media"
 	| "youtube"
-	| "latex"
+	| "image"
 	| "columns"
-	| "quiz"
-	| "divider"
-	| "code"
-	| "spacer";
+	| "quiz";
 
 export interface BaseBlock {
 	type: BlockType;
@@ -44,13 +41,6 @@ export interface SectionBlock extends BaseBlock {
 export interface CalloutBlock extends BaseBlock {
 	type: "important" | "warning" | "tip" | "note";
 	src: string;
-}
-
-export interface CodeBlock extends BaseBlock {
-	type: "code";
-	src: string;
-	lang?: string;
-	label?: string;
 }
 
 export type BlockAccent =
@@ -86,7 +76,7 @@ export interface AnimationBlock extends BaseBlock, CaptionedBlock {
 	accent?: BlockAccent;
 }
 
-export type MediaKind = "image" | "video" | "audio";
+export type MediaKind = "video" | "audio";
 
 export interface MediaBlock extends BaseBlock, CaptionedBlock {
 	type: "media";
@@ -100,21 +90,19 @@ export interface MediaBlock extends BaseBlock, CaptionedBlock {
 
 export interface YouTubeBlock extends BaseBlock, CaptionedBlock {
 	type: "youtube";
-	id: string;
-	start?: number;
+	id: string; // extracted video ID
+	start?: number; // start time in seconds
 }
 
-export interface LatexBlock extends BaseBlock, CaptionedBlock {
-	type: "latex";
-	tex: string;
-	display?: boolean;
+export interface ImageBlock extends BaseBlock, CaptionedBlock {
+	type: "image";
+	src: string;
 }
 
 export interface ColumnItem {
 	src?: string;
 	markdown?: string;
 	latex?: string;
-	width?: string;
 }
 
 export interface ColumnsBlock extends BaseBlock, CaptionedBlock {
@@ -127,30 +115,18 @@ export interface QuizBlock extends BaseBlock, CaptionedBlock {
 	src: string; // path to .json file or inline json
 }
 
-export interface DividerBlock extends BaseBlock {
-	type: "divider";
-}
-
-export interface SpacerBlock extends BaseBlock {
-	type: "spacer";
-	size: number;
-}
-
 export type Block =
 	| HeadingBlock
 	| MarkdownBlock
 	| SectionBlock
 	| CalloutBlock
-	| CodeBlock
 	| SimulationBlock
 	| AnimationBlock
 	| MediaBlock
 	| YouTubeBlock
-	| LatexBlock
+	| ImageBlock
 	| ColumnsBlock
-	| QuizBlock
-	| DividerBlock
-	| SpacerBlock;
+	| QuizBlock;
 
 // ─── Lesson Schema ────────────────────────────────────────────────────────────
 
@@ -166,6 +142,7 @@ export interface LessonMeta {
 	prevTitle?: string;
 	nextSlug?: string;
 	nextTitle?: string;
+	contentBase?: string;
 }
 
 export interface Lesson {
@@ -272,12 +249,6 @@ export interface MediaOptions {
 
 export interface YouTubeOptions {
 	start?: number;
-	label?: string;
-	caption?: string;
-}
-
-export interface LatexOptions {
-	display?: boolean;
 	label?: string;
 	caption?: string;
 }

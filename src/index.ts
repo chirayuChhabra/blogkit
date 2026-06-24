@@ -1,4 +1,5 @@
 export { ChapterBuilder, chapter, LessonBuilder, lesson } from "./builder.js";
+export { parseLesson, parseChapter, buildLesson, buildChapter } from "./parser/mdx.js";
 export { render } from "./renderer/index.js";
 export type {
 	AnimationBlock,
@@ -8,13 +9,11 @@ export type {
 	BlockType,
 	BuildOptions,
 	CalloutBlock,
-	CodeBlock,
 	ColumnItem,
 	ColumnsBlock,
 	ColumnsOptions,
 	HeadingBlock,
-	LatexBlock,
-	LatexOptions,
+	ImageBlock,
 	Lesson,
 	LessonMeta,
 	LessonPreset,
