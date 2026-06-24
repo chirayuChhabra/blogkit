@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import { logger } from "../cli/logger.js";
 import { renderChapter } from "../renderer/index.js";
 import type { BuildOptions, Chapter, ChapterMeta, Lesson } from "../types.js";
 import type { LessonBuilder } from "./LessonBuilder.js";
@@ -88,8 +89,8 @@ export class ChapterBuilder {
 		}
 
 		const relPath = path.relative(process.cwd(), outPath);
-		console.log(
-			`  ✓ Built chapter (${this.lessonBuilders.length} lessons) → ${relPath}`,
+		logger.success(
+			`Built chapter (${this.lessonBuilders.length} lessons) → ${relPath}`,
 		);
 		return outPath;
 	}

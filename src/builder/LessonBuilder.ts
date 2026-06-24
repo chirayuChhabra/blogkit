@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import { logger } from "../cli/logger.js";
 import { render } from "../renderer/index.js";
 import type { BuildOptions, Lesson, LessonMeta } from "../types.js";
 import { LessonBlocks } from "./LessonBlocks.js";
@@ -138,7 +139,7 @@ export class LessonBuilder extends LessonBlocks {
 		}
 
 		const relPath = path.relative(process.cwd(), outPath);
-		console.log(`  ✓ Built lesson (${this.blocks.length} blocks) → ${relPath}`);
+		logger.success(`Built lesson (${this.blocks.length} blocks) → ${relPath}`);
 		return outPath;
 	}
 }

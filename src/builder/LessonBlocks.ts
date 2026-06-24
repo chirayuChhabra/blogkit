@@ -5,14 +5,11 @@ import type {
 	AnimationOptions,
 	Block,
 	CalloutBlock,
-	CodeBlock,
 	ColumnItem,
 	ColumnsBlock,
 	ColumnsOptions,
-	DividerBlock,
 	HeadingBlock,
-	LatexBlock,
-	LatexOptions,
+	ImageBlock,
 	MarkdownBlock,
 	MediaBlock,
 	MediaOptions,
@@ -21,7 +18,6 @@ import type {
 	SimulationBlock,
 	SimulationConfig,
 	SimulationOptions,
-	SpacerBlock,
 	YouTubeBlock,
 	YouTubeOptions,
 } from "../types.js";
@@ -47,17 +43,7 @@ export abstract class LessonBlocks {
 		src: `${string}.mp3` | `${string}.wav` | `${string}.ogg` | `${string}.m4a`,
 		opts?: Omit<MediaOptions, "kind">,
 	): this;
-	add(
-		src:
-			| `${string}.png`
-			| `${string}.jpg`
-			| `${string}.jpeg`
-			| `${string}.gif`
-			| `${string}.svg`
-			| `${string}.webp`
-			| `${string}.avif`,
-		opts?: Omit<MediaOptions, "kind">,
-	): this;
+
 	add(src: string, opts?: unknown): this;
 	add(src: string, opts: unknown = {}): this {
 		const lower = src.toLowerCase();
@@ -69,13 +55,11 @@ export abstract class LessonBlocks {
 		if (lower.endsWith(".js") || lower.endsWith(".ts")) {
 			throw new Error(
 				`Ambiguous use of .add("${src}"). ` +
-					`Please use .code("${src}") to display the source code, ` +
-					`or .lab("${src}") to mount it as an interactive simulation.`,
+					`Please use .lab("${src}") to mount it as an interactive simulation, ` +
+					`or embed it using standard markdown code blocks via .markdown().`,
 			);
 		}
 
-		if (lower.match(/\.(png|jpg|jpeg|gif|webp|avif|svg)$/))
-			return this.image(src, opts as Omit<MediaOptions, "kind">);
 		if (lower.match(/\.(mp4|webm|mov)$/))
 			return this.video(src, opts as Omit<MediaOptions, "kind">);
 		if (lower.match(/\.(mp3|wav|ogg|m4a)$/))
@@ -130,21 +114,9 @@ export abstract class LessonBlocks {
 		return this;
 	}
 
-	code(src: string, lang?: string, label?: string): this {
-		this.blocks.push({ type: "code", src, lang, label } as CodeBlock);
-		return this;
-	}
 
-	latex(tex: string, opts: LatexOptions = {}): this {
-		this.blocks.push({
-			type: "latex",
-			tex,
-			display: opts.display ?? true,
-			label: opts.label,
-			caption: opts.caption,
-		} as LatexBlock);
-		return this;
-	}
+
+
 
 	columns(columns: ColumnItem[], opts: ColumnsOptions = {}): this {
 		this.blocks.push({ type: "columns", columns, ...opts } as ColumnsBlock);
@@ -214,8 +186,13 @@ export abstract class LessonBlocks {
 		return this;
 	}
 
-	image(src: string, opts: Omit<MediaOptions, "kind"> = {}): this {
-		return this.media(src, { ...opts, kind: "image" });
+	image(src: string, opts: { caption?: string; label?: string; accent?: string } = {}): this {
+		this.blocks.push({
+			type: "image",
+			src,
+			...opts,
+		} as ImageBlock);
+		return this;
 	}
 
 	video(src: string, opts: Omit<MediaOptions, "kind"> = {}): this {
@@ -239,16 +216,6 @@ export abstract class LessonBlocks {
 
 	quiz(src: string, opts: Pick<QuizBlock, "label" | "caption"> = {}): this {
 		this.blocks.push({ type: "quiz", src, ...opts } as QuizBlock);
-		return this;
-	}
-
-	divider(): this {
-		this.blocks.push({ type: "divider" } as DividerBlock);
-		return this;
-	}
-
-	space(size = 1): this {
-		this.blocks.push({ type: "spacer", size } as SpacerBlock);
 		return this;
 	}
 }

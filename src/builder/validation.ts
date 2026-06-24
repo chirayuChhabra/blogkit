@@ -25,13 +25,7 @@ export function validateLesson(
 			);
 		}
 
-		if (
-			block.type === "media" &&
-			block.kind === "image" &&
-			!block.alt?.trim()
-		) {
-			errors.push(`Image media block ${index + 1} needs alt text.`);
-		}
+
 
 		if (
 			block.type === "simulation" &&

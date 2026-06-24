@@ -46,10 +46,10 @@ export function getCallerDir(): string | undefined {
 		) {
 			continue;
 		}
-		console.log("getCallerDir found:", p, "basename:", basename);
+		// console.log("getCallerDir found:", p, "basename:", basename);
 		return path.dirname(p);
 	}
-	console.log("getCallerDir found nothing!");
+	// console.log("getCallerDir found nothing!");
 	return undefined;
 }
 
@@ -156,7 +156,7 @@ export function inferMediaKind(src: string): MediaBlock["kind"] {
 	const ext = path.extname(src).toLowerCase();
 	if ([".mp4", ".webm", ".mov"].includes(ext)) return "video";
 	if ([".mp3", ".wav", ".ogg", ".m4a"].includes(ext)) return "audio";
-	return "image"; // .gif, .svg, .webp, .avif, .jpg, .png
+	throw new Error(`Unsupported media type: ${ext}. For images, use standard Markdown syntax: ![alt text](${src})`);
 }
 
 export function extractYouTubeId(idOrUrl: string): string {
