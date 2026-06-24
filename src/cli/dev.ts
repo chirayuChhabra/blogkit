@@ -1,141 +1,155 @@
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 import * as fs from "fs";
 import * as path from "path";
+import * as os from "os";
+import { logger } from "./logger.js";
 
 declare const Bun: any;
 
 export function runDev(args: string[]) {
 	process.env.NODE_ENV = "development";
-	const dir = args[0] || ".";
-	let outDir = path.resolve(process.cwd(), dir, "out");
+	const target = args[0] || ".";
 
-	console.log(`Starting dev server for directory: ${dir}`);
+	let filePath = "";
+	const targetPath = path.resolve(process.cwd(), target);
+	if (!fs.existsSync(targetPath)) {
+		logger.error(`File or directory not found: ${target}`);
+		process.exit(1);
+	}
+
+	if (fs.statSync(targetPath).isDirectory()) {
+		for (const file of ["chapter.md", "lesson.md", "index.md"]) {
+			const p = path.join(targetPath, file);
+			if (fs.existsSync(p)) {
+				filePath = p;
+				break;
+			}
+		}
+		if (!filePath) {
+			logger.error(`No chapter.md or lesson.md found in directory: ${targetPath}`);
+			process.exit(1);
+		}
+	} else {
+		filePath = targetPath;
+		if (!filePath.endsWith(".md")) {
+			logger.error(`Not a markdown file: ${target}`);
+			process.exit(1);
+		}
+	}
+
+	const contentBase = path.dirname(filePath);
+	const outDir = path.resolve(contentBase, "out");
+
+	logger.dev(`Preparing dev server for: ${filePath}`);
 
 	let server: any;
 
 	const rebuild = () => {
-		console.log("Rebuilding...");
-		const entryPoints = [
-			"chapter.ts",
-			"index.ts",
-			"lesson.ts",
-			"chapters/01-chapter/chapter.ts",
-		];
-		for (const entry of entryPoints) {
-			const entryPath = path.join(dir, entry);
-			if (fs.existsSync(entryPath)) {
-				outDir = path.resolve(process.cwd(), path.dirname(entryPath), "out");
-
-				try {
-					for (const key in require.cache) {
-						if (
-							key.startsWith(process.cwd()) &&
-							!key.includes("node_modules")
-						) {
-							delete require.cache[key];
-						}
-					}
-
-					const mod = require(path.resolve(entryPath));
-					let built = false;
-					for (const key in mod) {
-						if (
-							mod[key] &&
-							typeof mod[key].build === "function" &&
-							mod[key].constructor &&
-							(mod[key].constructor.name === "ChapterBuilder" ||
-								mod[key].constructor.name === "LessonBuilder")
-						) {
-							mod[key].build();
-							built = true;
-						}
-					}
-
-					if (!built) {
-						console.log(
-							`No exported ChapterBuilder or LessonBuilder found in ${entry}. Ensure you export your chapter or lesson (e.g., export const myChapter = chapter(...)).`,
-						);
-					} else {
-						console.log("Build successful.");
-						server?.publish("livereload", "reload");
-					}
-				} catch (err: any) {
-					console.error(`Build failed:`, err);
-				}
-				return;
+		logger.startSpinner("Rebuilding...");
+		try {
+			const { parseChapter, parseLesson, buildChapter, buildLesson } = require("../parser/mdx.js");
+			const content = fs.readFileSync(filePath, "utf-8");
+			const parsed = require("gray-matter")(content);
+			const isChapter = parsed.data.chapter === true || parsed.data.type === "chapter";
+			
+			if (isChapter) {
+				const chapter = parseChapter(content, { outDir, contentBase }, contentBase);
+				buildChapter(chapter, { outDir, contentBase });
+			} else {
+				const lesson = parseLesson(content, { outDir, contentBase }, contentBase);
+				buildLesson(lesson, { outDir, contentBase });
 			}
+			logger.succeedSpinner(`Build successful for ${filePath}.`);
+			server?.publish("livereload", "reload");
+		} catch (err: any) {
+			logger.failSpinner(`Build failed`);
+			logger.error(err);
 		}
-		console.log("No chapter.ts or lesson.ts found to build automatically.");
 	};
 
 	rebuild();
 
-	if (fs.existsSync(dir)) {
-		let timeout: NodeJS.Timeout;
-		fs.watch(dir, { recursive: true }, (_eventType, filename) => {
-			if (
-				!filename ||
-				filename.includes("out/") ||
-				filename.includes("out\\") ||
-				filename.includes(".git/") ||
-				filename.includes(".git\\")
-			)
-				return;
+	let timeout: NodeJS.Timeout;
+	fs.watch(contentBase, { recursive: true }, (_eventType, filename) => {
+		if (
+			!filename ||
+			filename.includes("out/") ||
+			filename.includes("out\\") ||
+			filename.includes(".git/") ||
+			filename.includes(".git\\")
+		)
+			return;
 
-			clearTimeout(timeout);
-			timeout = setTimeout(() => {
-				console.log(`File changed: ${filename}`);
-				rebuild();
-			}, 200);
-		});
-		console.log(`Watching ${dir} for changes...`);
-	}
+		clearTimeout(timeout);
+		timeout = setTimeout(() => {
+			logger.watch(`File changed: ${filename}`);
+			rebuild();
+		}, 200);
+	});
+	logger.watch(`Watching ${contentBase} for changes...`);
 
 	const basePort = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 	let port = basePort;
 	const maxPort = basePort + 10;
 
 	const fetchHandler = async (req: any, srv: any) => {
-		if (srv.upgrade(req)) return;
-
+		const start = Date.now();
+		const clientIp = srv.requestIP(req)?.address || "::1";
 		const url = new URL(req.url);
+		const method = req.method;
 		const decodedPath = decodeURIComponent(url.pathname);
-		let filePath = path.resolve(outDir, `.${decodedPath}`);
 
-		if (decodedPath.endsWith("/")) {
-			filePath = path.join(outDir, "index.html");
+		if (!srv.upgrade(req)) {
+			logger.httpReq(clientIp, method, decodedPath);
 		}
 
-		const normalizedOutDir = outDir.endsWith(path.sep)
-			? outDir
-			: outDir + path.sep;
-		if (!filePath.startsWith(normalizedOutDir) && filePath !== outDir) {
-			return new Response("Forbidden", { status: 403 });
-		}
+		const handle = async () => {
+			if (srv.upgrade(req)) return null;
 
-		if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-			if (filePath.endsWith(".html")) {
-				const file = Bun.file(filePath);
-				let text = await file.text();
+			let outFilePath = path.resolve(outDir, `.${decodedPath}`);
 
-				const script = `<script>
-					const ws = new WebSocket(\`ws://\${location.host}/\`);
-					ws.onmessage = (e) => { if (e.data === "reload") location.reload(); };
-				</script>`;
-
-				const lastBodyIndex = text.toLowerCase().lastIndexOf("</body>");
-				if (lastBodyIndex !== -1) {
-					text =
-						text.slice(0, lastBodyIndex) + script + text.slice(lastBodyIndex);
-				} else {
-					text += script;
-				}
-				return new Response(text, { headers: { "Content-Type": "text/html" } });
+			if (decodedPath.endsWith("/")) {
+				outFilePath = path.join(outDir, "index.html");
 			}
-			return new Response(Bun.file(filePath));
-		}
 
-		console.log("Returning 404 for filePath:", filePath, "outDir:", outDir);
-		return new Response("Not found", { status: 404 });
+			const normalizedOutDir = outDir.endsWith(path.sep)
+				? outDir
+				: outDir + path.sep;
+			if (!outFilePath.startsWith(normalizedOutDir) && outFilePath !== outDir) {
+				return new Response("Forbidden", { status: 403 });
+			}
+
+			if (fs.existsSync(outFilePath) && fs.statSync(outFilePath).isFile()) {
+				if (outFilePath.endsWith(".html")) {
+					const file = Bun.file(outFilePath);
+					let text = await file.text();
+
+					const script = `<script>
+						const ws = new WebSocket(\`ws://\${location.host}/\`);
+						ws.onmessage = (e) => { if (e.data === "reload") location.reload(); };
+					</script>`;
+
+					const lastBodyIndex = text.toLowerCase().lastIndexOf("</body>");
+					if (lastBodyIndex !== -1) {
+						text =
+							text.slice(0, lastBodyIndex) + script + text.slice(lastBodyIndex);
+					} else {
+						text += script;
+					}
+					return new Response(text, { headers: { "Content-Type": "text/html" } });
+				}
+				return new Response(Bun.file(outFilePath));
+			}
+
+			return new Response("Not found", { status: 404 });
+		};
+
+		const res = await handle();
+		if (res) {
+			logger.httpRes(clientIp, res.status, Date.now() - start);
+			return res;
+		}
 	};
 
 	const wsHandler = {
@@ -145,6 +159,14 @@ export function runDev(args: string[]) {
 		},
 	};
 
+	process.on("SIGINT", () => {
+		logger.info("Gracefully shutting down. Please wait...");
+		if (server) {
+			server.stop(true);
+		}
+		process.exit(0);
+	});
+
 	while (port <= maxPort) {
 		try {
 			server = Bun.serve({
@@ -152,11 +174,25 @@ export function runDev(args: string[]) {
 				fetch: fetchHandler,
 				websocket: wsHandler,
 			});
-			console.log(`Dev server listening on http://localhost:${server.port}`);
+			const localUrl = `http://localhost:${server.port}`;
+			
+			const interfaces = os.networkInterfaces();
+			let networkUrl: string | null = null;
+			for (const name of Object.keys(interfaces)) {
+				for (const iface of interfaces[name]!) {
+					if (iface.family === "IPv4" && !iface.internal) {
+						networkUrl = `http://${iface.address}:${server.port}`;
+						break;
+					}
+				}
+				if (networkUrl) break;
+			}
+			
+			logger.serveBox(localUrl, networkUrl, basePort, port);
 			break;
 		} catch (err: any) {
 			if (err.code === "EADDRINUSE") {
-				console.warn(`Port ${port} is in use, trying ${port + 1}...`);
+				logger.warn(`Port ${port} is in use, trying ${port + 1}...`);
 				port++;
 			} else {
 				throw err;
@@ -165,7 +201,7 @@ export function runDev(args: string[]) {
 	}
 
 	if (!server) {
-		console.error(
+		logger.error(
 			`Could not find an open port between ${basePort} and ${maxPort}.`,
 		);
 		process.exit(1);

@@ -1,0 +1,86 @@
+import { createConsola } from "consola";
+import ora from "ora";
+import pc from "picocolors";
+import boxen from "boxen";
+import clipboardy from "clipboardy";
+
+export const consola = createConsola({
+	level: 4,
+	fancy: true,
+	formatOptions: {
+		colors: true,
+		compact: false,
+	},
+});
+
+let currentSpinner: ReturnType<typeof ora> | null = null;
+
+const badge = (text: string, bgColor: (s: string) => string) => bgColor(pc.black(pc.bold(` ${text} `)));
+
+export const logger = {
+	info: (msg: string) => console.log(`${badge("INFO", pc.bgBlue)} ${msg}`),
+	success: (msg: string) => console.log(`${badge("BUILD", pc.bgGreen)} ${msg}`),
+	warn: (msg: string) => console.log(`${badge("WARN", pc.bgYellow)} ${msg}`),
+	error: (msg: string, err?: any) => {
+		if (currentSpinner) {
+			currentSpinner.fail(`${badge("BUILD", pc.bgRed)} Process failed.`);
+			currentSpinner = null;
+		}
+		console.log(`${badge("ERROR", pc.bgRed)} ${msg}`);
+		if (err) console.error(err);
+	},
+	dev: (msg: string) => console.log(`${badge("DEV", pc.bgMagenta)} ${msg}`),
+	watch: (msg: string) => console.log(`${badge("WATCH", pc.bgYellow)} ${msg}`),
+	startSpinner: (msg: string) => {
+		if (currentSpinner) currentSpinner.stop();
+		currentSpinner = ora({ 
+			prefixText: badge("BUILD", pc.bgBlue), 
+			text: msg, 
+			color: "cyan" 
+		}).start();
+	},
+	succeedSpinner: (msg: string) => {
+		if (currentSpinner) {
+			currentSpinner.stop();
+			currentSpinner = null;
+		}
+		console.log(`${badge("BUILD", pc.bgGreen)} ${pc.green(msg)}`);
+	},
+	failSpinner: (msg: string) => {
+		if (currentSpinner) {
+			currentSpinner.stop();
+			currentSpinner = null;
+		}
+		console.log(`${badge("BUILD", pc.bgRed)} ${pc.red(msg)}`);
+	},
+	box: (msg: string) => consola.box(msg),
+	httpReq: (ip: string, method: string, path: string) => {
+		const date = new Date().toLocaleString("en-US");
+		console.log(`${pc.bgCyan(pc.black(pc.bold(" HTTP ")))} ${pc.gray(date)} ${pc.yellow(ip)} ${pc.greenBright(method)} ${pc.greenBright(path)}`);
+	},
+	httpRes: (ip: string, status: number, ms: number) => {
+		const date = new Date().toLocaleString("en-US");
+		console.log(`${pc.bgCyan(pc.black(pc.bold(" HTTP ")))} ${pc.gray(date)} ${pc.yellow(ip)} ${pc.greenBright(`Returned ${status} in ${ms} ms`)}`);
+	},
+	serveBox: (localUrl: string, networkUrl: string | null, basePort?: number, currentPort?: number) => {
+		let text = `${pc.greenBright("Serving!")}\n\n`;
+		text += `- ${pc.bold("Local:")}    ${localUrl}\n`;
+		if (networkUrl) {
+			text += `- ${pc.bold("Network:")}  ${networkUrl}\n`;
+		}
+		
+		if (basePort && currentPort && basePort !== currentPort) {
+			text += `\n${pc.red(`This port was picked because ${pc.underline(basePort.toString())} is in use.`)}\n`;
+		}
+
+		text += `\nCopied local address to clipboard!`;
+
+		try {
+			clipboardy.writeSync(localUrl);
+		} catch (err) {
+			// Ignore clipboard errors on headless CI
+		}
+
+		console.log(boxen(text, { padding: 1, margin: 1, borderColor: "green" }));
+	}
+};
