@@ -12,3 +12,10 @@ scratch-test/
 
 mr-md-testing
 testing-mr-md-e2e
+
+test-*
+test_*.ts
+test*.html
+chapters/
+lessons/
+update-*.py
