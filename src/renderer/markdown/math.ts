@@ -2,6 +2,7 @@ import hljs from "highlight.js";
 import katex from "katex";
 import { marked } from "marked";
 import { markedHighlight } from "marked-highlight";
+import { blockChrome } from "./chrome.js";
 
 marked.use(
 	markedHighlight({
@@ -17,10 +18,10 @@ const blockMathExtension = {
 	name: "blockMath",
 	level: "block",
 	start(src: string) {
-		return src.match(/\$\$/)?.index;
+		return src.match(/^[ \t]*\$\$/m)?.index;
 	},
 	tokenizer(src: string) {
-		const rule = /^\$\$([\s\S]+?)\$\$/;
+		const rule = /^[ \t]*\$\$([\s\S]+?)\$\$/;
 		const match = rule.exec(src);
 		if (match) {
 			return {
@@ -35,7 +36,14 @@ const blockMathExtension = {
 			throwOnError: false,
 			displayMode: true,
 		});
-		return `<div class="bk-math-block">${rendered}</div>`;
+		return blockChrome(
+			"LaTeX",
+			undefined,
+			undefined,
+			`<div class="bk-latex-block">${rendered}</div>`,
+			"violet",
+			false
+		);
 	},
 };
 

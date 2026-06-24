@@ -2,17 +2,14 @@ import type { Block, BuildOptions } from "../../types.js";
 import type { NavItem } from "../utils.js";
 import { renderAnimation } from "./animation.js";
 import { renderCallout } from "./callout.js";
-import { renderCode } from "./code.js";
 import { renderColumns } from "./columns.js";
-import { renderDivider } from "./divider.js";
 import { renderHeading } from "./heading.js";
-import { renderLatex } from "./latex.js";
+import { renderImage } from "./image.js";
 import { renderMarkdown } from "./markdown.js";
 import { renderMedia } from "./media.js";
 import { renderQuiz } from "./quiz.js";
 import { renderSection } from "./section.js";
 import { renderSimulation } from "./simulation.js";
-import { renderSpacer } from "./spacer.js";
 import { escAttr, escHtml } from "./utils.js";
 import { renderYouTube } from "./youtube.js";
 
@@ -36,26 +33,20 @@ export function renderBlockInner(
 		case "tip":
 		case "note":
 			return renderCallout(block, idx, options);
-		case "code":
-			return renderCode(block, idx, options);
 		case "simulation":
 			return renderSimulation(block, idx, options);
 		case "animation":
 			return renderAnimation(block, idx, options);
 		case "media":
 			return renderMedia(block, idx, options);
+		case "image":
+			return renderImage(block as any, idx, options);
 		case "youtube":
 			return renderYouTube(block, idx, options);
-		case "latex":
-			return renderLatex(block, idx, options);
 		case "columns":
-			return renderColumns(block, idx, options);
+			return renderColumns(block as any, idx, options);
 		case "quiz":
 			return renderQuiz(block, idx, options);
-		case "divider":
-			return renderDivider();
-		case "spacer":
-			return renderSpacer(block);
 		default:
 			return { html: "" };
 	}

@@ -14,9 +14,7 @@ export function renderColumns(
 			"Columns",
 			block.label,
 			block.caption,
-			`<div class="bk-columns" style="grid-template-columns:${block.columns
-				.map((column) => escAttr(column.width ?? "minmax(0, 1fr)"))
-				.join(" ")}">
+			`<div class="bk-columns" style="grid-template-columns: repeat(${block.columns.length}, minmax(0, 1fr))">
             ${block.columns
 							.map((column) => {
 								const content =
@@ -27,6 +25,7 @@ export function renderColumns(
 													(column.src
 														? resolveContent(column.src, options, "md")
 														: ""),
+												options
 											).html;
 								return `<div class="bk-column">${content}</div>`;
 							})

@@ -49,14 +49,14 @@ function resolveContent(
 		}
 	}
 
-	const baseDir = path.resolve(options.contentBase ?? ".");
+	const securityDir = process.cwd();
 	if (
-		!filePath.startsWith(baseDir + path.sep) &&
-		filePath !== baseDir &&
+		!filePath.startsWith(securityDir + path.sep) &&
+		filePath !== securityDir &&
 		options.strict !== false
 	) {
 		throw new Error(
-			`Security Error: Path traversal attempt outside contentBase: ${filePath}`,
+			`Security Error: Path traversal attempt outside project root: ${filePath}`,
 		);
 	}
 

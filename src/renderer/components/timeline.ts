@@ -242,19 +242,30 @@ export const chapterStyles = `
 }
 
 .bk-timeline-card.bk-last-opened .bk-timeline-content {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent), 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+  box-shadow: 0 8px 32px color-mix(in srgb, var(--accent) 8%, transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 5%, var(--paper)) 0%, var(--paper) 100%);
+  transform: translateY(-2px);
+}
+.bk-timeline-card.bk-last-opened .bk-timeline-title {
+  color: var(--ink);
 }
 .bk-timeline-card.bk-last-opened .bk-timeline-node {
-  background: var(--accent);
+  background: var(--paper);
   border-color: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 15%, transparent);
 }
 .bk-timeline-card.bk-last-opened .bk-timeline-node::after {
-  background: var(--paper);
+  background: var(--accent);
 }
 
 :root[data-theme="dark"] .bk-timeline-content {
   background: var(--panel);
+}
+:root[data-theme="dark"] .bk-timeline-card.bk-last-opened .bk-timeline-content {
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, var(--panel)) 0%, var(--panel) 100%);
+  box-shadow: 0 8px 32px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 :root[data-theme="dark"] .bk-status-unread .bk-timeline-content {
   background: transparent;

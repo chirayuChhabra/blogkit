@@ -1,5 +1,8 @@
 import DOMPurify from "isomorphic-dompurify";
+import hljs from "highlight.js";
+import { blockChrome } from "./chrome.js";
 import { marked } from "./math.js";
+import { resolveAssetSrc } from "../utils.js";
 
 const domPurifyConfig = {
 	USE_PROFILES: { html: true, mathMl: true, svg: true },
@@ -11,7 +14,9 @@ export function sanitizeHtml(htmlRaw: string): string {
 	return DOMPurify.sanitize(htmlRaw, domPurifyConfig);
 }
 
-export function mdToHtml(md: string): {
+import type { BuildOptions } from "../../types.js";
+
+export function mdToHtml(md: string, options?: BuildOptions, callerDir?: string): {
 	html: string;
 	title: string;
 	headings: { id: string; text: string; level: number }[];
@@ -38,7 +43,42 @@ export function mdToHtml(md: string): {
 		return `<h${depth} id="${id}" class="bk-heading-${depth}">${text}</h${depth}>`;
 	};
 
-	const htmlRaw = marked.parse(md, { renderer }) as string;
+	renderer.hr = () => {
+		return '<hr class="bk-divider">';
+	};
+
+	renderer.code = ({ text, lang }) => {
+		const safeLang = lang || "";
+
+		return `<div class="bk-code-block">
+          ${safeLang ? `<div class="bk-code-header"><span class="bk-code-lang">${safeLang}</span></div>` : ""}
+          <div class="bk-code-scroll">
+            <pre><code class="language-${safeLang} hljs">${text}</code></pre>
+          </div>
+        </div>`;
+	};
+
+	renderer.image = ({ href, title, text }) => {
+		let resolvedHref = href;
+		if (options) {
+			try {
+				resolvedHref = resolveAssetSrc(href, options);
+			} catch (e) {
+				console.error("resolveAssetSrc failed:", e);
+			}
+		}
+		return `<img src="${resolvedHref}" alt="${text || ""}" title="${title || ""}" loading="lazy">`;
+	};
+
+	let processedMd = md.replace(/\|(\s*):(center|left|right):(\s*)(?=\|)/gi, (match, p1, p2, p3) => {
+		const lower = p2.toLowerCase();
+		if (lower === 'center') return `|${p1}:-:${p3}`;
+		if (lower === 'left') return `|${p1}:---${p3}`;
+		if (lower === 'right') return `|${p1}---:${p3}`;
+		return match;
+	});
+
+	const htmlRaw = marked.parse(processedMd, { renderer }) as string;
 	const html = sanitizeHtml(htmlRaw);
 
 	return { html, title, headings };

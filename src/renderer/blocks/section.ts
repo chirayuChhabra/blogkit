@@ -11,7 +11,7 @@ export function renderSection(
 	if (!md.includes("\n") && !md.startsWith("#")) {
 		md = `### ${md}`;
 	}
-	const { html, title } = mdToHtml(md);
+	const { html, title } = mdToHtml(md, options);
 	const label =
 		block.label ||
 		title ||

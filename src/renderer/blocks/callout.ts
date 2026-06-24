@@ -15,7 +15,7 @@ export function renderCallout(
 	};
 	const label = variantMap[block.type];
 	const md = resolveContent(block.src, options, "md");
-	const { html } = mdToHtml(md);
+	const { html } = mdToHtml(md, options);
 	return {
 		html: `<div class="bk-callout bk-callout--${block.type}">
           <div class="bk-callout-icon"></div>

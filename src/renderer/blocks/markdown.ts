@@ -8,7 +8,7 @@ export function renderMarkdown(
 	options: BuildOptions,
 ): { html: string; navItems?: NavItem[] } {
 	const md = resolveContent(block.src, options, "md");
-	const { html, headings } = mdToHtml(md);
+	const { html, headings } = mdToHtml(md, options);
 	const navItems: NavItem[] = headings.map((h) => ({
 		id: h.id,
 		label: h.text,

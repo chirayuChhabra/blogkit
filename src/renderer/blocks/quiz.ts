@@ -8,9 +8,9 @@ import { escapeScriptJson, mdInline, mdToHtml } from "../markdown/index.js";
 import { type NavItem, resolveContent } from "../utils.js";
 import { escHtml } from "./utils.js";
 
-function renderQuestion(q: QuizQuestion, quizId: string, qi: number): string {
+function renderQuestion(q: QuizQuestion, quizId: string, qi: number, options: BuildOptions): string {
 	const qid = `${quizId}-q${qi}`;
-	const options = q.options
+	const optStrings = q.options
 		.map(
 			(opt, oi) => `
     <button class="bk-opt" data-opt-idx="${oi}">
@@ -20,13 +20,13 @@ function renderQuestion(q: QuizQuestion, quizId: string, qi: number): string {
 		.join("");
 
 	const expHtml = q.explanation
-		? `<div class="bk-explanation" id="${qid}-exp" hidden>${mdToHtml(q.explanation).html}</div>`
+		? `<div class="bk-explanation" id="${qid}-exp" hidden>${mdToHtml(q.explanation, options).html}</div>`
 		: "";
 
 	return `
     <div class="bk-question" id="${qid}">
-      <div class="bk-q-text">${mdToHtml(q.q).html}</div>
-      <div class="bk-opts">${options}</div>
+      <div class="bk-q-text">${mdToHtml(q.q, options).html}</div>
+      <div class="bk-opts">${optStrings}</div>
       ${expHtml}
     </div>`;
 }
@@ -62,7 +62,7 @@ export function renderQuiz(
             ${block.caption ? `<small>${mdInline(block.caption)}</small>` : ""}
           </div>
           <div class="bk-quiz-body">
-            ${quiz.questions.map((q, qi) => renderQuestion(q, `quiz-${idx}`, qi)).join("\n")}
+            ${quiz.questions.map((q, qi) => renderQuestion(q, `quiz-${idx}`, qi, options)).join("\n")}
           </div>
           <script type="application/json" class="bk-quiz-data">${escapeScriptJson(quiz.questions.map((q) => q.answer))}</script>
         </div>`,

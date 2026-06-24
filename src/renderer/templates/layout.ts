@@ -25,11 +25,17 @@ export function renderLayout(
 <head>
 <script>
 (function() {
-	var t = localStorage.getItem("bk-theme");
+	var t = localStorage.getItem("bk-theme") || "auto";
 	var p = localStorage.getItem("bk-palette");
 	var u = localStorage.getItem("bk-ui");
 	var root = document.documentElement;
-	if (t) root.setAttribute("data-theme", t);
+	
+	var resolvedTheme = t;
+	if (t === "auto") {
+		resolvedTheme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+	}
+	root.setAttribute("data-theme", resolvedTheme);
+	
 	if (p) root.setAttribute("data-palette", p === "green" ? "field" : p);
 	if (u) root.setAttribute("data-ui", u);
 })();
@@ -40,7 +46,7 @@ export function renderLayout(
 ${description ? `<meta name="description" content="${escHtml(description)}">` : ""}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/katex.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650;9..144,760&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css">
+
 ${opts.head ?? ""}
 ${opts.standalone === false ? `<link rel="stylesheet" href="assets/theme.css?v=${Date.now()}">` : `<style>\n${safeFont ? `:root { --font-sans: ${safeFont}, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }` : ""}\n${pageCSS()}\n</style>`}
 </head>
