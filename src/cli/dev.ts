@@ -102,17 +102,21 @@ export async function runDev(args: string[]) {
 	rebuild();
 
 	let timeout: NodeJS.Timeout;
-	const watcher = fs.watch(contentBase, { recursive: true }, (_eventType, filename) => {
-		if (!filename || !/\.(md|mdx|js|ts|jsx|tsx|json|css)$/i.test(filename)) {
-			return;
-		}
+	const watcher = fs.watch(
+		contentBase,
+		{ recursive: true },
+		(_eventType, filename) => {
+			if (!filename || !/\.(md|mdx|js|ts|jsx|tsx|json|css)$/i.test(filename)) {
+				return;
+			}
 
-		clearTimeout(timeout);
-		timeout = setTimeout(() => {
-			logger.watch(`File changed: ${filename}`);
-			rebuild();
-		}, 200);
-	});
+			clearTimeout(timeout);
+			timeout = setTimeout(() => {
+				logger.watch(`File changed: ${filename}`);
+				rebuild();
+			}, 200);
+		},
+	);
 	logger.watch(`Watching ${contentBase} for changes...`);
 
 	const basePort = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
@@ -199,7 +203,7 @@ export async function runDev(args: string[]) {
 
 		console.log(); // Add a newline so it doesn't print on the same line as ^C
 		logger.info("Gracefully shutting down. Please wait...");
-		
+
 		process.once("exit", (code) => {
 			if (code === 0) {
 				if (server) {

@@ -1,5 +1,5 @@
 // @ts-nocheck
-let interactiveObs;
+let interactiveObs: IntersectionObserver | undefined;
 
 export function bkInitInteractiveFrames() {
 	if (!interactiveObs) {
@@ -66,7 +66,7 @@ export function bkWireInteractiveFrames() {
 	});
 	document.addEventListener("focusin", interactiveHandler, { passive: true });
 
-	let scrollTimeout;
+	let scrollTimeout: ReturnType<typeof setTimeout> | undefined;
 	document.addEventListener(
 		"scroll",
 		() => {

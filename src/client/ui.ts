@@ -102,7 +102,10 @@ export function bkWireScrollSpy() {
 		activeScrollSpyObs = null;
 	}
 	if (activeScrollSpyListener && activeScrollSpyTarget) {
-		activeScrollSpyTarget.removeEventListener("scroll", activeScrollSpyListener);
+		activeScrollSpyTarget.removeEventListener(
+			"scroll",
+			activeScrollSpyListener,
+		);
 		activeScrollSpyListener = null;
 		activeScrollSpyTarget = null;
 	}
@@ -196,7 +199,9 @@ export function bkWireScrollSpy() {
 		updateActive();
 	};
 	activeScrollSpyTarget = mainScrollContainer || window;
-	activeScrollSpyTarget.addEventListener("scroll", activeScrollSpyListener, { passive: true });
+	activeScrollSpyTarget.addEventListener("scroll", activeScrollSpyListener, {
+		passive: true,
+	});
 
 	activeScrollSpyObs = new IntersectionObserver(
 		(entries) => {
