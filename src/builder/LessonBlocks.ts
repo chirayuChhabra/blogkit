@@ -28,6 +28,9 @@ import {
 	normalizeSimulationOptions,
 } from "./utils.js";
 
+export const DEFAULT_SIMULATION_HEIGHT = 420;
+export const DEFAULT_ANIMATION_HEIGHT = 360;
+
 export abstract class LessonBlocks {
 	protected blocks: Block[] = [];
 
@@ -130,7 +133,9 @@ export abstract class LessonBlocks {
 				return JSON.parse(fs.readFileSync(configPath, "utf-8"));
 			}
 		} catch (err: any) {
-			logger.warn(`Failed to load simulation config for ${src}: ${err.message || err}`);
+			logger.warn(
+				`Failed to load simulation config for ${src}: ${err.message || err}`,
+			);
 		}
 		return null;
 	}
@@ -138,7 +143,7 @@ export abstract class LessonBlocks {
 	simulation(
 		src: string,
 		opts: SimulationOptions | Record<string, unknown> = {},
-		height = 420,
+		height = DEFAULT_SIMULATION_HEIGHT,
 	): this {
 		const fileConfig = this.loadSimulationConfig(src);
 		const normalized = normalizeSimulationOptions(opts, height, fileConfig);
@@ -160,7 +165,7 @@ export abstract class LessonBlocks {
 			type: "animation",
 			src,
 			loop: opts.loop ?? true,
-			height: opts.height ?? 360,
+			height: opts.height ?? DEFAULT_ANIMATION_HEIGHT,
 			label: opts.label,
 			caption: opts.caption,
 			accent: opts.accent ?? "neutral",
