@@ -102,7 +102,7 @@ export async function runDev(args: string[]) {
 	rebuild();
 
 	let timeout: NodeJS.Timeout;
-	fs.watch(contentBase, { recursive: true }, (_eventType, filename) => {
+	const watcher = fs.watch(contentBase, { recursive: true }, (_eventType, filename) => {
 		if (!filename || !/\.(md|mdx|js|ts|jsx|tsx|json|css)$/i.test(filename)) {
 			return;
 		}
@@ -192,12 +192,30 @@ export async function runDev(args: string[]) {
 		},
 	};
 
+	let shuttingDown = false;
 	process.on("SIGINT", () => {
+		if (shuttingDown) return; // Ignore any extra Ctrl+C or duplicate signals
+		shuttingDown = true;
+
+		console.log(); // Add a newline so it doesn't print on the same line as ^C
 		logger.info("Gracefully shutting down. Please wait...");
+		
+		process.once("exit", (code) => {
+			if (code === 0) {
+				if (server) {
+					logger.info(`Shutdown complete. Port ${server.port} is now free.`);
+				} else {
+					logger.info("Shutdown complete.");
+				}
+			}
+		});
+
 		if (server) {
-			server.stop(true);
+			server.stop();
 		}
-		process.exit(0);
+		watcher.close();
+		clearTimeout(timeout);
+		setTimeout(() => process.exit(0), 3000).unref();
 	});
 
 	while (port <= maxPort) {
