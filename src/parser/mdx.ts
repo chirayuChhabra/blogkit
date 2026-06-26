@@ -1,47 +1,44 @@
 import * as fs from "fs";
-import * as path from "path";
 import matter from "gray-matter";
 import { marked } from "marked";
-import { logger } from "../cli/logger.js";
-import type {
-	Block,
-	Chapter,
-	ChapterMeta,
-	Lesson,
-	LessonMeta,
-	BuildOptions,
-} from "../types.js";
+import * as path from "path";
 import {
 	extractYouTubeId,
 	inferMediaKind,
 	normalizeSimulationOptions,
 } from "../builder/utils.js";
+import { logger } from "../cli/logger.js";
+import type {
+	Block,
+	BuildOptions,
+	Chapter,
+	ChapterMeta,
+	Lesson,
+	LessonMeta,
+} from "../types.js";
 
 // Helper to parse HTML attributes
 function parseAttributes(attrString: string): Record<string, string> {
 	const attrs: Record<string, string> = {};
 	const regex = /([a-zA-Z0-9_-]+)(?:=(["'])(.*?)\2)?/gs;
-	let match;
-	while ((match = regex.exec(attrString)) !== null) {
+	for (const match of attrString.matchAll(regex)) {
 		const [, key, , value] = match;
 		if (key) attrs[key] = value || "true";
 	}
 	return attrs;
 }
 
-const SUPPORTED_TAGS = [
-	"columns",
-];
+const SUPPORTED_TAGS = ["columns"];
 
 export function parseLesson(
 	content: string,
 	options: BuildOptions = {},
 	callerDir: string = process.cwd(),
-	defaultTitle?: string
+	defaultTitle?: string,
 ): Lesson {
 	const parsed = matter(content);
 	const tokens = marked.lexer(parsed.content);
-	
+
 	let h1Title = "";
 	for (const token of tokens) {
 		if (token.type === "heading" && token.depth === 1) {
@@ -50,7 +47,8 @@ export function parseLesson(
 		}
 	}
 
-	const resolvedTitle = parsed.data.title || h1Title || defaultTitle || "Untitled Lesson";
+	const resolvedTitle =
+		parsed.data.title || h1Title || defaultTitle || "Untitled Lesson";
 	const meta: LessonMeta = {
 		title: resolvedTitle,
 		slug:
@@ -76,7 +74,12 @@ export function parseLesson(
 
 	let strippedTitle = false;
 	for (const token of tokens as any[]) {
-		if (token.type === "heading" && token.depth === 1 && !strippedTitle && token.text === resolvedTitle) {
+		if (
+			token.type === "heading" &&
+			token.depth === 1 &&
+			!strippedTitle &&
+			token.text === resolvedTitle
+		) {
 			strippedTitle = true;
 			continue;
 		}
@@ -87,7 +90,7 @@ export function parseLesson(
 				const img = tokens[0] as any;
 				const src = img.href;
 				const caption = img.text;
-				
+
 				flushMarkdown();
 
 				// YouTube
@@ -106,14 +109,23 @@ export function parseLesson(
 				if (ext === ".ts" || ext === ".js") {
 					let fileConfig = null;
 					try {
-						const resolved = path.resolve(options.contentBase || callerDir, src);
+						const resolved = path.resolve(
+							options.contentBase || callerDir,
+							src,
+						);
 						const configPath = `${ext.length > 0 ? resolved.slice(0, -ext.length) : resolved}.config.json`;
 						if (fs.existsSync(configPath)) {
 							fileConfig = JSON.parse(fs.readFileSync(configPath, "utf-8"));
 						}
-					} catch {}
+					} catch (e: any) {
+						logger.warn(`Failed to load simulation config for ${src}: ${e.message || e}`);
+					}
 
-					const normalized = normalizeSimulationOptions({ caption }, 420, fileConfig);
+					const normalized = normalizeSimulationOptions(
+						{ caption },
+						420,
+						fileConfig,
+					);
 					blocks.push({
 						type: "simulation",
 						src,
@@ -124,17 +136,21 @@ export function parseLesson(
 				}
 
 				// Quiz
-				if (ext === ".json") {
+				if (ext === ".json" || src.endsWith(".quiz.md")) {
 					blocks.push({ type: "quiz", src, caption });
 					continue;
 				}
 
 				// Media (Video, Audio)
-				if (['.mp4', '.webm', '.mov', '.mp3', '.wav', '.ogg', '.m4a'].includes(ext)) {
+				if (
+					[".mp4", ".webm", ".mov", ".mp3", ".wav", ".ogg", ".m4a"].includes(
+						ext,
+					)
+				) {
 					blocks.push({
 						type: "media",
 						src,
-						kind: ['.mp4', '.webm', '.mov'].includes(ext) ? "video" : "audio",
+						kind: [".mp4", ".webm", ".mov"].includes(ext) ? "video" : "audio",
 						caption,
 					});
 					continue;
@@ -152,12 +168,14 @@ export function parseLesson(
 
 		if (token.type === "blockquote") {
 			const text = token.text || "";
-			const match = text.match(/^\[!(note|tip|important|warning|caution)\]\s*([\s\S]*)/i);
+			const match = text.match(
+				/^\[!(note|tip|important|warning|caution)\]\s*([\s\S]*)/i,
+			);
 			if (match) {
 				flushMarkdown();
 				blocks.push({
 					type: match[1].toLowerCase() as any,
-					src: match[2]
+					src: match[2],
 				});
 				continue;
 			}
@@ -170,11 +188,14 @@ export function parseLesson(
 			let attrs: Record<string, string> = {};
 
 			// Check for <columns> tag
-			const tagMatch = trimmedText.match(/^<([a-z]+)(?:\s+([^>]*))?>(.*?)<\/\1>$/is) 
-				|| trimmedText.match(/^<([a-z]+)\s*(.*?)\/?>$/i);
-				
+			const tagMatch =
+				trimmedText.match(/^<([a-z]+)(?:\s+([^>]*))?>(.*?)<\/\1>$/is) ||
+				trimmedText.match(/^<([a-z]+)\s*(.*?)\/?>$/i);
+
 			// Check for <div class="columns">
-			const divMatch = trimmedText.match(/^<div\s+([^>]*class=["'](?:[^"']*\s+)?columns(?:\s+[^"']*)?["'][^>]*)>(.*?)<\/div>$/is);
+			const divMatch = trimmedText.match(
+				/^<div\s+([^>]*class=["'](?:[^"']*\s+)?columns(?:\s+[^"']*)?["'][^>]*)>(.*?)<\/div>$/is,
+			);
 
 			if (tagMatch && SUPPORTED_TAGS.includes(tagMatch[1].toLowerCase())) {
 				const tag = tagMatch[1].toLowerCase();
@@ -193,16 +214,22 @@ export function parseLesson(
 				flushMarkdown();
 				const columns: any[] = [];
 				// Match both <column ... /> and <div class="column" ...>...</div>
-				const columnRegex = /<(?:column|div)\b([^>]*?)(?:\/?>|>.*?<\/(?:column|div)>)/gs;
-				let colMatch;
-				while ((colMatch = columnRegex.exec(innerContent)) !== null) {
+				const columnRegex =
+					/<(?:column|div)\b([^>]*?)(?:\/?>|>.*?<\/(?:column|div)>)/gs;
+				for (const colMatch of innerContent.matchAll(columnRegex)) {
 					const colAttrs = parseAttributes(colMatch[1]);
-					if (colMatch[0].startsWith('<div') && !/(?:^|\s)class=["'](?:[^"']*\s+)?column(?:\s+[^"']*)?["']/.test(colMatch[1])) {
+					if (
+						colMatch[0].startsWith("<div") &&
+						!/(?:^|\s)class=["'](?:[^"']*\s+)?column(?:\s+[^"']*)?["']/.test(
+							colMatch[1],
+						)
+					) {
 						continue;
 					}
 					const col: any = {};
-					if (colAttrs.markdown) col.markdown = colAttrs.markdown.replace(/\\n/g, '\n');
-					if (colAttrs.code) col.code = colAttrs.code.replace(/\\n/g, '\n');
+					if (colAttrs.markdown)
+						col.markdown = colAttrs.markdown.replace(/\\n/g, "\n");
+					if (colAttrs.code) col.code = colAttrs.code.replace(/\\n/g, "\n");
 					if (colAttrs.latex) col.latex = colAttrs.latex;
 					if (colAttrs.src) col.src = colAttrs.src;
 					columns.push(col);
@@ -255,40 +282,66 @@ export function parseChapter(
 				if (linkMatch) {
 					const title = linkMatch[1];
 					const relPath = linkMatch[2];
-					const fullPath = path.resolve(options.contentBase || callerDir, relPath);
+					const fullPath = path.resolve(
+						options.contentBase || callerDir,
+						relPath,
+					);
 					if (fs.existsSync(fullPath)) {
 						const lessonContent = fs.readFileSync(fullPath, "utf-8");
-						const lessonOptions = { ...options, contentBase: path.dirname(fullPath) };
-						const lesson = parseLesson(lessonContent, lessonOptions, path.dirname(fullPath), title);
+						const lessonOptions = {
+							...options,
+							contentBase: path.dirname(fullPath),
+						};
+						const lesson = parseLesson(
+							lessonContent,
+							lessonOptions,
+							path.dirname(fullPath),
+							title,
+						);
 						lesson.meta.parentSlug = meta.slug;
 						lessons.push(lesson);
 					} else {
-						console.warn(`[Chapter] Warning: Lesson file not found: ${fullPath}`);
+						logger.warn(
+							`[Chapter] Warning: Lesson file not found: ${fullPath}`,
+						);
 					}
 				}
 			}
 		} else if (token.type === "paragraph") {
-            const linkMatch = token.text.match(/\[([^\]]+)\]\(([^)]+\.md)\)/g);
-            if (linkMatch) {
-                for (const match of linkMatch) {
-                    const m = match.match(/\[([^\]]+)\]\(([^)]+\.md)\)/);
-                    if (m) {
-                    	const title = m[1];
-                        const relPath = m[2];
-                        const fullPath = path.resolve(options.contentBase || callerDir, relPath);
-                        if (fs.existsSync(fullPath)) {
-                            const lessonContent = fs.readFileSync(fullPath, "utf-8");
-                            const lessonOptions = { ...options, contentBase: path.dirname(fullPath) };
-                            const lesson = parseLesson(lessonContent, lessonOptions, path.dirname(fullPath), title);
-                            lesson.meta.parentSlug = meta.slug;
-                            lessons.push(lesson);
-                        } else {
-                            console.warn(`[Chapter] Warning: Lesson file not found: ${fullPath}`);
-                        }
-                    }
-                }
-            }
-        }
+			const linkMatch = token.text.match(/\[([^\]]+)\]\(([^)]+\.md)\)/g);
+			if (linkMatch) {
+				for (const match of linkMatch) {
+					const m = match.match(/\[([^\]]+)\]\(([^)]+\.md)\)/);
+					if (m) {
+						const title = m[1];
+						const relPath = m[2];
+						const fullPath = path.resolve(
+							options.contentBase || callerDir,
+							relPath,
+						);
+						if (fs.existsSync(fullPath)) {
+							const lessonContent = fs.readFileSync(fullPath, "utf-8");
+							const lessonOptions = {
+								...options,
+								contentBase: path.dirname(fullPath),
+							};
+							const lesson = parseLesson(
+								lessonContent,
+								lessonOptions,
+								path.dirname(fullPath),
+								title,
+							);
+							lesson.meta.parentSlug = meta.slug;
+							lessons.push(lesson);
+						} else {
+							logger.warn(
+								`[Chapter] Warning: Lesson file not found: ${fullPath}`,
+							);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	// Setup prev/next links
@@ -306,11 +359,14 @@ export function parseChapter(
 	return { meta, lessons };
 }
 
-import { render, renderChapter } from "../renderer/index.js";
 import { copyAssets } from "../builder/utils.js";
 import { validateLesson } from "../builder/validation.js";
+import { render, renderChapter } from "../renderer/index.js";
 
-export function buildLesson(lesson: Lesson, options: BuildOptions = {}): string {
+export function buildLesson(
+	lesson: Lesson,
+	options: BuildOptions = {},
+): string {
 	const lessonOptions = {
 		...options,
 		contentBase: lesson.meta.contentBase || options.contentBase,
@@ -318,7 +374,9 @@ export function buildLesson(lesson: Lesson, options: BuildOptions = {}): string 
 	validateLesson(lesson.meta, lesson.blocks, lessonOptions);
 	const html = render(lesson, lessonOptions);
 	const outDir = path.resolve(lessonOptions.outDir || "./out");
-	const filename = lesson.meta.parentSlug ? `${lesson.meta.slug}.html` : "index.html";
+	const filename = lesson.meta.parentSlug
+		? `${lesson.meta.slug}.html`
+		: "index.html";
 	const outPath = path.join(outDir, filename);
 	const outPathDir = path.dirname(outPath);
 	if (!fs.existsSync(outPathDir)) fs.mkdirSync(outPathDir, { recursive: true });
@@ -331,7 +389,10 @@ export function buildLesson(lesson: Lesson, options: BuildOptions = {}): string 
 	return outPath;
 }
 
-export function buildChapter(chapter: Chapter, options: BuildOptions = {}): string {
+export function buildChapter(
+	chapter: Chapter,
+	options: BuildOptions = {},
+): string {
 	// Build all nested lessons first
 	for (const lesson of chapter.lessons) {
 		buildLesson(lesson, options);
@@ -346,7 +407,8 @@ export function buildChapter(chapter: Chapter, options: BuildOptions = {}): stri
 		copyAssets(outDir);
 	}
 	const relPath = path.relative(process.cwd(), outPath);
-	logger.success(`Built chapter (${chapter.lessons.length} lessons) → ${relPath}`);
+	logger.success(
+		`Built chapter (${chapter.lessons.length} lessons) → ${relPath}`,
+	);
 	return outPath;
 }
-
