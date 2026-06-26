@@ -46,10 +46,8 @@ export function getCallerDir(): string | undefined {
 		) {
 			continue;
 		}
-		// console.log("getCallerDir found:", p, "basename:", basename);
 		return path.dirname(p);
 	}
-	// console.log("getCallerDir found nothing!");
 	return undefined;
 }
 
