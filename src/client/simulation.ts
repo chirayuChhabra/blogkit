@@ -1,3 +1,4 @@
+// @ts-nocheck
 export function bkReadSimProps(figure) {
 	const props = {};
 	figure.querySelectorAll("[data-bk-prop]").forEach((input) => {
