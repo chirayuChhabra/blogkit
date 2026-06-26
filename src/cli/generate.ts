@@ -19,7 +19,7 @@ export function runGenerate(args: string[]) {
 	// Normalize all slashes to POSIX-style for consistent parsing across platforms
 	const normalizedPath = rawName.replace(/\\/g, "/");
 	const parsedPath = path.parse(normalizedPath);
-	
+
 	let targetDir = process.cwd();
 	let fileNameBase = parsedPath.name;
 
@@ -32,9 +32,7 @@ export function runGenerate(args: string[]) {
 	}
 
 	if (parsedPath.ext === ".md" || rawName.endsWith(".md")) {
-		logger.info(
-			`Stripped '.md' extension from input name: '${originalName}'`,
-		);
+		logger.info(`Stripped '.md' extension from input name: '${originalName}'`);
 	}
 
 	const prefixMatch = fileNameBase.match(/^\d+-*/);
@@ -48,7 +46,7 @@ export function runGenerate(args: string[]) {
 	if (!fileNameBase.trim()) {
 		fileNameBase = "untitled";
 	}
-	
+
 	rawName = fileNameBase;
 
 	let files: string[] = [];
@@ -73,7 +71,9 @@ export function runGenerate(args: string[]) {
 					}
 				}
 			} catch (e: any) {
-				logger.warn(`Failed to parse file while determining max index: ${e.message || e}`);
+				logger.warn(
+					`Failed to parse file while determining max index: ${e.message || e}`,
+				);
 			}
 		}
 	}
