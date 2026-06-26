@@ -21,7 +21,7 @@
   "scripts": {
     "build": "bun build.ts",
     "prepublishOnly": "bun run build",
-    "dev:docs": "bun dist/cli.js dev docs",
+    "dev:docs": "bun dist/cli.js dev mr-markdown-documentation",
     "typecheck": "bunx tsc --noEmit",
     "test": "bun test && bun run typecheck",
     "test:watch": "bun test --watch",
@@ -45,10 +45,10 @@
   },
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
-    "@biomejs/biome": "^2.5.0",
+    "@biomejs/biome": "^2.5.1",
     "@types/katex": "^0.16.8",
-    "@types/node": "^25.9.3",
-    "puppeteer": "^25.1.0",
+    "@types/node": "^25.9.4",
+    "puppeteer": "^25.2.1",
     "typescript": "^6.0.3"
   },
   "dependencies": {
@@ -57,7 +57,7 @@
     "consola": "^3.4.2",
     "gray-matter": "^4.0.3",
     "highlight.js": "^11.11.1",
-    "isomorphic-dompurify": "^3.17.0",
+    "isomorphic-dompurify": "^3.18.0",
     "katex": "^0.17.0",
     "marked": "^18.0.5",
     "marked-highlight": "^2.2.4",
