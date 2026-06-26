@@ -1,16 +1,24 @@
 import { createRequire } from "module";
+
 const require = createRequire(import.meta.url);
+
 import * as fs from "fs";
-import * as path from "path";
 import * as os from "os";
+import * as path from "path";
 import { logger } from "./logger.js";
 
 declare const Bun: any;
 
-export function runDev(args: string[]) {
+export async function runDev(args: string[]) {
 	process.env.NODE_ENV = "development";
-	const target = args[0] || ".";
+	const target = args[0];
 
+	if (!target) {
+		logger.error("Usage: mr-md dev <file-or-directory>");
+		process.exit(1);
+	}
+
+	let isDirectory = false;
 	let filePath = "";
 	const targetPath = path.resolve(process.cwd(), target);
 	if (!fs.existsSync(targetPath)) {
@@ -19,15 +27,12 @@ export function runDev(args: string[]) {
 	}
 
 	if (fs.statSync(targetPath).isDirectory()) {
-		for (const file of ["chapter.md", "lesson.md", "index.md"]) {
-			const p = path.join(targetPath, file);
-			if (fs.existsSync(p)) {
-				filePath = p;
-				break;
-			}
-		}
-		if (!filePath) {
-			logger.error(`No chapter.md or lesson.md found in directory: ${targetPath}`);
+		isDirectory = true;
+		try {
+			const { generateChapterContent } = require("./chapter.js");
+			generateChapterContent(targetPath);
+		} catch (err: any) {
+			logger.error(err.message);
 			process.exit(1);
 		}
 	} else {
@@ -38,33 +43,59 @@ export function runDev(args: string[]) {
 		}
 	}
 
-	const contentBase = path.dirname(filePath);
+	const contentBase = isDirectory ? targetPath : path.dirname(filePath);
 	const outDir = path.resolve(contentBase, "out");
 
-	logger.dev(`Preparing dev server for: ${filePath}`);
+	logger.dev(`Preparing dev server for: ${targetPath}`);
 
 	let server: any;
 
 	const rebuild = () => {
 		logger.startSpinner("Rebuilding...");
 		try {
-			const { parseChapter, parseLesson, buildChapter, buildLesson } = require("../parser/mdx.js");
-			const content = fs.readFileSync(filePath, "utf-8");
-			const parsed = require("gray-matter")(content);
-			const isChapter = parsed.data.chapter === true || parsed.data.type === "chapter";
-			
-			if (isChapter) {
-				const chapter = parseChapter(content, { outDir, contentBase }, contentBase);
+			const {
+				parseChapter,
+				parseLesson,
+				buildChapter,
+				buildLesson,
+			} = require("../parser/mdx.js");
+
+			if (isDirectory) {
+				const { generateChapterContent } = require("./chapter.js");
+				const chapterContent = generateChapterContent(targetPath);
+				const chapter = parseChapter(
+					chapterContent,
+					{ outDir, contentBase },
+					contentBase,
+				);
 				buildChapter(chapter, { outDir, contentBase });
 			} else {
-				const lesson = parseLesson(content, { outDir, contentBase }, contentBase);
-				buildLesson(lesson, { outDir, contentBase });
+				const content = fs.readFileSync(filePath, "utf-8");
+				const parsed = require("gray-matter")(content);
+				const isChapter =
+					parsed.data.chapter === true || parsed.data.type === "chapter";
+
+				if (isChapter) {
+					const chapter = parseChapter(
+						content,
+						{ outDir, contentBase },
+						contentBase,
+					);
+					buildChapter(chapter, { outDir, contentBase });
+				} else {
+					const lesson = parseLesson(
+						content,
+						{ outDir, contentBase },
+						contentBase,
+					);
+					buildLesson(lesson, { outDir, contentBase });
+				}
 			}
-			logger.succeedSpinner(`Build successful for ${filePath}.`);
+			logger.succeedSpinner(`Build successful for ${targetPath}.`);
 			server?.publish("livereload", "reload");
 		} catch (err: any) {
 			logger.failSpinner(`Build failed`);
-			logger.error(err);
+			logger.error(err.message || err);
 		}
 	};
 
@@ -72,14 +103,9 @@ export function runDev(args: string[]) {
 
 	let timeout: NodeJS.Timeout;
 	fs.watch(contentBase, { recursive: true }, (_eventType, filename) => {
-		if (
-			!filename ||
-			filename.includes("out/") ||
-			filename.includes("out\\") ||
-			filename.includes(".git/") ||
-			filename.includes(".git\\")
-		)
+		if (!filename || !filename.endsWith(".md")) {
 			return;
+		}
 
 		clearTimeout(timeout);
 		timeout = setTimeout(() => {
@@ -111,6 +137,11 @@ export function runDev(args: string[]) {
 
 			if (decodedPath.endsWith("/")) {
 				outFilePath = path.join(outDir, "index.html");
+			} else if (
+				!fs.existsSync(outFilePath) &&
+				fs.existsSync(outFilePath + ".html")
+			) {
+				outFilePath += ".html";
 			}
 
 			const normalizedOutDir = outDir.endsWith(path.sep)
@@ -137,7 +168,9 @@ export function runDev(args: string[]) {
 					} else {
 						text += script;
 					}
-					return new Response(text, { headers: { "Content-Type": "text/html" } });
+					return new Response(text, {
+						headers: { "Content-Type": "text/html" },
+					});
 				}
 				return new Response(Bun.file(outFilePath));
 			}
@@ -175,7 +208,7 @@ export function runDev(args: string[]) {
 				websocket: wsHandler,
 			});
 			const localUrl = `http://localhost:${server.port}`;
-			
+
 			const interfaces = os.networkInterfaces();
 			let networkUrl: string | null = null;
 			for (const name of Object.keys(interfaces)) {
@@ -187,7 +220,7 @@ export function runDev(args: string[]) {
 				}
 				if (networkUrl) break;
 			}
-			
+
 			logger.serveBox(localUrl, networkUrl, basePort, port);
 			break;
 		} catch (err: any) {

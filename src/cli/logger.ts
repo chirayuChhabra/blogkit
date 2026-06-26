@@ -1,8 +1,8 @@
+import boxen from "boxen";
+import clipboardy from "clipboardy";
 import { createConsola } from "consola";
 import ora from "ora";
 import pc from "picocolors";
-import boxen from "boxen";
-import clipboardy from "clipboardy";
 
 export const consola = createConsola({
 	level: 4,
@@ -15,7 +15,8 @@ export const consola = createConsola({
 
 let currentSpinner: ReturnType<typeof ora> | null = null;
 
-const badge = (text: string, bgColor: (s: string) => string) => bgColor(pc.black(pc.bold(` ${text} `)));
+const badge = (text: string, bgColor: (s: string) => string) =>
+	bgColor(pc.black(pc.bold(` ${text} `)));
 
 export const logger = {
 	info: (msg: string) => console.log(`${badge("INFO", pc.bgBlue)} ${msg}`),
@@ -33,10 +34,10 @@ export const logger = {
 	watch: (msg: string) => console.log(`${badge("WATCH", pc.bgYellow)} ${msg}`),
 	startSpinner: (msg: string) => {
 		if (currentSpinner) currentSpinner.stop();
-		currentSpinner = ora({ 
-			prefixText: badge("BUILD", pc.bgBlue), 
-			text: msg, 
-			color: "cyan" 
+		currentSpinner = ora({
+			prefixText: badge("BUILD", pc.bgBlue),
+			text: msg,
+			color: "cyan",
 		}).start();
 	},
 	succeedSpinner: (msg: string) => {
@@ -56,19 +57,28 @@ export const logger = {
 	box: (msg: string) => consola.box(msg),
 	httpReq: (ip: string, method: string, path: string) => {
 		const date = new Date().toLocaleString("en-US");
-		console.log(`${pc.bgCyan(pc.black(pc.bold(" HTTP ")))} ${pc.gray(date)} ${pc.yellow(ip)} ${pc.greenBright(method)} ${pc.greenBright(path)}`);
+		console.log(
+			`${pc.bgCyan(pc.black(pc.bold(" HTTP ")))} ${pc.gray(date)} ${pc.yellow(ip)} ${pc.greenBright(method)} ${pc.greenBright(path)}`,
+		);
 	},
 	httpRes: (ip: string, status: number, ms: number) => {
 		const date = new Date().toLocaleString("en-US");
-		console.log(`${pc.bgCyan(pc.black(pc.bold(" HTTP ")))} ${pc.gray(date)} ${pc.yellow(ip)} ${pc.greenBright(`Returned ${status} in ${ms} ms`)}`);
+		console.log(
+			`${pc.bgCyan(pc.black(pc.bold(" HTTP ")))} ${pc.gray(date)} ${pc.yellow(ip)} ${pc.greenBright(`Returned ${status} in ${ms} ms`)}`,
+		);
 	},
-	serveBox: (localUrl: string, networkUrl: string | null, basePort?: number, currentPort?: number) => {
+	serveBox: (
+		localUrl: string,
+		networkUrl: string | null,
+		basePort?: number,
+		currentPort?: number,
+	) => {
 		let text = `${pc.greenBright("Serving!")}\n\n`;
 		text += `- ${pc.bold("Local:")}    ${localUrl}\n`;
 		if (networkUrl) {
 			text += `- ${pc.bold("Network:")}  ${networkUrl}\n`;
 		}
-		
+
 		if (basePort && currentPort && basePort !== currentPort) {
 			text += `\n${pc.red(`This port was picked because ${pc.underline(basePort.toString())} is in use.`)}\n`;
 		}
@@ -77,10 +87,10 @@ export const logger = {
 
 		try {
 			clipboardy.writeSync(localUrl);
-		} catch (err) {
-			// Ignore clipboard errors on headless CI
+		} catch (err: any) {
+			console.warn("Failed to copy address to clipboard (may be headless environment):", err.message || err);
 		}
 
 		console.log(boxen(text, { padding: 1, margin: 1, borderColor: "green" }));
-	}
+	},
 };

@@ -1,5 +1,9 @@
-export { ChapterBuilder, chapter, LessonBuilder, lesson } from "./builder.js";
-export { parseLesson, parseChapter, buildLesson, buildChapter } from "./parser/mdx.js";
+export {
+	buildChapter,
+	buildLesson,
+	parseChapter,
+	parseLesson,
+} from "./parser/mdx.js";
 export { render } from "./renderer/index.js";
 export type {
 	AnimationBlock,

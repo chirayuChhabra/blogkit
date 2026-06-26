@@ -1,9 +1,22 @@
 import { describe, test, expect, beforeEach, afterEach } from "bun:test";
 import { mkdtemp, rm, writeFile, mkdir, readFile } from "node:fs/promises";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { $ } from "bun";
+
+async function waitForServer(url: string, timeout = 10000) {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    try {
+      const res = await fetch(url);
+      return res;
+    } catch (e) {
+      await new Promise(r => setTimeout(r, 200));
+    }
+  }
+  throw new Error(`Server at ${url} did not start within ${timeout}ms`);
+}
 
 describe("CLI Deep Tests", () => {
   let tempDir: string;
@@ -20,9 +33,51 @@ describe("CLI Deep Tests", () => {
     }
   });
 
+  describe("generate command", () => {
+    test("Should generate a new markdown file with correct frontmatter and name", async () => {
+      const result = await $`bun run ${CLI_PATH} generate "test-lesson"`.cwd(tempDir).quiet();
+      expect(result.exitCode).toBe(0);
+      
+      const filePath = join(tempDir, "01-test-lesson.md");
+      expect(existsSync(filePath)).toBe(true);
+      
+      const content = await readFile(filePath, "utf-8");
+      expect(content).toContain("index: 1");
+      expect(content).toContain("# test-lesson");
+    });
+
+    test("Should correctly increment index for subsequent files", async () => {
+      await $`bun run ${CLI_PATH} generate "first"`.cwd(tempDir).quiet();
+      await $`bun run ${CLI_PATH} generate "second"`.cwd(tempDir).quiet();
+      
+      const content = await readFile(join(tempDir, "02-second.md"), "utf-8");
+      expect(content).toContain("index: 2");
+    });
+  });
+
+  describe("build command", () => {
+    test("Should successfully build a single file", async () => {
+      const filePath = join(tempDir, "01-test.md");
+      await writeFile(filePath, "---\ntitle: Test\n---\n# Hello\nSome block text");
+      
+      const result = await $`bun run ${CLI_PATH} build 01-test.md`.cwd(tempDir).quiet();
+      expect(result.exitCode).toBe(0);
+      
+      const outPath = join(tempDir, "out", "index.html");
+      expect(existsSync(outPath)).toBe(true);
+    });
+
+    test("Should fail gracefully with invalid targets", async () => {
+      const result = await $`bun run ${CLI_PATH} build non-existent.md`.cwd(tempDir).quiet().nothrow();
+      expect(result.exitCode).not.toBe(0);
+      const output = result.stdout.toString() + result.stderr.toString();
+      expect(output).toContain("not found");
+    });
+  });
+
   describe("dev command", () => {
     test("Should fall back to a different port if port 3080 is occupied", async () => {
-      await writeFile(join(tempDir, "chapter.md"), "test");
+      await writeFile(join(tempDir, "chapter.md"), "---\nindex: 1\n---\ntest");
       const dummyServer = Bun.serve({
         port: 3080,
         fetch() { return new Response("dummy"); }
@@ -33,14 +88,8 @@ describe("CLI Deep Tests", () => {
         env: { ...process.env, PORT: "3080" }
       });
 
-      let res;
-      for (let i = 0; i < 20; i++) {
-        await new Promise(r => setTimeout(r, 500));
-        res = await fetch("http://localhost:3081").catch(() => null);
-        if (res) break;
-      }
-      
       try {
+        const res = await waitForServer("http://localhost:3081");
         expect(res).toBeTruthy();
       } finally {
         devProc.kill();
@@ -49,7 +98,7 @@ describe("CLI Deep Tests", () => {
     }, 15000);
 
     test("Should prevent directory traversal attacks (403)", async () => {
-      await writeFile(join(tempDir, "chapter.md"), "test");
+      await writeFile(join(tempDir, "chapter.md"), "---\nindex: 1\n---\ntest");
       await mkdir(join(tempDir, "out"), { recursive: true });
       await writeFile(join(tempDir, "out", "index.html"), "<h1>Hello</h1>");
       await writeFile(join(tempDir, "secret.txt"), "shhh");
@@ -59,26 +108,17 @@ describe("CLI Deep Tests", () => {
         env: { ...process.env, PORT: "4000" }
       });
 
-      let res;
-      for (let i = 0; i < 20; i++) {
-        await new Promise(r => setTimeout(r, 500));
-        try {
-          res = await fetch("http://localhost:4000/..%2fsecret.txt");
-          break;
-        } catch (e) {
-          // ignore ConnectionRefused
-        }
-      }
-      
       try {
-        expect(res?.status).toBe(403);
+        const _ = await waitForServer("http://localhost:4000"); // wait for boot
+        const res = await fetch("http://localhost:4000/..%2fsecret.txt");
+        expect(res.status).toBe(403);
       } finally {
         devProc.kill();
       }
     }, 15000);
 
     test("Should return 404 for missing files", async () => {
-      await writeFile(join(tempDir, "chapter.md"), "test");
+      await writeFile(join(tempDir, "chapter.md"), "---\nindex: 1\n---\ntest");
       await mkdir(join(tempDir, "out"), { recursive: true });
       
       const devProc = Bun.spawn(["bun", "run", CLI_PATH, "dev", "."], {
@@ -86,19 +126,10 @@ describe("CLI Deep Tests", () => {
         env: { ...process.env, PORT: "4005" }
       });
 
-      let res;
-      for (let i = 0; i < 20; i++) {
-        await new Promise(r => setTimeout(r, 500));
-        try {
-          res = await fetch("http://localhost:4005/non-existent-file.css");
-          break;
-        } catch (e) {
-          // ignore ConnectionRefused
-        }
-      }
-
       try {
-        expect(res?.status).toBe(404);
+        const _ = await waitForServer("http://localhost:4005"); // wait for boot
+        const res = await fetch("http://localhost:4005/non-existent-file.css");
+        expect(res.status).toBe(404);
       } finally {
         devProc.kill();
       }
