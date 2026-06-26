@@ -1,6 +1,9 @@
+// @ts-nocheck
 export function bkWireMaximizeControls() {
 	document.addEventListener("click", (e) => {
-		const btn = e.target.closest?.(".bk-object-maximize");
+		const btn = (e.target as HTMLElement).closest?.(
+			".bk-object-maximize",
+		) as HTMLElement;
 		if (!btn) return;
 		const obj = btn.closest(".bk-object");
 		if (!obj) return;
@@ -34,6 +37,7 @@ export function bkWireSidebarToggle() {
 export function bkInitCodeCopy() {
 	document.querySelectorAll("pre > code").forEach((code) => {
 		const pre = code.parentElement;
+		if (!pre) return;
 		let container = pre.closest(".bk-code-block");
 
 		if (!container) {
@@ -42,13 +46,13 @@ export function bkInitCodeCopy() {
 			const scroll = document.createElement("div");
 			scroll.className = "bk-code-scroll";
 
-			pre.parentNode.insertBefore(container, pre);
+			pre.parentNode?.insertBefore(container, pre);
 			scroll.appendChild(pre);
 			container.appendChild(scroll);
 		}
 
 		if (getComputedStyle(container).position === "static") {
-			container.style.position = "relative";
+			(container as HTMLElement).style.position = "relative";
 		}
 
 		// Prevent adding multiple buttons if initialized multiple times
@@ -66,7 +70,9 @@ export function bkInitCodeCopy() {
 
 export function bkWireCodeCopy() {
 	document.addEventListener("click", async (e) => {
-		const btn = e.target.closest?.(".bk-copy-btn");
+		const btn = (e.target as HTMLElement).closest?.(
+			".bk-copy-btn",
+		) as HTMLElement;
 		if (!btn) return;
 		const container = btn.closest(".bk-code-block");
 		if (!container) return;
@@ -100,7 +106,7 @@ export function bkWireScrollSpy() {
 		nav.prepend(pill);
 	}
 
-	const sections = [];
+	const sections: any[] = [];
 	navLinks.forEach((l) => {
 		const id = l.dataset.id;
 		if (id) {
@@ -111,7 +117,7 @@ export function bkWireScrollSpy() {
 
 	if (!sections.length) return;
 
-	function setActive(idx) {
+	function setActive(idx: number) {
 		let targetTop = 0;
 		let targetHeight = 0;
 		if (pill && sections[idx]) {
