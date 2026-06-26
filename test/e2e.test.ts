@@ -20,7 +20,10 @@ beforeAll(async () => {
   );
   
   // Launch puppeteer in headless mode
-  browser = await puppeteer.launch({ headless: true });
+  browser = await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
 });
 
 afterAll(async () => {
