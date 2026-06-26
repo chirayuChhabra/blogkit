@@ -14,7 +14,8 @@ export type BlockType =
 	| "youtube"
 	| "image"
 	| "columns"
-	| "quiz";
+	| "quiz"
+	| "caution";
 
 export interface BaseBlock {
 	type: BlockType;
@@ -39,7 +40,7 @@ export interface SectionBlock extends BaseBlock {
 }
 
 export interface CalloutBlock extends BaseBlock {
-	type: "important" | "warning" | "tip" | "note";
+	type: "important" | "warning" | "tip" | "note" | "caution";
 	src: string;
 }
 
@@ -102,6 +103,7 @@ export interface ImageBlock extends BaseBlock, CaptionedBlock {
 export interface ColumnItem {
 	src?: string;
 	markdown?: string;
+	code?: string;
 	latex?: string;
 }
 
