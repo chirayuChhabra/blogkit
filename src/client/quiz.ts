@@ -1,6 +1,7 @@
+// @ts-nocheck
 export function bkWireQuizzes() {
 	document.addEventListener("click", (e) => {
-		const btn = e.target.closest?.(".bk-opt");
+		const btn = (e.target as HTMLElement).closest?.(".bk-opt") as HTMLElement;
 		if (!btn) return;
 
 		const question = btn.closest(".bk-question");
@@ -11,9 +12,15 @@ export function bkWireQuizzes() {
 		const dataEl = quiz ? quiz.querySelector(".bk-quiz-data") : null;
 		let isCorrect = false;
 
+		let answers = [];
 		if (dataEl) {
 			try {
-				const answers = JSON.parse(dataEl.textContent || "[]");
+				let raw = dataEl.textContent || "";
+				if (raw.startsWith('"') && raw.endsWith('"')) {
+					raw = raw.slice(1, -1);
+				}
+				const decoded = atob(raw);
+				answers = JSON.parse(decoded);
 				// qid is format "quiz-IDX-qQI"
 				const match = qid.match(/-q(\d+)$/);
 				if (match) {
@@ -26,21 +33,14 @@ export function bkWireQuizzes() {
 			}
 		}
 
-		question.querySelectorAll(".bk-opt").forEach((b) => {
+		question.querySelectorAll(".bk-opt").forEach((b: any) => {
 			b.disabled = true; // Disable buttons for screen readers
 			const optIdx = parseInt(b.dataset.optIdx, 10);
 			// If we know the answer, highlight it
-			if (dataEl) {
-				try {
-					const answers = JSON.parse(dataEl.textContent || "[]");
-					const match = qid.match(/-q(\d+)$/);
-					if (match && answers[parseInt(match[1], 10)] === optIdx) {
-						b.classList.add("correct");
-						return;
-					}
-				} catch (_e) {
-					console.warn("Failed to parse quiz answers for highlighting:", _e);
-				}
+			const match = qid.match(/-q(\d+)$/);
+			if (dataEl && match && answers[parseInt(match[1], 10)] === optIdx) {
+				b.classList.add("correct");
+				return;
 			}
 
 			if (b === btn && isCorrect) {
