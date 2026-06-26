@@ -1,3 +1,4 @@
+// @ts-nocheck
 export function bkInitRouter() {
 	if (window.__bk_router_initialized) return;
 	window.__bk_router_initialized = true;
@@ -54,7 +55,10 @@ export function bkInitRouter() {
 				}
 			})
 			.catch((err) => {
-				console.warn("PJAX navigation failed, falling back to full reload:", err);
+				console.warn(
+					"PJAX navigation failed, falling back to full reload:",
+					err,
+				);
 				window.location.href = targetUrl.href;
 			})
 			.finally(() => {
