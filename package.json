@@ -1,7 +1,7 @@
 {
   "name": "mr-md",
   "version": "3.0.0-beta.1",
-  "description": "Mr Markdown is an opinionated TypeScript SDK for building interactive learning pages.",
+  "description": "Mr Markdown is an opinionated Markdown framework for building interactive learning pages.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -41,7 +41,7 @@
   "author": "Chirayu Chhabra",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chirayuChhabra/blogkit.git"
+    "url": "git+https://github.com/chirayuChhabra/mr-md.git"
   },
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
@@ -55,6 +55,7 @@
     "boxen": "^8.0.1",
     "clipboardy": "^5.3.1",
     "consola": "^3.4.2",
+    "gray-matter": "^4.0.3",
     "highlight.js": "^11.11.1",
     "isomorphic-dompurify": "^3.17.0",
     "katex": "^0.17.0",
