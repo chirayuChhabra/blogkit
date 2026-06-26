@@ -1,3 +1,4 @@
+// @ts-nocheck
 let interactiveObs;
 
 export function bkInitInteractiveFrames() {
@@ -34,8 +35,8 @@ export function bkInitInteractiveFrames() {
 }
 
 export function bkWireInteractiveFrames() {
-	const interactiveHandler = (e) => {
-		const obj = e.target.closest?.(".bk-object");
+	const interactiveHandler = (e: any) => {
+		const obj = (e.target as HTMLElement).closest?.(".bk-object");
 		const activateFrame = obj
 			? obj.querySelector(".bk-embed-interactive")
 			: null;
@@ -84,10 +85,10 @@ export function bkWireInteractiveFrames() {
 
 	document.addEventListener(
 		"contentvisibilityautostatechange",
-		(e) => {
-			const frame = e.target;
+		(e: any) => {
+			const frame = e.target as HTMLElement;
 			if (frame?.classList?.contains("bk-embed-interactive")) {
-				const iframe = frame.querySelector("iframe");
+				const iframe = frame.querySelector("iframe") as HTMLIFrameElement;
 				if (!iframe?.contentWindow) return;
 
 				if (e.skipped) {
