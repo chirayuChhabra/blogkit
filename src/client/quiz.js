@@ -21,7 +21,9 @@ export function bkWireQuizzes() {
 					const optIdx = parseInt(btn.dataset.optIdx, 10);
 					isCorrect = answers[qi] === optIdx;
 				}
-			} catch (_e) {}
+			} catch (_e) {
+				console.warn("Failed to parse quiz answers from data element:", _e);
+			}
 		}
 
 		question.querySelectorAll(".bk-opt").forEach((b) => {
@@ -36,7 +38,9 @@ export function bkWireQuizzes() {
 						b.classList.add("correct");
 						return;
 					}
-				} catch (_e) {}
+				} catch (_e) {
+					console.warn("Failed to parse quiz answers for highlighting:", _e);
+				}
 			}
 
 			if (b === btn && isCorrect) {
