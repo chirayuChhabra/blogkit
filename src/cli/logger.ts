@@ -88,7 +88,10 @@ export const logger = {
 		try {
 			clipboardy.writeSync(localUrl);
 		} catch (err: any) {
-			console.warn("Failed to copy address to clipboard (may be headless environment):", err.message || err);
+			console.warn(
+				"Failed to copy address to clipboard (may be headless environment):",
+				err.message || err,
+			);
 		}
 
 		console.log(boxen(text, { padding: 1, margin: 1, borderColor: "green" }));
