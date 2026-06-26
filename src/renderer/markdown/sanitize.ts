@@ -1,9 +1,7 @@
-import hljs from "highlight.js";
 import DOMPurify from "isomorphic-dompurify";
-import { resolveAssetSrc } from "../utils.js";
-import { blockChrome } from "./chrome.js";
-import { marked } from "./math.js";
 import { logger } from "../../cli/logger.js";
+import { resolveAssetSrc } from "../utils.js";
+import { marked } from "./math.js";
 
 const domPurifyConfig = {
 	USE_PROFILES: { html: true, mathMl: true, svg: true },
@@ -35,12 +33,16 @@ export function mdToHtml(
 	}
 
 	const headings: { id: string; text: string; level: number }[] = [];
-	const idPrefix = Math.random().toString(36).substring(2, 6);
 	let headingIdCounter = 0;
 
 	const renderer = new marked.Renderer();
 	renderer.heading = ({ tokens, depth, text }) => {
-		const id = `bk-heading-${idPrefix}-${headingIdCounter++}`;
+		const plainText = text.replace(/<[^>]+>/g, "");
+		const slug = plainText
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, "-")
+			.replace(/(^-|-$)/g, "");
+		const id = `bk-${slug}-${headingIdCounter++}`;
 		if (depth === 2 || depth === 3) {
 			const plainText = text.replace(/<[^>]+>/g, "");
 			headings.push({ id, text: plainText, level: depth });
@@ -69,7 +71,9 @@ export function mdToHtml(
 			try {
 				resolvedHref = resolveAssetSrc(href, options);
 			} catch (e) {
-				logger.error(`resolveAssetSrc failed: ${e instanceof Error ? e.message : e}`);
+				logger.error(
+					`resolveAssetSrc failed: ${e instanceof Error ? e.message : e}`,
+				);
 			}
 		}
 		return `<img src="${resolvedHref}" alt="${text || ""}" title="${title || ""}" loading="lazy">`;
