@@ -1,6 +1,6 @@
+import { logger } from "../../cli/logger.js";
 import type { Block, BuildOptions } from "../../types.js";
 import type { NavItem } from "../utils.js";
-import { logger } from "../../cli/logger.js";
 import { renderAnimation } from "./animation.js";
 import { renderCallout } from "./callout.js";
 import { renderColumns } from "./columns.js";
@@ -41,14 +41,23 @@ export function renderBlockInner(
 		case "media":
 			return renderMedia(block, idx, options);
 		case "image":
-			return renderImage(block as any, idx, options);
+			return renderImage(
+				block as Extract<Block, { type: "image" }>,
+				idx,
+				options,
+			);
 		case "youtube":
 			return renderYouTube(block, idx, options);
 		case "columns":
-			return renderColumns(block as any, idx, options);
+			return renderColumns(
+				block as Extract<Block, { type: "columns" }>,
+				idx,
+				options,
+			);
 		case "quiz":
 			return renderQuiz(block, idx, options);
 		default:
+			logger.warn(`Unknown block type encountered: ${(block as any).type}`);
 			return { html: "" };
 	}
 }
@@ -77,9 +86,7 @@ export function renderBlock(
 		if (options.strict !== false) {
 			throw e;
 		}
-		logger.warn(
-			`  ⚠ Error rendering block ${idx + 1} (${block.type}): ${msg}`,
-		);
+		logger.warn(`  ⚠ Error rendering block ${idx + 1} (${block.type}): ${msg}`);
 		const errorHtml = `<div class="bk-callout bk-callout--warning"><div class="bk-callout-icon"></div><div class="bk-callout-content"><div class="bk-callout-label">Block Error (${escHtml(block.type)})</div><div class="bk-callout-body"><p>${escHtml(msg)}</p></div></div></div>`;
 		return { html: errorHtml };
 	}
