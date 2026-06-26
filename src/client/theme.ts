@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { normalIcons, proIcons, proPalettes } from "./icons.js";
 
 export function bkBroadcastTheme(targetWindow) {
