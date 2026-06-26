@@ -4,15 +4,16 @@ import { marked } from "marked";
 import * as path from "path";
 import {
 	extractYouTubeId,
-	inferMediaKind,
 	normalizeSimulationOptions,
 } from "../builder/utils.js";
 import { logger } from "../cli/logger.js";
 import type {
 	Block,
 	BuildOptions,
+	CalloutBlock,
 	Chapter,
 	ChapterMeta,
+	ColumnItem,
 	Lesson,
 	LessonMeta,
 } from "../types.js";
@@ -50,6 +51,7 @@ export function parseLesson(
 	const resolvedTitle =
 		parsed.data.title || h1Title || defaultTitle || "Untitled Lesson";
 	const meta: LessonMeta = {
+		...parsed.data,
 		title: resolvedTitle,
 		slug:
 			parsed.data.slug ||
@@ -58,7 +60,6 @@ export function parseLesson(
 				.replace(/[^a-z0-9]+/g, "-")
 				.replace(/(^-|-$)/g, ""),
 		contentBase: options.contentBase || callerDir,
-		...parsed.data,
 	};
 
 	const blocks: Block[] = [];
@@ -73,7 +74,7 @@ export function parseLesson(
 	};
 
 	let strippedTitle = false;
-	for (const token of tokens as any[]) {
+	for (const token of tokens) {
 		if (
 			token.type === "heading" &&
 			token.depth === 1 &&
@@ -118,7 +119,9 @@ export function parseLesson(
 							fileConfig = JSON.parse(fs.readFileSync(configPath, "utf-8"));
 						}
 					} catch (e: any) {
-						logger.warn(`Failed to load simulation config for ${src}: ${e.message || e}`);
+						logger.warn(
+							`Failed to load simulation config for ${src}: ${e.message || e}`,
+						);
 					}
 
 					const normalized = normalizeSimulationOptions(
@@ -174,7 +177,7 @@ export function parseLesson(
 			if (match) {
 				flushMarkdown();
 				blocks.push({
-					type: match[1].toLowerCase() as any,
+					type: match[1].toLowerCase() as CalloutBlock["type"],
 					src: match[2],
 				});
 				continue;
@@ -212,7 +215,7 @@ export function parseLesson(
 
 			if (isColumns) {
 				flushMarkdown();
-				const columns: any[] = [];
+				const columns: ColumnItem[] = [];
 				// Match both <column ... /> and <div class="column" ...>...</div>
 				const columnRegex =
 					/<(?:column|div)\b([^>]*?)(?:\/?>|>.*?<\/(?:column|div)>)/gs;
@@ -226,7 +229,7 @@ export function parseLesson(
 					) {
 						continue;
 					}
-					const col: any = {};
+					const col: ColumnItem = {};
 					if (colAttrs.markdown)
 						col.markdown = colAttrs.markdown.replace(/\\n/g, "\n");
 					if (colAttrs.code) col.code = colAttrs.code.replace(/\\n/g, "\n");
@@ -260,6 +263,7 @@ export function parseChapter(
 ): Chapter {
 	const parsed = matter(content);
 	const meta: ChapterMeta = {
+		...parsed.data,
 		title: parsed.data.title || "Untitled Chapter",
 		slug:
 			parsed.data.slug ||
@@ -267,7 +271,6 @@ export function parseChapter(
 				.toLowerCase()
 				.replace(/[^a-z0-9]+/g, "-")
 				.replace(/(^-|-$)/g, ""),
-		...parsed.data,
 	};
 
 	const tokens = marked.lexer(parsed.content);
