@@ -42,7 +42,7 @@ const blockMathExtension = {
 			undefined,
 			`<div class="bk-latex-block">${rendered}</div>`,
 			"violet",
-			false
+			false,
 		);
 	},
 };

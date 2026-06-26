@@ -11,12 +11,17 @@ export function renderMedia(
 	const src = resolveAssetSrc(block.src, options);
 
 	if (block.kind === "audio") {
-		const caption = [block.caption, block.credit ? `Credit: ${block.credit}` : ""].filter(Boolean).join(" ");
+		const caption = [
+			block.caption,
+			block.credit ? `Credit: ${block.credit}` : "",
+		]
+			.filter(Boolean)
+			.join(" ");
 		return {
 			html: `<div class="bk-audio-box">
 				<audio src="${escAttr(src)}" ${block.controls !== false ? "controls" : ""}></audio>
 				${caption ? `<div class="bk-audio-caption">${mdInline(caption)}</div>` : ""}
-			</div>`
+			</div>`,
 		};
 	}
 

@@ -25,7 +25,7 @@ export function renderColumns(
 													(column.src
 														? resolveContent(column.src, options, "md")
 														: ""),
-												options
+												options,
 											).html;
 								return `<div class="bk-column">${content}</div>`;
 							})

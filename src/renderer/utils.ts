@@ -3,6 +3,7 @@ import * as crypto from "crypto";
 import * as fs from "fs";
 import * as path from "path";
 import type { BuildOptions } from "../types.js";
+import { logger } from "../cli/logger.js";
 
 export interface NavItem {
 	id: string;
@@ -78,7 +79,7 @@ function resolveContent(
 				if (out.status === 0) {
 					return out.stdout.toString("utf-8");
 				} else {
-					console.warn(
+					logger.warn(
 						`\n  ⚠ Bun build failed for ${filePath}:\n${out.stderr.toString("utf-8")}`,
 					);
 					// fallback to reading raw
@@ -151,7 +152,8 @@ function resolveAssetSrc(src: string, options: BuildOptions): string {
 	const relPathForHash = path.relative(
 		options.contentBase ?? process.cwd(),
 		filePath,
-	);
+	).replace(/\\/g, "/"); // Normalize to POSIX slashes for deterministic cross-platform hashes
+
 	const hash = crypto
 		.createHash("md5")
 		.update(relPathForHash)

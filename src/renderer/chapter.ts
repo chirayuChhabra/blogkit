@@ -1,6 +1,6 @@
 import type { BuildOptions, Chapter } from "../types.js";
 import { escAttr, escHtml } from "./blocks.js";
-import { chapterStyles, renderChapterTimeline } from "./components/timeline.js";
+import { renderChapterTimeline } from "./components/timeline.js";
 import { renderLayout } from "./html.js";
 
 export function renderChapter(
@@ -27,13 +27,11 @@ export function renderChapter(
     </article>
 	`;
 
-	const headHtml = `<style>${chapterStyles}</style>`;
-
 	return renderLayout(
 		chapter.meta.title,
 		chapter.meta.description,
 		navHtml,
 		contentHtml,
-		{ ...opts, head: (opts.head ?? "") + headHtml },
+		opts,
 	);
 }

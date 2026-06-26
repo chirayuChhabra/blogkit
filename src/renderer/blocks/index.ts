@@ -1,5 +1,6 @@
 import type { Block, BuildOptions } from "../../types.js";
 import type { NavItem } from "../utils.js";
+import { logger } from "../../cli/logger.js";
 import { renderAnimation } from "./animation.js";
 import { renderCallout } from "./callout.js";
 import { renderColumns } from "./columns.js";
@@ -73,7 +74,10 @@ export function renderBlock(
 		return result;
 	} catch (e) {
 		const msg = e instanceof Error ? e.message : String(e);
-		console.warn(
+		if (options.strict !== false) {
+			throw e;
+		}
+		logger.warn(
 			`  ⚠ Error rendering block ${idx + 1} (${block.type}): ${msg}`,
 		);
 		const errorHtml = `<div class="bk-callout bk-callout--warning"><div class="bk-callout-icon"></div><div class="bk-callout-content"><div class="bk-callout-label">Block Error (${escHtml(block.type)})</div><div class="bk-callout-body"><p>${escHtml(msg)}</p></div></div></div>`;

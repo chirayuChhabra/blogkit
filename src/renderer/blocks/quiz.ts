@@ -1,14 +1,21 @@
+import { parseQuizMarkdown } from "../../parser/quiz.js";
 import type {
 	BuildOptions,
 	QuizBlock,
 	QuizFile,
 	QuizQuestion,
 } from "../../types.js";
+import { logger } from "../../cli/logger.js";
 import { escapeScriptJson, mdInline, mdToHtml } from "../markdown/index.js";
 import { type NavItem, resolveContent } from "../utils.js";
 import { escHtml } from "./utils.js";
 
-function renderQuestion(q: QuizQuestion, quizId: string, qi: number, options: BuildOptions): string {
+function renderQuestion(
+	q: QuizQuestion,
+	quizId: string,
+	qi: number,
+	options: BuildOptions,
+): string {
 	const qid = `${quizId}-q${qi}`;
 	const optStrings = q.options
 		.map(
@@ -37,21 +44,46 @@ export function renderQuiz(
 	options: BuildOptions,
 ): { html: string; navItems?: NavItem[] } {
 	let quiz: QuizFile = { questions: [] };
-	const rawJson = resolveContent(block.src, options, "json");
+	const isMd = block.src.endsWith(".quiz.md");
+	const rawContent = resolveContent(block.src, options, isMd ? "text" : "json");
 	try {
-		const trimmed = rawJson.trim();
-		if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) {
-			throw new Error("Quiz file not found or invalid JSON format");
+		const trimmed = rawContent.trim();
+		if (isMd) {
+			quiz = parseQuizMarkdown(trimmed);
+		} else {
+			if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) {
+				throw new Error("Quiz file not found or invalid JSON format");
+			}
+			quiz = JSON.parse(trimmed);
 		}
-		quiz = JSON.parse(trimmed);
+
+		if (!quiz || typeof quiz !== "object" || !Array.isArray(quiz.questions)) {
+			throw new Error("Quiz must contain a 'questions' array");
+		}
+		for (let i = 0; i < quiz.questions.length; i++) {
+			const q = quiz.questions[i];
+			if (!q.q || typeof q.q !== "string") {
+				throw new Error(`Question ${i + 1} is missing a valid 'q' string`);
+			}
+			if (!Array.isArray(q.options) || q.options.length < 2) {
+				throw new Error(`Question ${i + 1} must have at least 2 options`);
+			}
+			if (
+				typeof q.answer !== "number" ||
+				q.answer < 0 ||
+				q.answer >= q.options.length
+			) {
+				throw new Error(`Question ${i + 1} has an invalid answer index`);
+			}
+		}
 	} catch (e) {
 		const msg = e instanceof Error ? e.message : String(e);
 		if (options.strict !== false) {
-			throw new Error(`Invalid Quiz JSON for block ${idx + 1}: ${msg}`);
+			throw new Error(`Invalid Quiz for block ${idx + 1}: ${msg}`);
 		}
-		console.warn(`  ⚠ Invalid Quiz JSON for block ${idx + 1}:`, e);
+		logger.warn(`  ⚠ Invalid Quiz for block ${idx + 1}: ${e instanceof Error ? e.message : e}`);
 		return {
-			html: `<div class="bk-callout bk-callout--warning"><div class="bk-callout-icon"></div><div class="bk-callout-content"><div class="bk-callout-label">Quiz JSON Error</div><div class="bk-callout-body"><p>${escHtml(msg)}</p></div></div></div>`,
+			html: `<div class="bk-callout bk-callout--warning"><div class="bk-callout-icon"></div><div class="bk-callout-content"><div class="bk-callout-label">Quiz Error</div><div class="bk-callout-body"><p>${escHtml(msg)}</p></div></div></div>`,
 		};
 	}
 

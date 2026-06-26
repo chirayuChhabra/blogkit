@@ -1,8 +1,9 @@
-import DOMPurify from "isomorphic-dompurify";
 import hljs from "highlight.js";
+import DOMPurify from "isomorphic-dompurify";
+import { resolveAssetSrc } from "../utils.js";
 import { blockChrome } from "./chrome.js";
 import { marked } from "./math.js";
-import { resolveAssetSrc } from "../utils.js";
+import { logger } from "../../cli/logger.js";
 
 const domPurifyConfig = {
 	USE_PROFILES: { html: true, mathMl: true, svg: true },
@@ -16,7 +17,11 @@ export function sanitizeHtml(htmlRaw: string): string {
 
 import type { BuildOptions } from "../../types.js";
 
-export function mdToHtml(md: string, options?: BuildOptions, callerDir?: string): {
+export function mdToHtml(
+	md: string,
+	options?: BuildOptions,
+	callerDir?: string,
+): {
 	html: string;
 	title: string;
 	headings: { id: string; text: string; level: number }[];
@@ -64,19 +69,22 @@ export function mdToHtml(md: string, options?: BuildOptions, callerDir?: string)
 			try {
 				resolvedHref = resolveAssetSrc(href, options);
 			} catch (e) {
-				console.error("resolveAssetSrc failed:", e);
+				logger.error(`resolveAssetSrc failed: ${e instanceof Error ? e.message : e}`);
 			}
 		}
 		return `<img src="${resolvedHref}" alt="${text || ""}" title="${title || ""}" loading="lazy">`;
 	};
 
-	let processedMd = md.replace(/\|(\s*):(center|left|right):(\s*)(?=\|)/gi, (match, p1, p2, p3) => {
-		const lower = p2.toLowerCase();
-		if (lower === 'center') return `|${p1}:-:${p3}`;
-		if (lower === 'left') return `|${p1}:---${p3}`;
-		if (lower === 'right') return `|${p1}---:${p3}`;
-		return match;
-	});
+	const processedMd = md.replace(
+		/\|(\s*):(center|left|right):(\s*)(?=\|)/gi,
+		(match, p1, p2, p3) => {
+			const lower = p2.toLowerCase();
+			if (lower === "center") return `|${p1}:-:${p3}`;
+			if (lower === "left") return `|${p1}:---${p3}`;
+			if (lower === "right") return `|${p1}---:${p3}`;
+			return match;
+		},
+	);
 
 	const htmlRaw = marked.parse(processedMd, { renderer }) as string;
 	const html = sanitizeHtml(htmlRaw);
