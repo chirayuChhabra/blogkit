@@ -1,3 +1,4 @@
+import { logger } from "../../cli/logger.js";
 import { parseQuizMarkdown } from "../../parser/quiz.js";
 import type {
 	BuildOptions,
@@ -5,7 +6,6 @@ import type {
 	QuizFile,
 	QuizQuestion,
 } from "../../types.js";
-import { logger } from "../../cli/logger.js";
 import { escapeScriptJson, mdInline, mdToHtml } from "../markdown/index.js";
 import { type NavItem, resolveContent } from "../utils.js";
 import { escHtml } from "./utils.js";
@@ -81,7 +81,9 @@ export function renderQuiz(
 		if (options.strict !== false) {
 			throw new Error(`Invalid Quiz for block ${idx + 1}: ${msg}`);
 		}
-		logger.warn(`  ⚠ Invalid Quiz for block ${idx + 1}: ${e instanceof Error ? e.message : e}`);
+		logger.warn(
+			`  ⚠ Invalid Quiz for block ${idx + 1}: ${e instanceof Error ? e.message : e}`,
+		);
 		return {
 			html: `<div class="bk-callout bk-callout--warning"><div class="bk-callout-icon"></div><div class="bk-callout-content"><div class="bk-callout-label">Quiz Error</div><div class="bk-callout-body"><p>${escHtml(msg)}</p></div></div></div>`,
 		};
@@ -96,7 +98,7 @@ export function renderQuiz(
           <div class="bk-quiz-body">
             ${quiz.questions.map((q, qi) => renderQuestion(q, `quiz-${idx}`, qi, options)).join("\n")}
           </div>
-          <script type="application/json" class="bk-quiz-data">${escapeScriptJson(quiz.questions.map((q) => q.answer))}</script>
+          <script type="application/json" class="bk-quiz-data">"${Buffer.from(JSON.stringify(quiz.questions.map((q) => q.answer))).toString("base64")}"</script>
         </div>`,
 		navItems: [
 			{
