@@ -25,8 +25,6 @@ export function validateLesson(
 			);
 		}
 
-
-
 		if (
 			block.type === "simulation" &&
 			block.controls === "observe" &&

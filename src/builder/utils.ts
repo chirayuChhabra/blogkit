@@ -156,7 +156,9 @@ export function inferMediaKind(src: string): MediaBlock["kind"] {
 	const ext = path.extname(src).toLowerCase();
 	if ([".mp4", ".webm", ".mov"].includes(ext)) return "video";
 	if ([".mp3", ".wav", ".ogg", ".m4a"].includes(ext)) return "audio";
-	throw new Error(`Unsupported media type: ${ext}. For images, use standard Markdown syntax: ![alt text](${src})`);
+	throw new Error(
+		`Unsupported media type: ${ext}. For images, use standard Markdown syntax: ![alt text](${src})`,
+	);
 }
 
 export function extractYouTubeId(idOrUrl: string): string {

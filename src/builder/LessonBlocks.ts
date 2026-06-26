@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import { logger } from "../cli/logger.js";
 import type {
 	AnimationBlock,
 	AnimationOptions,
@@ -114,10 +115,6 @@ export abstract class LessonBlocks {
 		return this;
 	}
 
-
-
-
-
 	columns(columns: ColumnItem[], opts: ColumnsOptions = {}): this {
 		this.blocks.push({ type: "columns", columns, ...opts } as ColumnsBlock);
 		return this;
@@ -132,8 +129,8 @@ export abstract class LessonBlocks {
 			if (fs.existsSync(configPath)) {
 				return JSON.parse(fs.readFileSync(configPath, "utf-8"));
 			}
-		} catch {
-			// ignore
+		} catch (err: any) {
+			logger.warn(`Failed to load simulation config for ${src}: ${err.message || err}`);
 		}
 		return null;
 	}
@@ -186,7 +183,10 @@ export abstract class LessonBlocks {
 		return this;
 	}
 
-	image(src: string, opts: { caption?: string; label?: string; accent?: string } = {}): this {
+	image(
+		src: string,
+		opts: { caption?: string; label?: string; accent?: string } = {},
+	): this {
 		this.blocks.push({
 			type: "image",
 			src,
