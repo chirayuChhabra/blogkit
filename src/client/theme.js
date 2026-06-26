@@ -55,7 +55,9 @@ export function bkWireThemeControls() {
 	function applyThemeSetting(val) {
 		let resolved = val;
 		if (val === "auto") {
-			resolved = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+			resolved = window.matchMedia("(prefers-color-scheme: dark)").matches
+				? "dark"
+				: "light";
 		}
 		root.setAttribute("data-theme", resolved);
 	}
@@ -191,7 +193,10 @@ if (typeof window !== "undefined") {
 		.addEventListener("change", () => {
 			const currentSetting = localStorage.getItem("bk-theme") || "auto";
 			if (currentSetting === "auto") {
-				const resolved = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+				const resolved = window.matchMedia("(prefers-color-scheme: dark)")
+					.matches
+					? "dark"
+					: "light";
 				document.documentElement.setAttribute("data-theme", resolved);
 				bkBroadcastTheme();
 			}

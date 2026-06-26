@@ -1,16 +1,19 @@
-import { bkWireInteractiveFrames, bkInitInteractiveFrames } from "./interactive.js";
+import {
+	bkInitInteractiveFrames,
+	bkWireInteractiveFrames,
+} from "./interactive.js";
 import { bkWireQuizzes } from "./quiz.js";
-import { bkWireSimControls, bkInitSimControls } from "./simulation.js";
+import { bkInitRouter } from "./router.js";
+import { bkInitSimControls, bkWireSimControls } from "./simulation.js";
 import { bkWireThemeControls } from "./theme.js";
 import {
-	bkWireCodeCopy,
 	bkInitCodeCopy,
+	bkWireCodeCopy,
 	bkWireLastLessonTracking,
 	bkWireMaximizeControls,
 	bkWireScrollSpy,
 	bkWireSidebarToggle,
 } from "./ui.js";
-import { bkInitRouter } from "./router.js";
 
 function wireOnce() {
 	if (window.__bk_wired_once) return;

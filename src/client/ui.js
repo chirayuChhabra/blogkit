@@ -52,7 +52,7 @@ export function bkInitCodeCopy() {
 		}
 
 		// Prevent adding multiple buttons if initialized multiple times
-		if (container.querySelector('.bk-copy-btn')) return;
+		if (container.querySelector(".bk-copy-btn")) return;
 
 		const btn = document.createElement("button");
 		btn.className = "bk-copy-btn";
@@ -131,6 +131,21 @@ export function bkWireScrollSpy() {
 			pill.style.top = `${targetTop}px`;
 			pill.style.height = `${targetHeight}px`;
 			pill.style.opacity = "1";
+
+			// Auto-scroll sidebar if active item is out of view
+			const sidebar = document.querySelector(".bk-sidebar");
+			if (sidebar) {
+				const linkRect = sections[idx].link.getBoundingClientRect();
+				const sidebarRect = sidebar.getBoundingClientRect();
+				// Use a small buffer to avoid sticking exactly to the edge
+				const buffer = 32;
+
+				if (linkRect.bottom > sidebarRect.bottom) {
+					sidebar.scrollTop += linkRect.bottom - sidebarRect.bottom + buffer;
+				} else if (linkRect.top < sidebarRect.top) {
+					sidebar.scrollTop -= sidebarRect.top - linkRect.top + buffer;
+				}
+			}
 		}
 	}
 
@@ -139,10 +154,37 @@ export function bkWireScrollSpy() {
 		for (let i = 0; i < sections.length; i++) {
 			if (sections[i].isAbove) activeIdx = i;
 		}
+
+		// If we are at the absolute bottom of the scrolling container, highlight the last element
+		const container = mainScrollContainer || document.documentElement;
+		const scrollPos = mainScrollContainer
+			? mainScrollContainer.scrollTop
+			: window.scrollY;
+		const scrollHeight = container.scrollHeight;
+		const clientHeight = mainScrollContainer
+			? mainScrollContainer.clientHeight
+			: window.innerHeight;
+
+		if (scrollHeight - scrollPos <= clientHeight + 5) {
+			activeIdx = sections.length - 1;
+		}
+
 		setActive(activeIdx);
 	}
 
 	const mainScrollContainer = document.querySelector(".bk-main");
+
+	// Add a scroll listener to detect when we hit the absolute bottom
+	const scrollTarget = mainScrollContainer || window;
+	scrollTarget.addEventListener(
+		"scroll",
+		() => {
+			// Only need to re-evaluate if we might be at the bottom, or just left the bottom
+			updateActive();
+		},
+		{ passive: true },
+	);
+
 	const sectionObs = new IntersectionObserver(
 		(entries) => {
 			for (const entry of entries) {
