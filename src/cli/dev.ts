@@ -103,7 +103,7 @@ export async function runDev(args: string[]) {
 
 	let timeout: NodeJS.Timeout;
 	fs.watch(contentBase, { recursive: true }, (_eventType, filename) => {
-		if (!filename || !filename.endsWith(".md")) {
+		if (!filename || !/\.(md|mdx|js|ts|jsx|tsx|json|css)$/i.test(filename)) {
 			return;
 		}
 
