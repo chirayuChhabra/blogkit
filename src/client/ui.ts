@@ -21,17 +21,15 @@ export function bkWireMaximizeControls() {
 }
 
 export function bkWireSidebarToggle() {
-	const shell = document.querySelector(".bk-shell");
-	const collapseBtn = document.getElementById("bk-sidebar-collapse");
-	const expandBtn = document.getElementById("bk-sidebar-expand");
-	if (collapseBtn)
-		collapseBtn.addEventListener("click", () =>
-			shell?.setAttribute("data-collapsed", "true"),
-		);
-	if (expandBtn)
-		expandBtn.addEventListener("click", () =>
-			shell?.removeAttribute("data-collapsed"),
-		);
+	document.addEventListener("click", (e) => {
+		const target = e.target as HTMLElement;
+		const shell = document.querySelector(".bk-shell");
+		if (target.closest("#bk-sidebar-collapse")) {
+			shell?.setAttribute("data-collapsed", "true");
+		} else if (target.closest("#bk-sidebar-expand")) {
+			shell?.removeAttribute("data-collapsed");
+		}
+	});
 }
 
 export function bkInitCodeCopy() {
@@ -94,7 +92,20 @@ export function bkWireCodeCopy() {
 	});
 }
 
+let activeScrollSpyObs: IntersectionObserver | null = null;
+let activeScrollSpyListener: EventListener | null = null;
+let activeScrollSpyTarget: EventTarget | null = null;
+
 export function bkWireScrollSpy() {
+	if (activeScrollSpyObs) {
+		activeScrollSpyObs.disconnect();
+		activeScrollSpyObs = null;
+	}
+	if (activeScrollSpyListener && activeScrollSpyTarget) {
+		activeScrollSpyTarget.removeEventListener("scroll", activeScrollSpyListener);
+		activeScrollSpyListener = null;
+		activeScrollSpyTarget = null;
+	}
 	const navLinks = document.querySelectorAll(".bk-nav-item");
 	if (!navLinks.length) return;
 
@@ -181,17 +192,13 @@ export function bkWireScrollSpy() {
 	const mainScrollContainer = document.querySelector(".bk-main");
 
 	// Add a scroll listener to detect when we hit the absolute bottom
-	const scrollTarget = mainScrollContainer || window;
-	scrollTarget.addEventListener(
-		"scroll",
-		() => {
-			// Only need to re-evaluate if we might be at the bottom, or just left the bottom
-			updateActive();
-		},
-		{ passive: true },
-	);
+	activeScrollSpyListener = () => {
+		updateActive();
+	};
+	activeScrollSpyTarget = mainScrollContainer || window;
+	activeScrollSpyTarget.addEventListener("scroll", activeScrollSpyListener, { passive: true });
 
-	const sectionObs = new IntersectionObserver(
+	activeScrollSpyObs = new IntersectionObserver(
 		(entries) => {
 			for (const entry of entries) {
 				const section = sections.find((s) => s.el === entry.target);
@@ -213,7 +220,7 @@ export function bkWireScrollSpy() {
 	);
 
 	sections.forEach((s) => {
-		sectionObs.observe(s.el);
+		activeScrollSpyObs?.observe(s.el);
 	});
 	setActive(0);
 }
