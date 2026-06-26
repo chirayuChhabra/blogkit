@@ -51,7 +51,18 @@ ${opts.head ?? ""}
 ${opts.standalone === false ? `<link rel="stylesheet" href="assets/theme.css?v=${Date.now()}">` : `<style>\n${safeFont ? `:root { --font-sans: ${safeFont}, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }` : ""}\n${pageCSS()}\n</style>`}
 </head>
 <body class="bk-layout-${layout} bk-density-${density} bk-tone-${tone}">
-<div class="bk-shell">
+<div class="bk-shell" data-palette="${palette}" data-ui="${ui}" ${schemeAttr}>
+<script>
+  (function() {
+    var shell = document.querySelector(".bk-shell");
+    var root = document.documentElement;
+    if(shell && root) {
+      if(root.hasAttribute("data-theme")) shell.setAttribute("data-theme", root.getAttribute("data-theme"));
+      if(root.hasAttribute("data-palette")) shell.setAttribute("data-palette", root.getAttribute("data-palette"));
+      if(root.hasAttribute("data-ui")) shell.setAttribute("data-ui", root.getAttribute("data-ui"));
+    }
+  })();
+</script>
   <aside class="bk-sidebar">
     <div class="bk-sidebar-inner">
       <div class="bk-sidebar-header">

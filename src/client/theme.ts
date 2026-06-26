@@ -61,6 +61,8 @@ export function bkWireThemeControls() {
 				: "light";
 		}
 		root.setAttribute("data-theme", resolved);
+		const shell = document.querySelector(".bk-shell");
+		if (shell) shell.setAttribute("data-theme", resolved);
 	}
 
 	function updatePaletteBtn(val) {
@@ -92,14 +94,17 @@ export function bkWireThemeControls() {
 		updateThemeBtn(savedTheme);
 		applyThemeSetting(savedTheme);
 	}
+	const shell = document.querySelector(".bk-shell");
 	if (savedPalette) {
 		const normalizedPalette = savedPalette === "green" ? "field" : savedPalette;
 		updatePaletteBtn(normalizedPalette);
 		root.setAttribute("data-palette", normalizedPalette);
+		if (shell) shell.setAttribute("data-palette", normalizedPalette);
 	}
 	if (savedUi) {
 		updateUiBtn(savedUi);
 		root.setAttribute("data-ui", savedUi);
+		if (shell) shell.setAttribute("data-ui", savedUi);
 	}
 
 	button &&
@@ -155,6 +160,8 @@ export function bkWireThemeControls() {
 			localStorage.setItem("bk-palette", newVal);
 			updatePaletteBtn(newVal);
 			root.setAttribute("data-palette", newVal);
+			const shell = document.querySelector(".bk-shell");
+			if (shell) shell.setAttribute("data-palette", newVal);
 			bkBroadcastTheme();
 		});
 	});
@@ -165,6 +172,8 @@ export function bkWireThemeControls() {
 			localStorage.setItem("bk-ui", val);
 			updateUiBtn(val);
 			root.setAttribute("data-ui", val);
+			const shell = document.querySelector(".bk-shell");
+			if (shell) shell.setAttribute("data-ui", val);
 			bkBroadcastTheme();
 		});
 	});
@@ -199,6 +208,8 @@ if (typeof window !== "undefined") {
 					? "dark"
 					: "light";
 				document.documentElement.setAttribute("data-theme", resolved);
+				const shell = document.querySelector(".bk-shell");
+				if (shell) shell.setAttribute("data-theme", resolved);
 				bkBroadcastTheme();
 			}
 		});
