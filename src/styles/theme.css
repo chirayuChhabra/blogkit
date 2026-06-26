@@ -1777,7 +1777,7 @@ body.bk-is-scrolling .bk-embed-interactive.is-interactive iframe {
 /* ─── UI THEMES ───────────────────────────────────────────────────────────── */
 
 /* --- NEO BRUTALIST --- */
-html[data-ui="neo"] {
+html[data-ui="neo"], .bk-shell[data-ui="neo"] {
 	--font-sans: "Archivo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 	--font-display: "Syne", Georgia, serif;
 	--font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -1877,10 +1877,12 @@ html[data-ui="neo"][data-theme="dark"] .bk-lesson-card:hover {
 
 
 /* --- PLAYFUL --- */
-html[data-ui="playful"] {
+html[data-ui="playful"], .bk-shell[data-ui="playful"] {
 	--font-sans: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 	--font-display: "Nunito", sans-serif;
 	--font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+	--radius: 16px;
 }
 
 html[data-ui="playful"] .bk-callout,
