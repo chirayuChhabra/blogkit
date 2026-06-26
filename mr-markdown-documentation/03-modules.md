@@ -113,14 +113,14 @@ If the URL ends in `.mp4`, `.webm`, or `.mov`, it renders as a video player. For
 **Syntax:**
 ```markdown
 ![Demo Video](https://www.w3schools.com/html/mov_bbb.mp4)
-![Background Track](https://www.w3schools.com/html/horse.mp3)
+![Horse Sound Effect](https://www.w3schools.com/html/horse.mp3)
 ```
 
 **Result:**
 
 ![Demo Video](https://www.w3schools.com/html/mov_bbb.mp4)
 
-![Background Track](https://www.w3schools.com/html/horse.mp3)
+![Horse Sound Effect](https://www.w3schools.com/html/horse.mp3)
 
 ### YouTube
 If the URL contains `youtube.com` or `youtu.be`, it embeds a YouTube player:
