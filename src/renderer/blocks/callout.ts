@@ -12,6 +12,7 @@ export function renderCallout(
 		warning: "Warning",
 		tip: "Tip",
 		note: "Note",
+		caution: "Caution",
 	};
 	const label = variantMap[block.type];
 	const md = resolveContent(block.src, options, "md");
