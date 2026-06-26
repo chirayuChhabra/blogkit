@@ -4,31 +4,32 @@ Mr Markdown is an opinionated TypeScript SDK for building interactive learning p
 
 ## Documentation
 
-The documentation has been split into dedicated guides. Start with the Quick Start, and then explore the core features:
+The documentation has been consolidated into a modern guide:
 
-1. [Quick Start](./docs/quickstart.md) - Learn how to build your first lesson.
-2. [Core Blocks](./docs/core-blocks.md) - An overview of the API and layout components (markdown, math, media, callouts).
-3. [Simulations & Interactivity](./docs/simulations.md) - The definitive guide for building and integrating sandboxed JavaScript simulations, including zero-config companion files.
-4. [Themes and Styling](./docs/themes-and-styling.md) - Learn how to customize fonts, colors, and hook into Dark Mode.
-5. [Quizzes](./docs/quizzes.md) - Learn the JSON format for injecting interactive quizzes.
-6. [Production Checks](./docs/production-checks.md) - Understand Mr Markdown's strict mode and quality enforcement.
+1. [Showcase](./docs/01-showcase.md) - See what Mr Markdown can do.
+2. [Quickstart](./docs/02-quickstart.md) - Learn how to initialize the SDK and use the CLI.
+3. [Modules & Features](./docs/03-modules.md) - Learn how to write rich markdown content.
+4. [Creating Quizzes](./docs/04-creating-quizzes.md) - Learn how to define interactive quizzes via Markdown.
+5. [Creating Simulations](./docs/05-creating-simulations.md) - Learn how to build and embed sandboxed JS simulations.
 
 ## Quick Start (CLI)
 
-The easiest way to use Mr Markdown is to install it into your project folder and use `bunx` to run its commands:
+The easiest way to use Mr Markdown is to run the dev server on a Markdown file.
+
+First, create a file with some content (or use your own existing `lesson.md` file):
 
 ```bash
-mkdir my-course && cd my-course
-bun add mr-md
-
-# Initialize the project structure
-bunx md init
-
-# Generate a chapter and lesson
-bunx md g ch physics
-cd chapters/01-physics
-bunx md g lesson intro
-
-# Start the dev server
-bunx md dev
+echo "# Hello World" > lesson.md
 ```
+
+Then, start the development server:
+
+```bash
+bunx mr-md dev lesson.md
+```
+
+Or, for a full chapter, put your `.md` files in a folder, `cd` into it, and run:
+```bash
+bunx mr-md dev .
+```
+
