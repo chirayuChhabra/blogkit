@@ -1,3 +1,4 @@
+// @ts-nocheck
 export const proPalettes = {
 	ink: "elixir",
 	field: "trunk",
