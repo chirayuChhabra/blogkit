@@ -1,80 +1,138 @@
-import { test, expect, beforeAll } from "bun:test";
-import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
+import { test, expect, beforeAll, afterAll } from "bun:test";
+import { mkdtemp, rm, writeFile, mkdir } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { $ } from "bun";
+import puppeteer, { Browser, Page } from "puppeteer";
 
 const CLI_PATH = join(process.cwd(), "dist", "cli.js");
 let tempDir: string;
+let browser: Browser;
+let devProc: any;
+const PORT = "3005";
 
 beforeAll(async () => {
   tempDir = await mkdtemp(join(tmpdir(), "mr-md-e2e-"));
-  
-  // Scaffold manually since init is removed
-  await mkdir(join(tempDir, "chapters", "01-first-chapter", "lessons"), { recursive: true });
-  await mkdir(join(tempDir, "chapters", "01-first-chapter", "sims"), { recursive: true });
-  
-  await writeFile(
-    join(tempDir, "chapters", "01-first-chapter", "chapter.md"),
-    `---
-title: "First Chapter"
-description: "A test chapter"
----
-
-# Hello World
-<LessonCard path="./lessons/01-first-lesson.md" />
-`
-  );
-  
-  await writeFile(
-    join(tempDir, "chapters", "01-first-chapter", "lessons", "01-first-lesson.md"),
-    `---
-title: "First Lesson"
----
-Welcome to your first lesson!
-<Simulation path="../sims/example.js" />
-`
-  );
-  
   await writeFile(
     join(tempDir, "package.json"),
     JSON.stringify({ name: "e2e-test" })
   );
+  
+  // Launch puppeteer in headless mode
+  browser = await puppeteer.launch({ headless: true });
 });
 
-// Cleanup is deliberately omitted to prevent 5s hook timeout on slow rm. Temp files are handled by OS.
+afterAll(async () => {
+  if (browser) await browser.close();
+  if (devProc) devProc.kill();
+  if (tempDir) {
+    await rm(tempDir, { recursive: true, force: true }).catch(() => {});
+  }
+});
 
-test("E2E: Should start dev server and serve files", async () => {
-  const devProc = Bun.spawn(["bun", "run", CLI_PATH, "dev", "chapters/01-first-chapter"], { cwd: tempDir, env: { ...process.env, PORT: "3005" }, stdout: "inherit", stderr: "inherit" });
+test("E2E Workflow: From blank canvas to full project", async () => {
+  // 1. Generate a Chapter
+  const generateChapterResult = await $`bun run ${CLI_PATH} generate "first-chapter"`.cwd(tempDir).quiet();
+  expect(generateChapterResult.exitCode).toBe(0);
+  expect(existsSync(join(tempDir, "01-first-chapter.md"))).toBe(true);
+
+  // 2. Generate a Lesson inside a lessons directory
+  const lessonsDir = join(tempDir, "lessons");
+  await mkdir(lessonsDir, { recursive: true });
+  const generateLessonResult = await $`bun run ${CLI_PATH} generate "first-lesson"`.cwd(lessonsDir).quiet();
+  expect(generateLessonResult.exitCode).toBe(0);
+  expect(existsSync(join(lessonsDir, "01-first-lesson.md"))).toBe(true);
+
+  // 3. Update the chapter to link to the lesson
+  await writeFile(
+    join(tempDir, "01-first-chapter.md"),
+    `---
+index: 1
+title: "First Chapter"
+type: "chapter"
+---
+
+# Welcome to the Chapter
+Check out the first lesson:
+- [First Lesson](./lessons/01-first-lesson.md)
+`
+  );
+
+  // 4. Update the lesson with some rich markdown content
+  await writeFile(
+    join(lessonsDir, "01-first-lesson.md"),
+    `---
+index: 1
+title: "First Lesson"
+---
+
+# Welcome to your first lesson!
+
+This tests custom v3 markdown parsing capabilities.
+
+> [!NOTE]
+> This is an e2e test note.
+
+<columns label="Layout Test">
+  <column markdown="Column 1 content" />
+  <column markdown="Column 2 content" />
+</columns>
+`
+  );
+
+  // 5. Build the project
+  const buildResult = await $`bun run ${CLI_PATH} build 01-first-chapter.md`.cwd(tempDir).quiet();
+  expect(buildResult.exitCode).toBe(0);
   
-  let isReady = false;
-  let html = "";
-  let lastError = null;
+  // Verify out directory and HTML files exist
+  const outDir = join(tempDir, "out");
+  expect(existsSync(outDir)).toBe(true);
+  expect(existsSync(join(outDir, "first-lesson.html"))).toBe(true);
 
+  // 6. Start Dev Server
+  devProc = Bun.spawn(["bun", "run", CLI_PATH, "dev", "01-first-chapter.md"], {
+    cwd: tempDir,
+    env: { ...process.env, PORT },
+  });
+
+  // Wait for dev server to be ready
+  let isReady = false;
   for (let i = 0; i < 20; i++) {
     await new Promise((r) => setTimeout(r, 500));
     try {
-      const res = await fetch("http://localhost:3005");
+      const res = await fetch(`http://localhost:${PORT}`);
       if (res.ok) {
         isReady = true;
-        html = await res.text();
         break;
-      } else {
-        lastError = `Status: ${res.status}`;
       }
-    } catch (e: any) {
-      lastError = e.message;
+    } catch (e) {
+      // ignore
     }
   }
+  expect(isReady).toBe(true);
 
-  try {
-    if (!isReady) console.error("Fetch failed with:", lastError);
-    expect(isReady).toBe(true);
-    expect(html).toContain("<html");
-    
-    const bunFs = require("fs");
-    expect(bunFs.existsSync(join(tempDir, "chapters", "01-first-chapter", "out")) || bunFs.existsSync(join(tempDir, "out"))).toBe(true);
-  } finally {
-    devProc.kill();
+  // 7. Use Puppeteer to verify rendering
+  const page = await browser.newPage();
+  
+  // Navigate to the built lesson page (the server serves it statically from /out/ or directly via JIT)
+  await page.goto(`http://localhost:${PORT}/first-lesson.html`, { waitUntil: 'networkidle0' });
+
+  const pageContent = await page.content();
+  expect(pageContent).toContain("Welcome to your first lesson!");
+
+  // Verify the Callout (Note)
+  const noteText = await page.$eval('.bk-callout, .callout, blockquote', el => el.textContent).catch(() => null);
+  expect(noteText).toBeTruthy();
+  if (noteText) {
+    expect(noteText).toContain("This is an e2e test note.");
   }
-}, 60000);
+
+  // Verify columns rendered
+  const columnsText = await page.$$eval('.columns, .column-container, [data-label="Layout Test"]', els => els.map(el => el.textContent).join(' ')).catch(() => "");
+  // Depending on how renderer implements <columns>, just checking if text exists on page is a safe fallback
+  const bodyText = await page.$eval('body', el => el.textContent);
+  expect(bodyText).toContain("Column 1 content");
+  expect(bodyText).toContain("Column 2 content");
+
+}, 60000); // 60 seconds timeout
