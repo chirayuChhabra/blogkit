@@ -28,8 +28,10 @@ Your lesson will be available in the browser with hot-module reloading on edits.
 
 ## 2. Multi-Page Chapter
 
-To build a structured chapter with multiple lessons, first create and enter a new directory for your project (or use an existing one):
+To build a structured chapter with multiple lessons, first create and enter a new directory for your project (or use an existing one).
 
+> [!note]
+> The name of your directory will automatically be used as the title for your chapter! For example, a folder named \`01-getting-started\` becomes a chapter titled **Getting Started**.
 ```bash
 mkdir my-chapter && cd my-chapter
 ```
