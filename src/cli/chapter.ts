@@ -80,8 +80,18 @@ export function generateChapterContent(targetPath: string): string {
 	const listItems = fileData
 		.map((d) => `- [${d.title}](./${d.file})`)
 		.join("\n");
+
+	const folderName = path.basename(targetPath);
+	const rawName = folderName.replace(/^\d+[-_]/, "");
+	const formattedTitle = rawName
+		.replace(/[-_]/g, " ")
+		.replace(/\b\w/g, (char) => char.toUpperCase());
+
+	const { logger } = require("./logger.js");
+	logger.info(`Derived chapter title "${formattedTitle}" from folder name "${folderName}"`);
+
 	return `---
-title: Chapter
+title: ${formattedTitle}
 chapter: true
 ---
 ${listItems}
