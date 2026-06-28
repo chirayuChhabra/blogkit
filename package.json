@@ -28,7 +28,13 @@
     "test:watch": "bun test --watch",
     "lint": "biome lint .",
     "format": "biome format --write .",
-    "check": "biome check --write ."
+    "check": "biome check --write .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,ts,json,md}": [
+      "biome check --write --no-errors-on-unmatched"
+    ]
   },
   "keywords": [
     "markdown",
@@ -49,7 +55,9 @@
     "@biomejs/biome": "^2.5.1",
     "@types/katex": "^0.16.8",
     "@types/node": "^26.0.1",
+    "husky": "^9.1.7",
     "js-yaml": "^4.1.0",
+    "lint-staged": "^17.0.8",
     "puppeteer": "^25.2.1",
     "typescript": "^6.0.3"
   },
