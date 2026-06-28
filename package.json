@@ -1,6 +1,6 @@
 {
   "name": "mr-md",
-  "version": "3.0.0-rc.5",
+  "version": "3.0.0-rc.6",
   "description": "Mr Markdown is an opinionated Markdown framework for building interactive learning pages.",
   "type": "module",
   "main": "dist/index.js",
@@ -47,7 +47,8 @@
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",
     "@types/katex": "^0.16.8",
-    "@types/node": "^25.9.4",
+    "@types/node": "^26.0.1",
+    "js-yaml": "^4.1.0",
     "puppeteer": "^25.2.1",
     "typescript": "^6.0.3"
   },
@@ -56,12 +57,20 @@
     "clipboardy": "^5.3.1",
     "consola": "^3.4.2",
     "gray-matter": "^4.0.3",
-    "highlight.js": "^11.11.1",
     "isomorphic-dompurify": "^3.18.0",
     "katex": "^0.17.0",
     "marked": "^18.0.5",
-    "marked-highlight": "^2.2.4",
     "ora": "^9.4.1",
-    "picocolors": "^1.1.1"
+    "picocolors": "^1.1.1",
+    "shiki": "^4.3.0",
+    "zod": "^4.4.3"
+  },
+  "overrides": {
+    "js-yaml": "^4.1.0",
+    "undici": "^7.28.0"
+  },
+  "resolutions": {
+    "js-yaml": "^4.1.0",
+    "undici": "^7.28.0"
   }
 }
