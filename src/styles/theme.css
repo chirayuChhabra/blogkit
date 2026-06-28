@@ -1586,6 +1586,14 @@ body.bk-is-scrolling .bk-embed-interactive.is-interactive iframe {
 .bk-question:last-child {
 	border-bottom: none;
 }
+.bk-q-num {
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--muted);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	margin-bottom: 8px;
+}
 .bk-q-text {
 	font-size: 16px;
 	font-weight: 500;
@@ -2330,4 +2338,14 @@ html[data-ui="playful"] ol > li::before {
   .bk-timeline-title {
     font-size: 1.4rem;
   }
+}
+
+/* Shiki Dual Theme Support */
+html[data-theme='dark'] .shiki,
+html[data-theme='dark'] .shiki span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
 }

@@ -55,10 +55,10 @@ describe("Block Renderers", () => {
 		test("should render a valid MD quiz", () => {
 			const quizPath = path.join(testDir, "test.quiz.md");
 			const mdData = `
-1. Markdown quiz?
-- No
-+ Yes
-- Maybe
+## Markdown quiz?
+-- No
+++ Yes
+-- Maybe
 `;
 			fs.writeFileSync(quizPath, mdData);
 
