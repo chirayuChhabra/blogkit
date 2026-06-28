@@ -1,0 +1,6 @@
+[build]
+  command = "bun run build:docs"
+  publish = "out"
+
+[build.environment]
+  BUN_VERSION = "latest"
