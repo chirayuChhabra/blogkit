@@ -7,9 +7,22 @@ import * as os from "os";
 import * as path from "path";
 import { logger } from "./logger.js";
 
-declare const Bun: any;
+interface BunServer {
+	port: number;
+	stop: () => void;
+	publish: (topic: string, data: string) => void;
+	requestIP: (req: Request) => { address: string } | null;
+	upgrade: (req: Request) => boolean;
+}
+
+declare const Bun: {
+	serve: (options: unknown) => BunServer;
+	file: (path: string) => Blob & { text: () => Promise<string> };
+};
 
 export async function runDev(args: string[]) {
+	const { initHighlighter } = require("../renderer/markdown/math.js");
+	await initHighlighter();
 	process.env.NODE_ENV = "development";
 	const target = args[0];
 
@@ -31,8 +44,8 @@ export async function runDev(args: string[]) {
 		try {
 			const { generateChapterContent } = require("./chapter.js");
 			generateChapterContent(targetPath);
-		} catch (err: any) {
-			logger.error(err.message);
+		} catch (err: unknown) {
+			logger.error(err instanceof Error ? err.message : String(err));
 			process.exit(1);
 		}
 	} else {
@@ -48,7 +61,8 @@ export async function runDev(args: string[]) {
 
 	logger.dev(`Preparing dev server for: ${targetPath}`);
 
-	let server: any;
+	let server: BunServer | undefined;
+	let singleFileSlug = "";
 
 	const rebuild = () => {
 		logger.startSpinner("Rebuilding...");
@@ -88,14 +102,17 @@ export async function runDev(args: string[]) {
 						{ outDir, contentBase },
 						contentBase,
 					);
+					singleFileSlug = lesson.meta.slug;
 					buildLesson(lesson, { outDir, contentBase });
 				}
 			}
 			logger.succeedSpinner(`Build successful for ${targetPath}.`);
 			server?.publish("livereload", "reload");
-		} catch (err: any) {
+		} catch (err: unknown) {
 			logger.failSpinner(`Build failed`);
-			logger.error(err.message || err);
+			const msg = err instanceof Error ? err.message : String(err);
+			logger.error(msg);
+			server?.publish("livereload", "error:" + msg);
 		}
 	};
 
@@ -106,7 +123,12 @@ export async function runDev(args: string[]) {
 		contentBase,
 		{ recursive: true },
 		(_eventType, filename) => {
-			if (!filename || !/\.(md|mdx|js|ts|jsx|tsx|json|css)$/i.test(filename)) {
+			if (
+				!filename ||
+				!/\.(md|mdx|js|ts|jsx|tsx|json|css|png|jpg|jpeg|gif|svg|webp|ico)$/i.test(
+					filename,
+				)
+			) {
 				return;
 			}
 
@@ -123,7 +145,7 @@ export async function runDev(args: string[]) {
 	let port = basePort;
 	const maxPort = basePort + 10;
 
-	const fetchHandler = async (req: any, srv: any) => {
+	const fetchHandler = async (req: Request, srv: BunServer) => {
 		const start = Date.now();
 		const clientIp = srv.requestIP(req)?.address || "::1";
 		const url = new URL(req.url);
@@ -136,6 +158,13 @@ export async function runDev(args: string[]) {
 
 		const handle = async () => {
 			if (srv.upgrade(req)) return null;
+
+			if (!isDirectory && decodedPath === "/" && singleFileSlug) {
+				return new Response(null, {
+					status: 302,
+					headers: { Location: `/${singleFileSlug}.html` },
+				});
+			}
 
 			let outFilePath = path.resolve(outDir, `.${decodedPath}`);
 
@@ -162,7 +191,81 @@ export async function runDev(args: string[]) {
 
 					const script = `<script>
 						const ws = new WebSocket(\`ws://\${location.host}/\`);
-						ws.onmessage = (e) => { if (e.data === "reload") location.reload(); };
+						ws.onmessage = async (e) => { 
+							if (e.data === "reload") {
+								try {
+									const res = await fetch(location.href);
+									const text = await res.text();
+									const parser = new DOMParser();
+									const doc = parser.parseFromString(text, "text/html");
+
+									const newMain = doc.querySelector(".bk-main");
+									const newNav = doc.querySelector(".bk-nav");
+									const newHeader = doc.querySelector(".bk-sidebar-header");
+
+									if (newMain && newNav && newHeader) {
+										const mainEl = document.querySelector(".bk-main");
+										const navEl = document.querySelector(".bk-nav");
+										
+										const mainScroll = mainEl ? mainEl.scrollTop : 0;
+										const navScroll = navEl ? navEl.scrollTop : 0;
+										const winScrollY = window.scrollY;
+										const winScrollX = window.scrollX;
+										
+										if (mainEl) mainEl.innerHTML = newMain.innerHTML;
+										if (navEl) navEl.innerHTML = newNav.innerHTML;
+										
+										const headerEl = document.querySelector(".bk-sidebar-header");
+										if (headerEl) headerEl.innerHTML = newHeader.innerHTML;
+										
+										document.title = doc.title;
+
+										if (mainEl) mainEl.scrollTop = mainScroll;
+										if (navEl) navEl.scrollTop = navScroll;
+										window.scrollTo(winScrollX, winScrollY);
+
+										const existingStyles = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style'));
+										const newStyles = Array.from(doc.head.querySelectorAll('link[rel="stylesheet"], style'));
+										
+										newStyles.forEach(s => {
+											if (s.tagName === 'LINK') {
+												const href = new URL(s.href, location.href);
+												if (href.origin === location.origin) {
+													href.searchParams.set('t', Date.now());
+													s.href = href.toString();
+												}
+											}
+											document.head.appendChild(s);
+										});
+
+										setTimeout(() => {
+											existingStyles.forEach(s => s.remove());
+										}, 50);
+
+										const overlay = document.getElementById("bk-dev-error");
+										if (overlay) overlay.remove();
+
+										window.dispatchEvent(new Event("bk-page-loaded"));
+									} else {
+										location.reload();
+									}
+								} catch (err) {
+									console.error("Live reload failed:", err);
+									location.reload();
+								}
+							} else if (e.data.startsWith("error:")) {
+								const msg = e.data.slice(6);
+								console.error("Build Error:", msg);
+								let overlay = document.getElementById("bk-dev-error");
+								if (!overlay) {
+									overlay = document.createElement("div");
+									overlay.id = "bk-dev-error";
+									overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);color:#ff5555;padding:2rem;z-index:99999;font-family:monospace;white-space:pre-wrap;overflow:auto;backdrop-filter:blur(4px);";
+									document.body.appendChild(overlay);
+								}
+								overlay.textContent = "Build Error\\n\\n" + msg;
+							}
+						};
 					</script>`;
 
 					const lastBodyIndex = text.toLowerCase().lastIndexOf("</body>");
@@ -191,7 +294,7 @@ export async function runDev(args: string[]) {
 
 	const wsHandler = {
 		message() {},
-		open(ws: any) {
+		open(ws: { subscribe: (topic: string) => void }) {
 			ws.subscribe("livereload");
 		},
 	};
@@ -229,14 +332,16 @@ export async function runDev(args: string[]) {
 				fetch: fetchHandler,
 				websocket: wsHandler,
 			});
-			const localUrl = `http://localhost:${server.port}`;
+			const urlSuffix =
+				!isDirectory && singleFileSlug ? `/${singleFileSlug}.html` : "";
+			const localUrl = `http://localhost:${server.port}${urlSuffix}`;
 
 			const interfaces = os.networkInterfaces();
 			let networkUrl: string | null = null;
 			for (const name of Object.keys(interfaces)) {
-				for (const iface of interfaces[name]!) {
+				for (const iface of interfaces[name] || []) {
 					if (iface.family === "IPv4" && !iface.internal) {
-						networkUrl = `http://${iface.address}:${server.port}`;
+						networkUrl = `http://${iface.address}:${server.port}${urlSuffix}`;
 						break;
 					}
 				}
@@ -245,8 +350,11 @@ export async function runDev(args: string[]) {
 
 			logger.serveBox(localUrl, networkUrl, basePort, port);
 			break;
-		} catch (err: any) {
-			if (err.code === "EADDRINUSE") {
+		} catch (err: unknown) {
+			if (
+				err instanceof Error &&
+				(err as Error & { code?: string }).code === "EADDRINUSE"
+			) {
 				logger.warn(`Port ${port} is in use, trying ${port + 1}...`);
 				port++;
 			} else {

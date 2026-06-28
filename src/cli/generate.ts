@@ -7,13 +7,17 @@ const require = createRequire(import.meta.url);
 import { logger } from "./logger.js";
 
 export function runGenerate(args: string[]) {
-	let rawName = args[0];
-
-	if (!rawName) {
-		logger.error("Usage: mr-md g <name>");
+	if (args.length === 0) {
+		logger.error("Usage: mr-md g <name> [name2...]");
 		process.exit(1);
 	}
 
+	for (const arg of args) {
+		generateSingle(arg);
+	}
+}
+
+function generateSingle(rawName: string) {
 	const originalName = rawName;
 
 	// Normalize all slashes to POSIX-style for consistent parsing across platforms
@@ -70,9 +74,9 @@ export function runGenerate(args: string[]) {
 						maxIndex = index;
 					}
 				}
-			} catch (e: any) {
+			} catch (e: unknown) {
 				logger.warn(
-					`Failed to parse file while determining max index: ${e.message || e}`,
+					`Failed to parse file while determining max index: ${e instanceof Error ? e.message : String(e)}`,
 				);
 			}
 		}

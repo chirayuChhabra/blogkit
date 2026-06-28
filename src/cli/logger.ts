@@ -22,7 +22,7 @@ export const logger = {
 	info: (msg: string) => console.log(`${badge("INFO", pc.bgBlue)} ${msg}`),
 	success: (msg: string) => console.log(`${badge("BUILD", pc.bgGreen)} ${msg}`),
 	warn: (msg: string) => console.log(`${badge("WARN", pc.bgYellow)} ${msg}`),
-	error: (msg: string, err?: any) => {
+	error: (msg: string, err?: unknown) => {
 		if (currentSpinner) {
 			currentSpinner.fail(`${badge("BUILD", pc.bgRed)} Process failed.`);
 			currentSpinner = null;
@@ -87,10 +87,10 @@ export const logger = {
 
 		try {
 			clipboardy.writeSync(localUrl);
-		} catch (err: any) {
+		} catch (err: unknown) {
 			console.warn(
 				"Failed to copy address to clipboard (may be headless environment):",
-				err.message || err,
+				err instanceof Error ? err.message : String(err),
 			);
 		}
 

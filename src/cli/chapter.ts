@@ -58,7 +58,7 @@ export function generateChapterContent(targetPath: string): string {
 		if (!indexCounts.has(d.idx)) {
 			indexCounts.set(d.idx, []);
 		}
-		indexCounts.get(d.idx)!.push(d.file);
+		indexCounts.get(d.idx)?.push(d.file);
 	}
 
 	const duplicates = Array.from(indexCounts.entries())
