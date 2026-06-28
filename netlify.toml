@@ -1,6 +1,6 @@
 [build]
-  command = "bun run build:docs"
-  publish = "out"
+  command = "bun run build && bun run build:docs"
+  publish = "mr-markdown-documentation/out"
 
 [build.environment]
   BUN_VERSION = "latest"
