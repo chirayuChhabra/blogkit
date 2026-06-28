@@ -42,8 +42,8 @@ export function parseQuizMarkdown(content: string): QuizFile {
 			continue;
 		}
 
-		// Check for new question (e.g. "1. Question text")
-		const qMatch = trimmed.match(/^\d+\.\s+(.*)/);
+		// Check for new question (e.g. "## Question text")
+		const qMatch = trimmed.match(/^##\s+(.*)/);
 		if (qMatch) {
 			saveCurrentQuestion();
 			questionNum++;
@@ -57,20 +57,22 @@ export function parseQuizMarkdown(content: string): QuizFile {
 
 		if (!currentQ) continue;
 
-		if (trimmed.startsWith("- ")) {
-			options.push(line.substring(line.indexOf("- ") + 2).trim());
+		// Correct option: "++ "
+		if (trimmed.startsWith("++ ")) {
+			if (answerIndex !== -1) {
+				throw new Error(
+					`Question ${questionNum} has multiple correct answers.`,
+				);
+			}
+			answerIndex = options.length;
+			options.push(line.substring(line.indexOf("++ ") + 3).trim());
 			state = "options";
 			continue;
 		}
 
-		if (trimmed.startsWith("+ ")) {
-			if (answerIndex !== -1) {
-				throw new Error(
-					`Question ${questionNum} has multiple correct answers (multiple '+' options).`,
-				);
-			}
-			answerIndex = options.length;
-			options.push(line.substring(line.indexOf("+ ") + 2).trim());
+		// Incorrect option: "-- "
+		if (trimmed.startsWith("-- ")) {
+			options.push(line.substring(line.indexOf("-- ") + 3).trim());
 			state = "options";
 			continue;
 		}

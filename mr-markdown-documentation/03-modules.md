@@ -144,7 +144,7 @@ To embed an interactive quiz, create a `.quiz.md` file containing the quiz confi
 ![Test your knowledge](./quizzes/sample.quiz.md)
 ```
 
-Quizzes are written in standard Markdown lists! See the [Creating Quizzes](./creating-quizzes.md) guide for details.
+Quizzes are written using a simple markdown syntax! See the [Creating Quizzes](./creating-quizzes.md) guide for details.
 
 **Result:**
 

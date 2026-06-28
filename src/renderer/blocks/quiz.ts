@@ -6,7 +6,7 @@ import type {
 	QuizFile,
 	QuizQuestion,
 } from "../../types.js";
-import { escapeScriptJson, mdInline, mdToHtml } from "../markdown/index.js";
+import { mdInline, mdToHtml } from "../markdown/index.js";
 import { type NavItem, resolveContent } from "../utils.js";
 import { escHtml } from "./utils.js";
 
@@ -32,6 +32,7 @@ function renderQuestion(
 
 	return `
     <div class="bk-question" id="${qid}">
+      <div class="bk-q-num">Question ${qi + 1}</div>
       <div class="bk-q-text">${mdToHtml(q.q, options).html}</div>
       <div class="bk-opts">${optStrings}</div>
       ${expHtml}

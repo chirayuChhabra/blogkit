@@ -33,7 +33,7 @@ export function bkWireQuizzes() {
 			}
 		}
 
-		question.querySelectorAll(".bk-opt").forEach((b: any) => {
+		question.querySelectorAll<HTMLButtonElement>(".bk-opt").forEach((b) => {
 			b.disabled = true; // Disable buttons for screen readers
 			const optIdx = parseInt(b.dataset.optIdx, 10);
 			// If we know the answer, highlight it

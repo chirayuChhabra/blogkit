@@ -10,27 +10,33 @@ Mr Markdown supports interactive multiple-choice quizzes out of the box. Quizzes
 
 ## The Quiz Syntax
 
-To create a quiz, create a `.quiz.md` file. Inside, you write standard Markdown lists to define the questions:
-- Use numbered lists (`1.`, `2.`) for the questions.
-- Use a single `+` bullet point for the correct option.
-- Use `-` bullet points for the incorrect options.
+To create a quiz, create a `.quiz.md` file. Inside, you write questions using a simple custom syntax:
+- Use a Markdown h2 heading (`## `) for the questions.
+- For the **correct** option, use `++ `.
+- For the **incorrect** options, use `-- `.
 - Use blockquotes (`>`) for the explanation that appears after a user answers.
+
+*Tip: You don't need to indent anything! This format is completely compatible with Markdown formatters like Prettier.*
 
 Here is an example `checkup.quiz.md`:
 
 ```markdown
-1. How do you mount an interactive sandboxed JavaScript simulation in Mr Markdown v3?
-- By using an `<iframe>` tag
-+ By linking to a `.js` or `.ts` file using standard Markdown image syntax
-- By using the `<script>` tag
-- By using the `<columns>` tag
+## How do you mount an interactive sandboxed JavaScript simulation in Mr Markdown v3?
+
+-- By using an `<iframe>` tag
+++ By linking to a `.js` or `.ts` file using standard Markdown image syntax
+-- By using the `<script>` tag
+-- By using the `<columns>` tag
+
 > In `mr-md` v3, you can embed interactive JavaScript sandboxes natively using a link to a script file, e.g. `![Simulation](./sim.js)`.
 
-2. How do you add a red callout box for critical information?
-- `> [!tip]`
-- `> [!warning]`
-+ `> [!important]`
-- `> [!note]`
+## How do you add a red callout box for critical information?
+
+-- `> [!tip]`
+-- `> [!warning]`
+++ `> [!important]`
+-- `> [!note]`
+
 > The `> [!important]` callout creates a red/accented box for critical information using standard GitHub-flavored blockquotes.
 ```
 
