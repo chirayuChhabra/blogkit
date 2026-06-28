@@ -89,11 +89,11 @@ export function parseQuizMarkdown(content: string): QuizFile {
 
 		// Multiline support
 		if (state === "question") {
-			currentQ.q += "\n" + trimmed;
+			currentQ.q += `\n${line}`;
 		} else if (state === "options" && options.length > 0) {
-			options[options.length - 1] += "\n" + trimmed;
+			options[options.length - 1] += `\n${line}`;
 		} else if (state === "explanation") {
-			explanation.push(trimmed);
+			explanation.push(line);
 		}
 	}
 

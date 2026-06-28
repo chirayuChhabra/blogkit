@@ -58,8 +58,8 @@ describe("Quiz Parser", () => {
 `;
 		const result = parseQuizMarkdown(md);
 		expect(result.questions).toHaveLength(1);
-		expect(result.questions[0].q).toBe("Multi line\nquestion text");
-		expect(result.questions[0].options[0]).toBe("Option\ncontinued");
+		expect(result.questions[0].q).toBe("Multi line\n   question text");
+		expect(result.questions[0].options[0]).toBe("Option\n   continued");
 		expect(result.questions[0].options[1]).toBe("Option 2");
 		expect(result.questions[0].explanation).toBe(
 			"explanation line 1\nexplanation line 2",
