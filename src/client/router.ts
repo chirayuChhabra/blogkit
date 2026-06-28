@@ -77,7 +77,7 @@ export function bkInitRouter() {
 	}
 
 	const prefetched = new Set();
-	document.addEventListener("mouseover", (e) => {
+	const prefetchLink = (e) => {
 		const a = e.target.closest("a");
 		if (!a?.href) return;
 		const targetUrl = new URL(a.href);
@@ -94,7 +94,9 @@ export function bkInitRouter() {
 				document.head.appendChild(link);
 			}
 		}
-	});
+	};
+	document.addEventListener("mouseover", prefetchLink, { passive: true });
+	document.addEventListener("touchstart", prefetchLink, { passive: true });
 
 	document.addEventListener("click", (e) => {
 		const a = e.target.closest("a");
@@ -104,12 +106,10 @@ export function bkInitRouter() {
 
 		const targetUrl = new URL(a.href);
 		const pathname = targetUrl.pathname;
-		const isHtmlOrNoExt = pathname.endsWith(".html") || !pathname.split("/").pop()?.includes(".");
-		
-		if (
-			targetUrl.origin === window.location.origin &&
-			isHtmlOrNoExt
-		) {
+		const isHtmlOrNoExt =
+			pathname.endsWith(".html") || !pathname.split("/").pop()?.includes(".");
+
+		if (targetUrl.origin === window.location.origin && isHtmlOrNoExt) {
 			if (
 				targetUrl.pathname === window.location.pathname &&
 				targetUrl.search === window.location.search
