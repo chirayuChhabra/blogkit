@@ -254,10 +254,14 @@ export function bkWireLastLessonTracking() {
 			for (const card of cards) {
 				const href = (card as HTMLAnchorElement).href;
 				if (!href) continue;
-				
+
 				const cardUrl = new URL(href, window.location.href);
-				const cardPath = cardUrl.pathname.replace(/\/$/, "").split("/").pop()?.replace(".html", "");
-				
+				const cardPath = cardUrl.pathname
+					.replace(/\/$/, "")
+					.split("/")
+					.pop()
+					?.replace(".html", "");
+
 				if (cardPath === lastLesson) {
 					card.scrollIntoView({ behavior: "auto", block: "center" });
 					card.classList.add("bk-last-opened");
