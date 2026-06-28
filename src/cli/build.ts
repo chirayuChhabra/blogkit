@@ -3,7 +3,7 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
 import * as fs from "fs";
-import matter from "gray-matter";
+import matter from "@11ty/gray-matter";
 import * as path from "path";
 import { logger } from "./logger.js";
 

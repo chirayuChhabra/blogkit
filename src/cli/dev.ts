@@ -85,7 +85,7 @@ export async function runDev(args: string[]) {
 				buildChapter(chapter, { outDir, contentBase });
 			} else {
 				const content = fs.readFileSync(filePath, "utf-8");
-				const parsed = require("gray-matter")(content);
+				const parsed = require("@11ty/gray-matter")(content);
 				const isChapter =
 					parsed.data.chapter === true || parsed.data.type === "chapter";
 

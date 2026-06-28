@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import matter from "gray-matter";
+import matter from "@11ty/gray-matter";
 import { marked, type Tokens } from "marked";
 import * as path from "path";
 import { z } from "zod";

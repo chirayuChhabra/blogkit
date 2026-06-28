@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import matter from "gray-matter";
+import matter from "@11ty/gray-matter";
 import * as path from "path";
 
 export function generateChapterContent(targetPath: string): string {

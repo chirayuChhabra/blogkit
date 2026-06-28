@@ -63,7 +63,7 @@ function generateSingle(rawName: string) {
 	let maxIndex = 0;
 
 	if (files.length > 0) {
-		const matter = require("gray-matter");
+		const matter = require("@11ty/gray-matter");
 		for (const f of files) {
 			try {
 				const content = fs.readFileSync(path.join(targetDir, f), "utf-8");
