@@ -1,7 +1,7 @@
 import katex from "katex";
 import { marked, type Tokens } from "marked";
-import { blockChrome } from "./chrome.js";
 import { createHighlighter, type Highlighter } from "shiki";
+import { blockChrome } from "./chrome.js";
 
 export let shiki: Highlighter;
 
