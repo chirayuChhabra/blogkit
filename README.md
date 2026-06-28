@@ -4,13 +4,7 @@ Mr Markdown is an opinionated Markdown framework for building interactive learni
 
 ## Documentation
 
-The documentation has been consolidated into a modern guide:
-
-1. [Showcase](./mr-markdown-documentation/01-showcase.md) - See what Mr Markdown can do.
-2. [Quickstart](./mr-markdown-documentation/02-quickstart.md) - Learn how to get started and use the CLI.
-3. [Modules & Features](./mr-markdown-documentation/03-modules.md) - Learn how to write rich markdown content.
-4. [Creating Quizzes](./mr-markdown-documentation/04-creating-quizzes.md) - Learn how to define interactive quizzes via Markdown.
-5. [Creating Simulations](./mr-markdown-documentation/05-creating-simulations.md) - Learn how to build and embed sandboxed JS simulations.
+The official documentation, guides, and showcase are available online at [mrmarkdown.com](https://mrmarkdown.com).
 
 ## Quick Start (CLI)
 

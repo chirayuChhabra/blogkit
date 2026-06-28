@@ -21,35 +21,43 @@ export function bkInitRouter() {
 				const newTitle = doc.title;
 
 				if (newMain && newNav && newHeader) {
-					document.querySelector(".bk-main").innerHTML = newMain.innerHTML;
-					document.querySelector(".bk-nav").innerHTML = newNav.innerHTML;
-					document.querySelector(".bk-sidebar-header").innerHTML =
-						newHeader.innerHTML;
-					document.title = newTitle;
+					const updateDOM = () => {
+						document.querySelector(".bk-main").innerHTML = newMain.innerHTML;
+						document.querySelector(".bk-nav").innerHTML = newNav.innerHTML;
+						document.querySelector(".bk-sidebar-header").innerHTML =
+							newHeader.innerHTML;
+						document.title = newTitle;
 
-					if (addToHistory) {
-						window.history.pushState({}, "", targetUrl.href);
-					}
+						if (addToHistory) {
+							window.history.pushState({}, "", targetUrl.href);
+						}
 
-					// Reset scroll to top or scroll to hash
-					const hash = targetUrl.hash;
-					if (hash) {
-						// Small delay to ensure DOM is fully updated and rendered
-						setTimeout(() => {
-							const targetEl = document.getElementById(hash.slice(1));
-							if (targetEl) {
-								targetEl.scrollIntoView();
-							} else {
-								window.scrollTo(0, 0);
-								document.querySelector(".bk-main").scrollTop = 0;
-							}
-						}, 0);
+						// Reset scroll to top or scroll to hash
+						const hash = targetUrl.hash;
+						if (hash) {
+							// Small delay to ensure DOM is fully updated and rendered
+							setTimeout(() => {
+								const targetEl = document.getElementById(hash.slice(1));
+								if (targetEl) {
+									targetEl.scrollIntoView();
+								} else {
+									window.scrollTo(0, 0);
+									document.querySelector(".bk-main").scrollTop = 0;
+								}
+							}, 0);
+						} else {
+							window.scrollTo(0, 0);
+							document.querySelector(".bk-main").scrollTop = 0;
+						}
+
+						window.dispatchEvent(new Event("bk-page-loaded"));
+					};
+
+					if (document.startViewTransition) {
+						document.startViewTransition(() => updateDOM());
 					} else {
-						window.scrollTo(0, 0);
-						document.querySelector(".bk-main").scrollTop = 0;
+						updateDOM();
 					}
-
-					window.dispatchEvent(new Event("bk-page-loaded"));
 				} else {
 					window.location.href = targetUrl.href;
 				}
@@ -68,6 +76,26 @@ export function bkInitRouter() {
 		return true;
 	}
 
+	const prefetched = new Set();
+	document.addEventListener("mouseover", (e) => {
+		const a = e.target.closest("a");
+		if (!a?.href) return;
+		const targetUrl = new URL(a.href);
+		const pathname = targetUrl.pathname;
+		const isHtmlOrNoExt =
+			pathname.endsWith(".html") || !pathname.split("/").pop()?.includes(".");
+
+		if (targetUrl.origin === window.location.origin && isHtmlOrNoExt) {
+			if (!prefetched.has(targetUrl.href)) {
+				prefetched.add(targetUrl.href);
+				const link = document.createElement("link");
+				link.rel = "prefetch";
+				link.href = targetUrl.href;
+				document.head.appendChild(link);
+			}
+		}
+	});
+
 	document.addEventListener("click", (e) => {
 		const a = e.target.closest("a");
 		if (!a?.href) return;
@@ -75,9 +103,12 @@ export function bkInitRouter() {
 		if (a.target === "_blank") return;
 
 		const targetUrl = new URL(a.href);
+		const pathname = targetUrl.pathname;
+		const isHtmlOrNoExt = pathname.endsWith(".html") || !pathname.split("/").pop()?.includes(".");
+		
 		if (
 			targetUrl.origin === window.location.origin &&
-			targetUrl.pathname.endsWith(".html")
+			isHtmlOrNoExt
 		) {
 			if (
 				targetUrl.pathname === window.location.pathname &&

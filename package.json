@@ -22,6 +22,7 @@
     "build": "bun build.ts",
     "prepublishOnly": "bun run build",
     "dev:docs": "bun dist/cli.js dev mr-markdown-documentation",
+    "build:docs": "bun dist/cli.js build mr-markdown-documentation",
     "typecheck": "bunx tsc --noEmit",
     "test": "bun test && bun run typecheck",
     "test:watch": "bun test --watch",

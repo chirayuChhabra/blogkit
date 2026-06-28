@@ -252,8 +252,13 @@ export function bkWireLastLessonTracking() {
 		if (lastLesson) {
 			const cards = document.querySelectorAll(".bk-timeline-card");
 			for (const card of cards) {
-				const href = card.getAttribute("href");
-				if (href && href.replace(".html", "") === lastLesson) {
+				const href = (card as HTMLAnchorElement).href;
+				if (!href) continue;
+				
+				const cardUrl = new URL(href, window.location.href);
+				const cardPath = cardUrl.pathname.replace(/\/$/, "").split("/").pop()?.replace(".html", "");
+				
+				if (cardPath === lastLesson) {
 					card.scrollIntoView({ behavior: "auto", block: "center" });
 					card.classList.add("bk-last-opened");
 					break;

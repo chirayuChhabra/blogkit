@@ -14,7 +14,7 @@ export function renderImage(
 			"image",
 			block.label,
 			block.caption,
-			`<div class="bk-media bk-media--image"><img src="${escAttr(src)}" alt="${escAttr(block.caption ?? "")}" loading="lazy"></div>`,
+			`<div class="bk-media bk-media--image"><img src="${escAttr(src)}" alt="${escAttr(block.caption ?? "")}" loading="lazy" decoding="async"></div>`,
 			"neutral",
 		),
 	};

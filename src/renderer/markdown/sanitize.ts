@@ -89,7 +89,7 @@ export function mdToHtml(
 				);
 			}
 		}
-		return `<img src="${resolvedHref}" alt="${text || ""}" title="${title || ""}" loading="lazy">`;
+		return `<img src="${resolvedHref}" alt="${text || ""}" title="${title || ""}" loading="lazy" decoding="async">`;
 	};
 
 	const processedMd = md.replace(
