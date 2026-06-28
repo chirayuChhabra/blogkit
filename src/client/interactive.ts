@@ -35,7 +35,7 @@ export function bkInitInteractiveFrames() {
 }
 
 export function bkWireInteractiveFrames() {
-	const interactiveHandler = (e: any) => {
+	const interactiveHandler = (e: Event) => {
 		const obj = (e.target as HTMLElement).closest?.(".bk-object");
 		const activateFrame = obj
 			? obj.querySelector(".bk-embed-interactive")
@@ -85,7 +85,7 @@ export function bkWireInteractiveFrames() {
 
 	document.addEventListener(
 		"contentvisibilityautostatechange",
-		(e: any) => {
+		(e: Event & { skipped?: boolean }) => {
 			const frame = e.target as HTMLElement;
 			if (frame?.classList?.contains("bk-embed-interactive")) {
 				const iframe = frame.querySelector("iframe") as HTMLIFrameElement;

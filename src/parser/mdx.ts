@@ -1,7 +1,8 @@
 import * as fs from "fs";
 import matter from "gray-matter";
-import { marked } from "marked";
+import { marked, type Tokens } from "marked";
 import * as path from "path";
+import { z } from "zod";
 import {
 	extractYouTubeId,
 	normalizeSimulationOptions,
@@ -17,6 +18,25 @@ import type {
 	Lesson,
 	LessonMeta,
 } from "../types.js";
+
+const LessonFrontmatterSchema = z
+	.object({
+		title: z.string().optional(),
+		slug: z.string().optional(),
+		description: z.string().optional(),
+		tags: z.array(z.string()).optional(),
+		author: z.string().optional(),
+		status: z.enum(["read", "unread", "locked"]).optional(),
+		parentSlug: z.string().optional(),
+		prevSlug: z.string().optional(),
+		prevTitle: z.string().optional(),
+		nextSlug: z.string().optional(),
+		nextTitle: z.string().optional(),
+		contentBase: z.string().optional(),
+		chapter: z.boolean().optional(),
+		type: z.string().optional(),
+	})
+	.catchall(z.unknown());
 
 // Helper to parse HTML attributes
 function parseAttributes(attrString: string): Record<string, string> {
@@ -38,6 +58,17 @@ export function parseLesson(
 	defaultTitle?: string,
 ): Lesson {
 	const parsed = matter(content);
+	const validation = LessonFrontmatterSchema.safeParse(parsed.data);
+
+	if (!validation.success) {
+		logger.error(`Frontmatter Validation Error:`);
+		validation.error.issues.forEach((err) => {
+			logger.error(`- ${err.path.join(".")}: ${err.message}`);
+		});
+		throw new Error("Invalid Frontmatter in Lesson");
+	}
+	const data = validation.data;
+
 	const tokens = marked.lexer(parsed.content);
 
 	let h1Title = "";
@@ -49,12 +80,12 @@ export function parseLesson(
 	}
 
 	const resolvedTitle =
-		parsed.data.title || h1Title || defaultTitle || "Untitled Lesson";
+		data.title || h1Title || defaultTitle || "Untitled Lesson";
 	const meta: LessonMeta = {
-		...parsed.data,
+		...data,
 		title: resolvedTitle,
 		slug:
-			parsed.data.slug ||
+			data.slug ||
 			resolvedTitle
 				.toLowerCase()
 				.replace(/[^a-z0-9]+/g, "-")
@@ -88,7 +119,7 @@ export function parseLesson(
 		if (token.type === "paragraph") {
 			const tokens = token.tokens || [];
 			if (tokens.length === 1 && tokens[0].type === "image") {
-				const img = tokens[0] as any;
+				const img = tokens[0] as Tokens.Image;
 				const src = img.href;
 				const caption = img.text;
 
@@ -118,9 +149,9 @@ export function parseLesson(
 						if (fs.existsSync(configPath)) {
 							fileConfig = JSON.parse(fs.readFileSync(configPath, "utf-8"));
 						}
-					} catch (e: any) {
+					} catch (e: unknown) {
 						logger.warn(
-							`Failed to load simulation config for ${src}: ${e.message || e}`,
+							`Failed to load simulation config for ${src}: ${e instanceof Error ? e.message : String(e)}`,
 						);
 					}
 
@@ -256,18 +287,40 @@ export function parseLesson(
 	return { meta, blocks };
 }
 
+const ChapterFrontmatterSchema = z
+	.object({
+		title: z.string().optional(),
+		slug: z.string().optional(),
+		description: z.string().optional(),
+		status: z.enum(["completed", "active", "locked"]).optional(),
+		chapter: z.boolean().optional(),
+		type: z.string().optional(),
+	})
+	.catchall(z.unknown());
+
 export function parseChapter(
 	content: string,
 	options: BuildOptions = {},
 	callerDir: string = process.cwd(),
 ): Chapter {
 	const parsed = matter(content);
+	const validation = ChapterFrontmatterSchema.safeParse(parsed.data);
+
+	if (!validation.success) {
+		logger.error(`Chapter Frontmatter Validation Error:`);
+		validation.error.issues.forEach((err) => {
+			logger.error(`- ${err.path.join(".")}: ${err.message}`);
+		});
+		throw new Error("Invalid Frontmatter in Chapter");
+	}
+	const data = validation.data;
+
 	const meta: ChapterMeta = {
-		...parsed.data,
-		title: parsed.data.title || "Untitled Chapter",
+		...data,
+		title: data.title || "Untitled Chapter",
 		slug:
-			parsed.data.slug ||
-			(parsed.data.title || "untitled")
+			data.slug ||
+			(data.title || "untitled")
 				.toLowerCase()
 				.replace(/[^a-z0-9]+/g, "-")
 				.replace(/(^-|-$)/g, ""),
@@ -377,9 +430,7 @@ export function buildLesson(
 	validateLesson(lesson.meta, lesson.blocks, lessonOptions);
 	const html = render(lesson, lessonOptions);
 	const outDir = path.resolve(lessonOptions.outDir || "./out");
-	const filename = lesson.meta.parentSlug
-		? `${lesson.meta.slug}.html`
-		: "index.html";
+	const filename = `${lesson.meta.slug}.html`;
 	const outPath = path.join(outDir, filename);
 	const outPathDir = path.dirname(outPath);
 	if (!fs.existsSync(outPathDir)) fs.mkdirSync(outPathDir, { recursive: true });

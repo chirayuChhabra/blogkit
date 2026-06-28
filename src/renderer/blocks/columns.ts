@@ -2,7 +2,6 @@ import katex from "katex";
 import type { BuildOptions, ColumnsBlock } from "../../types.js";
 import { blockChrome, mdToHtml, sanitizeHtml } from "../markdown/index.js";
 import { resolveContent } from "../utils.js";
-import { escAttr } from "./utils.js";
 
 export function renderColumns(
 	block: ColumnsBlock,

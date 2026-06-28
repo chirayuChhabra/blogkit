@@ -57,7 +57,9 @@ export function renderBlockInner(
 		case "quiz":
 			return renderQuiz(block, idx, options);
 		default:
-			logger.warn(`Unknown block type encountered: ${(block as any).type}`);
+			logger.warn(
+				`Unknown block type encountered: ${"type" in block ? (block as { type: string }).type : "unknown"}`,
+			);
 			return { html: "" };
 	}
 }

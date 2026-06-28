@@ -132,9 +132,9 @@ export abstract class LessonBlocks {
 			if (fs.existsSync(configPath)) {
 				return JSON.parse(fs.readFileSync(configPath, "utf-8"));
 			}
-		} catch (err: any) {
+		} catch (err: unknown) {
 			logger.warn(
-				`Failed to load simulation config for ${src}: ${err.message || err}`,
+				`Failed to load simulation config for ${src}: ${err instanceof Error ? err.message : String(err)}`,
 			);
 		}
 		return null;

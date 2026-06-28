@@ -120,7 +120,12 @@ export function bkWireScrollSpy() {
 		nav.prepend(pill);
 	}
 
-	const sections: any[] = [];
+	const sections: {
+		id: string;
+		el: HTMLElement;
+		link: HTMLElement;
+		isAbove: boolean;
+	}[] = [];
 	navLinks.forEach((l) => {
 		const id = l.dataset.id;
 		if (id) {

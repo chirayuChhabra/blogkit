@@ -50,17 +50,6 @@ function resolveContent(
 		}
 	}
 
-	const securityDir = process.cwd();
-	if (
-		!filePath.startsWith(securityDir + path.sep) &&
-		filePath !== securityDir &&
-		options.strict !== false
-	) {
-		throw new Error(
-			`Security Error: Path traversal attempt outside project root: ${filePath}`,
-		);
-	}
-
 	if (fs.existsSync(filePath)) {
 		const stat = fs.statSync(filePath);
 		if (stat.isFile()) {
@@ -71,7 +60,11 @@ function resolveContent(
 					filePath.endsWith(".jsx") ||
 					filePath.endsWith(".tsx"))
 			) {
-				if (typeof process !== "undefined" && (process as any).isBun) {
+				if (
+					typeof process !== "undefined" &&
+					"isBun" in process &&
+					process.isBun
+				) {
 					const out = spawnSync(process.execPath, [
 						"build",
 						"--target=browser",

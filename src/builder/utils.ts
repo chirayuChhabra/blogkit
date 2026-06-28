@@ -15,7 +15,7 @@ export function getCallerDir(): string | undefined {
 	const originalPrepareStackTrace = Error.prepareStackTrace;
 	Error.prepareStackTrace = (_, stack) => stack;
 	const err = new Error();
-	const stack = err.stack as any as NodeJS.CallSite[];
+	const stack = err.stack as unknown as NodeJS.CallSite[];
 	Error.prepareStackTrace = originalPrepareStackTrace;
 
 	if (!stack || !Array.isArray(stack)) return undefined;
@@ -103,7 +103,7 @@ export function mergeOptions(
 	};
 	for (const [k, v] of Object.entries(options)) {
 		if (v !== undefined && k !== "preset") {
-			(merged as any)[k] = v;
+			(merged as Record<string, unknown>)[k] = v;
 		}
 	}
 	merged.preset = {
