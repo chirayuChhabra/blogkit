@@ -37,7 +37,7 @@ function buildFile(filePath: string) {
 			buildLesson(lesson, { outDir, contentBase });
 		}
 		logger.succeedSpinner(`Build successful for ${filePath}.`);
-	} catch (err: any) {
+	} catch (err: unknown) {
 		logger.failSpinner(`Build failed for ${filePath}`);
 		logger.error(`Error details:`, err);
 		process.exit(1);
@@ -45,6 +45,8 @@ function buildFile(filePath: string) {
 }
 
 export async function runBuild(args: string[]) {
+	const { initHighlighter } = require("../renderer/markdown/math.js");
+	await initHighlighter();
 	process.env.NODE_ENV = "production";
 	const target = args[0];
 
@@ -79,8 +81,8 @@ export async function runBuild(args: string[]) {
 			buildChapter(chapter, { outDir, contentBase });
 
 			logger.succeedSpinner(`Build successful for directory ${targetPath}.`);
-		} catch (err: any) {
-			logger.error(err.message);
+		} catch (err: unknown) {
+			logger.error(err instanceof Error ? err.message : String(err));
 			process.exit(1);
 		}
 	} else {

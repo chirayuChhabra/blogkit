@@ -1,18 +1,54 @@
-import hljs from "highlight.js";
 import katex from "katex";
-import { marked } from "marked";
-import { markedHighlight } from "marked-highlight";
+import { marked, type Tokens } from "marked";
 import { blockChrome } from "./chrome.js";
+import { createHighlighter, type Highlighter } from "shiki";
 
-marked.use(
-	markedHighlight({
-		langPrefix: "hljs language-",
-		highlight(code, lang) {
-			const language = hljs.getLanguage(lang) ? lang : "plaintext";
-			return hljs.highlight(code, { language }).value;
-		},
-	}),
-);
+export let shiki: Highlighter;
+
+export async function initHighlighter() {
+	if (!shiki) {
+		shiki = await createHighlighter({
+			themes: ["github-dark", "github-light"],
+			langs: [
+				"javascript",
+				"typescript",
+				"json",
+				"html",
+				"css",
+				"bash",
+				"rust",
+				"markdown",
+				"yaml",
+			],
+		});
+	}
+}
+
+const renderer = {
+	code({ text, lang }: Tokens.Code) {
+		const language = lang || "text";
+		if (!shiki) {
+			console.warn(
+				"Shiki highlighter not initialized. Code block will not be highlighted.",
+			);
+			return `<pre><code>${text}</code></pre>`;
+		}
+
+		try {
+			return shiki.codeToHtml(text, {
+				lang: language,
+				themes: {
+					light: "github-light",
+					dark: "github-dark",
+				},
+			});
+		} catch (_e) {
+			return `<pre><code>${text}</code></pre>`;
+		}
+	},
+};
+
+marked.use({ renderer });
 
 const blockMathExtension = {
 	name: "blockMath",
@@ -31,7 +67,7 @@ const blockMathExtension = {
 			};
 		}
 	},
-	renderer(token: any) {
+	renderer(token: Tokens.Generic) {
 		const rendered = katex.renderToString(token.text, {
 			throwOnError: false,
 			displayMode: true,
@@ -64,7 +100,7 @@ const inlineMathExtension = {
 			};
 		}
 	},
-	renderer(token: any) {
+	renderer(token: Tokens.Generic) {
 		return katex.renderToString(token.text, {
 			throwOnError: false,
 			displayMode: false,
