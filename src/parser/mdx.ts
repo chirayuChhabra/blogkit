@@ -330,75 +330,49 @@ export function parseChapter(
 	const lessons: Lesson[] = [];
 
 	// Extract links to lesson .md files
-	for (const token of tokens) {
-		if (token.type === "list") {
-			for (const item of token.items) {
-				// simple search for links in list items
-				const linkMatch = item.text.match(/\[([^\]]+)\]\(([^)]+\.md)\)/);
-				if (linkMatch) {
-					const title = linkMatch[1];
-					const relPath = linkMatch[2];
-					const fullPath = path.resolve(
-						options.contentBase || callerDir,
-						relPath,
+	// biome-ignore lint/suspicious/noExplicitAny: token AST traversal
+	const extractLessonsFromTokens = (tokenList: any[]) => {
+		for (const token of tokenList) {
+			if (
+				token.type === "link" &&
+				typeof token.href === "string" &&
+				token.href.endsWith(".md")
+			) {
+				const title = token.text;
+				const relPath = token.href;
+				const fullPath = path.resolve(
+					options.contentBase || callerDir,
+					relPath,
+				);
+				if (fs.existsSync(fullPath)) {
+					const lessonContent = fs.readFileSync(fullPath, "utf-8");
+					const lessonOptions = {
+						...options,
+						contentBase: path.dirname(fullPath),
+					};
+					const lesson = parseLesson(
+						lessonContent,
+						lessonOptions,
+						path.dirname(fullPath),
+						title,
 					);
-					if (fs.existsSync(fullPath)) {
-						const lessonContent = fs.readFileSync(fullPath, "utf-8");
-						const lessonOptions = {
-							...options,
-							contentBase: path.dirname(fullPath),
-						};
-						const lesson = parseLesson(
-							lessonContent,
-							lessonOptions,
-							path.dirname(fullPath),
-							title,
-						);
-						lesson.meta.parentSlug = meta.slug;
-						lessons.push(lesson);
-					} else {
-						logger.warn(
-							`[Chapter] Warning: Lesson file not found: ${fullPath}`,
-						);
-					}
+					lesson.meta.parentSlug = meta.slug;
+					lessons.push(lesson);
+				} else {
+					logger.warn(`[Chapter] Warning: Lesson file not found: ${fullPath}`);
 				}
-			}
-		} else if (token.type === "paragraph") {
-			const linkMatch = token.text.match(/\[([^\]]+)\]\(([^)]+\.md)\)/g);
-			if (linkMatch) {
-				for (const match of linkMatch) {
-					const m = match.match(/\[([^\]]+)\]\(([^)]+\.md)\)/);
-					if (m) {
-						const title = m[1];
-						const relPath = m[2];
-						const fullPath = path.resolve(
-							options.contentBase || callerDir,
-							relPath,
-						);
-						if (fs.existsSync(fullPath)) {
-							const lessonContent = fs.readFileSync(fullPath, "utf-8");
-							const lessonOptions = {
-								...options,
-								contentBase: path.dirname(fullPath),
-							};
-							const lesson = parseLesson(
-								lessonContent,
-								lessonOptions,
-								path.dirname(fullPath),
-								title,
-							);
-							lesson.meta.parentSlug = meta.slug;
-							lessons.push(lesson);
-						} else {
-							logger.warn(
-								`[Chapter] Warning: Lesson file not found: ${fullPath}`,
-							);
-						}
+			} else if (token.tokens) {
+				extractLessonsFromTokens(token.tokens);
+			} else if (token.type === "list" && token.items) {
+				for (const item of token.items) {
+					if (item.tokens) {
+						extractLessonsFromTokens(item.tokens);
 					}
 				}
 			}
 		}
-	}
+	};
+	extractLessonsFromTokens(tokens);
 
 	// Setup prev/next links
 	for (let i = 0; i < lessons.length; i++) {
