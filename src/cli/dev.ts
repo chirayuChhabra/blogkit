@@ -112,7 +112,7 @@ export async function runDev(args: string[]) {
 			logger.failSpinner(`Build failed`);
 			const msg = err instanceof Error ? err.message : String(err);
 			logger.error(msg);
-			server?.publish("livereload", "error:" + msg);
+			server?.publish("livereload", `error:${msg}`);
 		}
 	};
 
@@ -172,7 +172,7 @@ export async function runDev(args: string[]) {
 				outFilePath = path.join(outDir, "index.html");
 			} else if (
 				!fs.existsSync(outFilePath) &&
-				fs.existsSync(outFilePath + ".html")
+				fs.existsSync(`${outFilePath}.html`)
 			) {
 				outFilePath += ".html";
 			}
