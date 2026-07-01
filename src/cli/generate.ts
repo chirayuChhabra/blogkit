@@ -5,6 +5,7 @@ import * as path from "path";
 const require = createRequire(import.meta.url);
 
 import { logger } from "./logger.js";
+import { getOriginalCwd } from "./utils.js";
 
 export function runGenerate(args: string[]) {
 	if (args.length === 0) {
@@ -24,11 +25,11 @@ function generateSingle(rawName: string) {
 	const normalizedPath = rawName.replace(/\\/g, "/");
 	const parsedPath = path.parse(normalizedPath);
 
-	let targetDir = process.env.PWD || process.cwd();
+	let targetDir = getOriginalCwd();
 	let fileNameBase = parsedPath.name;
 
 	if (parsedPath.dir) {
-		targetDir = path.resolve(process.env.PWD || process.cwd(), parsedPath.dir);
+		targetDir = path.resolve(targetDir, parsedPath.dir);
 		if (!fs.existsSync(targetDir)) {
 			fs.mkdirSync(targetDir, { recursive: true });
 			logger.info(`Created directory: ${parsedPath.dir}`);

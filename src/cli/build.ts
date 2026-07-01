@@ -6,10 +6,11 @@ import matter from "@11ty/gray-matter";
 import * as fs from "fs";
 import * as path from "path";
 import { logger } from "./logger.js";
+import { getOriginalCwd } from "./utils.js";
 
 function buildFile(filePath: string) {
 	logger.startSpinner(`Building file: ${filePath}`);
-	const outDir = path.resolve(process.cwd(), path.dirname(filePath), "out");
+	const outDir = path.resolve(getOriginalCwd(), path.dirname(filePath), "out");
 	const contentBase = path.dirname(filePath);
 
 	try {
@@ -55,7 +56,7 @@ export async function runBuild(args: string[]) {
 		process.exit(1);
 	}
 
-	const targetPath = path.resolve(process.cwd(), target);
+	const targetPath = path.resolve(getOriginalCwd(), target);
 
 	if (!fs.existsSync(targetPath)) {
 		logger.error(`File or directory not found: ${target}`);
@@ -67,7 +68,7 @@ export async function runBuild(args: string[]) {
 			const { generateChapterContent } = require("./chapter.js");
 			const chapterContent = generateChapterContent(targetPath);
 
-			const outDir = path.resolve(process.cwd(), targetPath, "out");
+			const outDir = path.resolve(getOriginalCwd(), targetPath, "out");
 			const contentBase = targetPath;
 
 			logger.startSpinner(`Building chapter from directory: ${targetPath}`);
