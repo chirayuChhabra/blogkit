@@ -24,11 +24,11 @@ function generateSingle(rawName: string) {
 	const normalizedPath = rawName.replace(/\\/g, "/");
 	const parsedPath = path.parse(normalizedPath);
 
-	let targetDir = process.cwd();
+	let targetDir = process.env.PWD || process.cwd();
 	let fileNameBase = parsedPath.name;
 
 	if (parsedPath.dir) {
-		targetDir = path.resolve(process.cwd(), parsedPath.dir);
+		targetDir = path.resolve(process.env.PWD || process.cwd(), parsedPath.dir);
 		if (!fs.existsSync(targetDir)) {
 			fs.mkdirSync(targetDir, { recursive: true });
 			logger.info(`Created directory: ${parsedPath.dir}`);
