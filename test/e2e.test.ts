@@ -6,6 +6,9 @@ import { tmpdir } from "node:os";
 import { $ } from "bun";
 import puppeteer, { Browser, Page } from "puppeteer";
 
+delete process.env.INIT_CWD;
+delete process.env.npm_config_local_prefix;
+
 const CLI_PATH = join(process.cwd(), "dist", "cli.js");
 let tempDir: string;
 let browser: Browser;
