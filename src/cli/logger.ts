@@ -15,23 +15,33 @@ export const consola = createConsola({
 
 let currentSpinner: ReturnType<typeof ora> | null = null;
 
+const safeLog = (msg: string) => {
+	if (currentSpinner) {
+		currentSpinner.clear();
+		console.log(msg);
+		currentSpinner.render();
+	} else {
+		console.log(msg);
+	}
+};
+
 const badge = (text: string, bgColor: (s: string) => string) =>
 	bgColor(pc.black(pc.bold(` ${text} `)));
 
 export const logger = {
-	info: (msg: string) => console.log(`${badge("INFO", pc.bgBlue)} ${msg}`),
-	success: (msg: string) => console.log(`${badge("BUILD", pc.bgGreen)} ${msg}`),
-	warn: (msg: string) => console.log(`${badge("WARN", pc.bgYellow)} ${msg}`),
+	info: (msg: string) => safeLog(`${badge("INFO", pc.bgBlue)} ${msg}`),
+	success: (msg: string) => safeLog(`${badge("BUILD", pc.bgGreen)} ${msg}`),
+	warn: (msg: string) => safeLog(`${badge("WARN", pc.bgYellow)} ${msg}`),
 	error: (msg: string, err?: unknown) => {
 		if (currentSpinner) {
 			currentSpinner.fail(`${badge("BUILD", pc.bgRed)} Process failed.`);
 			currentSpinner = null;
 		}
-		console.log(`${badge("ERROR", pc.bgRed)} ${msg}`);
+		safeLog(`${badge("ERROR", pc.bgRed)} ${msg}`);
 		if (err) console.error(err);
 	},
-	dev: (msg: string) => console.log(`${badge("DEV", pc.bgMagenta)} ${msg}`),
-	watch: (msg: string) => console.log(`${badge("WATCH", pc.bgYellow)} ${msg}`),
+	dev: (msg: string) => safeLog(`${badge("DEV", pc.bgMagenta)} ${msg}`),
+	watch: (msg: string) => safeLog(`${badge("WATCH", pc.bgYellow)} ${msg}`),
 	startSpinner: (msg: string) => {
 		if (currentSpinner) currentSpinner.stop();
 		currentSpinner = ora({
@@ -45,25 +55,25 @@ export const logger = {
 			currentSpinner.stop();
 			currentSpinner = null;
 		}
-		console.log(`${badge("BUILD", pc.bgGreen)} ${pc.green(msg)}`);
+		safeLog(`${badge("BUILD", pc.bgGreen)} ${pc.green(msg)}`);
 	},
 	failSpinner: (msg: string) => {
 		if (currentSpinner) {
 			currentSpinner.stop();
 			currentSpinner = null;
 		}
-		console.log(`${badge("BUILD", pc.bgRed)} ${pc.red(msg)}`);
+		safeLog(`${badge("BUILD", pc.bgRed)} ${pc.red(msg)}`);
 	},
 	box: (msg: string) => consola.box(msg),
 	httpReq: (ip: string, method: string, path: string) => {
 		const date = new Date().toLocaleString("en-US");
-		console.log(
+		safeLog(
 			`${pc.bgCyan(pc.black(pc.bold(" HTTP ")))} ${pc.gray(date)} ${pc.yellow(ip)} ${pc.greenBright(method)} ${pc.greenBright(path)}`,
 		);
 	},
 	httpRes: (ip: string, status: number, ms: number) => {
 		const date = new Date().toLocaleString("en-US");
-		console.log(
+		safeLog(
 			`${pc.bgCyan(pc.black(pc.bold(" HTTP ")))} ${pc.gray(date)} ${pc.yellow(ip)} ${pc.greenBright(`Returned ${status} in ${ms} ms`)}`,
 		);
 	},
@@ -93,6 +103,6 @@ export const logger = {
 			);
 		}
 
-		console.log(boxen(text, { padding: 1, margin: 1, borderColor: "green" }));
+		safeLog(boxen(text, { padding: 1, margin: 1, borderColor: "green" }));
 	},
 };
