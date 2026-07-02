@@ -88,9 +88,8 @@ export const logger = {
 		try {
 			clipboardy.writeSync(localUrl);
 		} catch (err: unknown) {
-			console.warn(
-				"Failed to copy address to clipboard (may be headless environment):",
-				err instanceof Error ? err.message : String(err),
+			logger.warn(
+				`Failed to copy address to clipboard (may be headless environment): ${err instanceof Error ? err.message : String(err)}`,
 			);
 		}
 
