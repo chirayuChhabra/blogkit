@@ -52,13 +52,13 @@
   },
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
-    "@biomejs/biome": "^2.5.1",
+    "@biomejs/biome": "^2.5.2",
     "@types/katex": "^0.16.8",
-    "@types/node": "^26.0.1",
+    "@types/node": "^26.1.0",
     "husky": "^9.1.7",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.3.0",
     "lint-staged": "^17.0.8",
-    "puppeteer": "^25.2.1",
+    "puppeteer": "^25.3.0",
     "typescript": "^6.0.3"
   },
   "dependencies": {
