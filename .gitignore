@@ -7,6 +7,7 @@ demo/**/out/
 dist/
 .vscode/
 .devbox/
+.devin/
 
 scratch-test/
 *.tgz
