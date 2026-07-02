@@ -23,7 +23,7 @@ switch (command) {
 		import("./cli/dev.js")
 			.then((m) => m.runDev(args.slice(1)))
 			.catch((e) => {
-				logger.error(e);
+				logger.error(e instanceof Error ? e.message : String(e));
 				process.exit(1);
 			});
 		break;
@@ -31,7 +31,7 @@ switch (command) {
 		import("./cli/build.js")
 			.then((m) => m.runBuild(args.slice(1)))
 			.catch((e) => {
-				logger.error(e);
+				logger.error(e instanceof Error ? e.message : String(e));
 				process.exit(1);
 			});
 		break;
@@ -40,7 +40,7 @@ switch (command) {
 		import("./cli/generate.js")
 			.then((m) => m.runGenerate(args.slice(1)))
 			.catch((e) => {
-				logger.error(e);
+				logger.error(e instanceof Error ? e.message : String(e));
 				process.exit(1);
 			});
 		break;
