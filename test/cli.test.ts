@@ -5,6 +5,9 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { $ } from "bun";
 
+delete process.env.INIT_CWD;
+delete process.env.npm_config_local_prefix;
+
 async function waitForServer(url: string, timeout = 10000) {
   const start = Date.now();
   while (Date.now() - start < timeout) {

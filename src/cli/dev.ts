@@ -6,6 +6,7 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import { logger } from "./logger.js";
+import { getOriginalCwd } from "./utils.js";
 
 interface BunServer {
 	port: number;
@@ -33,7 +34,7 @@ export async function runDev(args: string[]) {
 
 	let isDirectory = false;
 	let filePath = "";
-	const targetPath = path.resolve(process.cwd(), target);
+	const targetPath = path.resolve(getOriginalCwd(), target);
 	if (!fs.existsSync(targetPath)) {
 		logger.error(`File or directory not found: ${target}`);
 		process.exit(1);

@@ -1,6 +1,7 @@
 import katex from "katex";
 import { marked, type Tokens } from "marked";
 import { createHighlighter, type Highlighter } from "shiki";
+import { logger } from "../../cli/logger.js";
 import { blockChrome } from "./chrome.js";
 
 export let shiki: Highlighter;
@@ -28,7 +29,7 @@ const renderer = {
 	code({ text, lang }: Tokens.Code) {
 		const language = lang || "text";
 		if (!shiki) {
-			console.warn(
+			logger.warn(
 				"Shiki highlighter not initialized. Code block will not be highlighted.",
 			);
 			return `<pre><code>${text}</code></pre>`;

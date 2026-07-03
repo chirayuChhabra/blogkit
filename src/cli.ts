@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 
+import pkg from "../package.json" with { type: "json" };
 import { logger } from "./cli/logger.js";
 
 const args = process.argv.slice(2);
@@ -13,7 +14,7 @@ if (!command || command === "--help" || command === "-h") {
 }
 
 if (command === "--version" || command === "-v") {
-	logger.info("mr-md v3.0.0-beta.1");
+	logger.info(`mr-md v${pkg.version}`);
 	process.exit(0);
 }
 
@@ -22,7 +23,7 @@ switch (command) {
 		import("./cli/dev.js")
 			.then((m) => m.runDev(args.slice(1)))
 			.catch((e) => {
-				logger.error(e);
+				logger.error(e instanceof Error ? e.message : String(e));
 				process.exit(1);
 			});
 		break;
@@ -30,7 +31,7 @@ switch (command) {
 		import("./cli/build.js")
 			.then((m) => m.runBuild(args.slice(1)))
 			.catch((e) => {
-				logger.error(e);
+				logger.error(e instanceof Error ? e.message : String(e));
 				process.exit(1);
 			});
 		break;
@@ -39,7 +40,7 @@ switch (command) {
 		import("./cli/generate.js")
 			.then((m) => m.runGenerate(args.slice(1)))
 			.catch((e) => {
-				logger.error(e);
+				logger.error(e instanceof Error ? e.message : String(e));
 				process.exit(1);
 			});
 		break;

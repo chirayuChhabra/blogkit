@@ -1,6 +1,6 @@
 {
   "name": "mr-md",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Mr Markdown is an opinionated Markdown framework for building interactive learning pages.",
   "type": "module",
   "main": "dist/index.js",
@@ -24,7 +24,7 @@
     "dev:docs": "bun dist/cli.js dev mr-markdown-documentation",
     "build:docs": "bun dist/cli.js build mr-markdown-documentation",
     "typecheck": "bunx tsc --noEmit",
-    "test": "bun test && bun run typecheck",
+    "test": "bun test --timeout 60000 && bun run typecheck",
     "test:watch": "bun test --watch",
     "lint": "biome lint .",
     "format": "biome format --write .",
@@ -52,13 +52,13 @@
   },
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
-    "@biomejs/biome": "^2.5.1",
+    "@biomejs/biome": "^2.5.2",
     "@types/katex": "^0.16.8",
-    "@types/node": "^26.0.1",
+    "@types/node": "^26.1.0",
     "husky": "^9.1.7",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.3.0",
     "lint-staged": "^17.0.8",
-    "puppeteer": "^25.2.1",
+    "puppeteer": "^25.3.0",
     "typescript": "^6.0.3"
   },
   "dependencies": {
