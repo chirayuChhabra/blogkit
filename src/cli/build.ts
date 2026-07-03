@@ -40,7 +40,9 @@ function buildFile(filePath: string) {
 		logger.succeedSpinner(`Build successful for ${filePath}.`);
 	} catch (err: unknown) {
 		logger.failSpinner(`Build failed for ${filePath}`);
-		logger.error(`Error details:`, err);
+		logger.error(
+			`Error details: ${err instanceof Error ? err.message : String(err)}`,
+		);
 		process.exit(1);
 	}
 }
