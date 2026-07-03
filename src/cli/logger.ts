@@ -17,9 +17,14 @@ let currentSpinner: ReturnType<typeof ora> | null = null;
 
 const safeLog = (msg: string) => {
 	if (currentSpinner) {
-		currentSpinner.clear();
+		const spinnerOpts = { text: currentSpinner.text };
+		currentSpinner.stop();
 		console.log(msg);
-		currentSpinner.render();
+		currentSpinner = ora({
+			prefixText: badge("BUILD", pc.bgBlue),
+			text: spinnerOpts.text,
+			color: "cyan",
+		}).start();
 	} else {
 		console.log(msg);
 	}
