@@ -75,11 +75,11 @@
     "zod": "^4.4.3"
   },
   "overrides": {
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.3.0",
     "undici": "^7.28.0"
   },
   "resolutions": {
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.3.0",
     "undici": "^7.28.0"
   }
 }
