@@ -153,12 +153,13 @@ export async function runDev(args: string[]) {
 		const method = req.method;
 		const decodedPath = decodeURIComponent(url.pathname);
 
-		if (!srv.upgrade(req)) {
+		const isUpgrade = srv.upgrade(req);
+		if (!isUpgrade) {
 			logger.httpReq(clientIp, method, decodedPath);
 		}
 
 		const handle = async () => {
-			if (srv.upgrade(req)) return null;
+			if (isUpgrade) return null;
 
 			if (!isDirectory && decodedPath === "/" && singleFileSlug) {
 				return new Response(null, {
