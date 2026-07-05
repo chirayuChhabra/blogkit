@@ -22,10 +22,14 @@ export function bkInitRouter() {
 
 				if (newMain && newNav && newHeader) {
 					const updateDOM = () => {
-						document.querySelector(".bk-main").innerHTML = newMain.innerHTML;
-						document.querySelector(".bk-nav").innerHTML = newNav.innerHTML;
-						document.querySelector(".bk-sidebar-header").innerHTML =
-							newHeader.innerHTML;
+						const mainEl = document.querySelector(".bk-main");
+						const navEl = document.querySelector(".bk-nav");
+						const headerEl = document.querySelector(".bk-sidebar-header");
+
+						if (mainEl) mainEl.innerHTML = newMain.innerHTML;
+						if (navEl) navEl.innerHTML = newNav.innerHTML;
+						if (headerEl) headerEl.innerHTML = newHeader.innerHTML;
+
 						document.title = newTitle;
 
 						if (addToHistory) {
@@ -42,12 +46,12 @@ export function bkInitRouter() {
 									targetEl.scrollIntoView();
 								} else {
 									window.scrollTo(0, 0);
-									document.querySelector(".bk-main").scrollTop = 0;
+									if (mainEl) mainEl.scrollTop = 0;
 								}
 							}, 0);
 						} else {
 							window.scrollTo(0, 0);
-							document.querySelector(".bk-main").scrollTop = 0;
+							if (mainEl) mainEl.scrollTop = 0;
 						}
 
 						window.dispatchEvent(new Event("bk-page-loaded"));
