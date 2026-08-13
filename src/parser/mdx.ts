@@ -83,9 +83,7 @@ export function parseLesson(
 	const resolvedTitle =
 		data.title || h1Title || defaultTitle || "Untitled Lesson";
 
-	const baseSlug = filename
-		? path.basename(filename, ".md")
-		: resolvedTitle;
+	const baseSlug = filename ? path.basename(filename, ".md") : resolvedTitle;
 
 	const meta: LessonMeta = {
 		...data,
