@@ -56,6 +56,7 @@ export function parseLesson(
 	options: BuildOptions = {},
 	callerDir: string = process.cwd(),
 	defaultTitle?: string,
+	filename?: string,
 ): Lesson {
 	const parsed = matter(content);
 	const validation = LessonFrontmatterSchema.safeParse(parsed.data);
@@ -81,12 +82,17 @@ export function parseLesson(
 
 	const resolvedTitle =
 		data.title || h1Title || defaultTitle || "Untitled Lesson";
+
+	const baseSlug = filename
+		? path.basename(filename, ".md")
+		: resolvedTitle;
+
 	const meta: LessonMeta = {
 		...data,
 		title: resolvedTitle,
 		slug:
 			data.slug ||
-			resolvedTitle
+			baseSlug
 				.toLowerCase()
 				.replace(/[^a-z0-9]+/g, "-")
 				.replace(/(^-|-$)/g, ""),
@@ -355,6 +361,7 @@ export function parseChapter(
 						lessonOptions,
 						path.dirname(fullPath),
 						title,
+						path.basename(fullPath),
 					);
 					lesson.meta.parentSlug = meta.slug;
 					lessons.push(lesson);

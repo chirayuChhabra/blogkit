@@ -137,5 +137,34 @@ describe("CLI Deep Tests", () => {
         devProc.kill();
       }
     }, 15000);
+
+    test("Should keep the HTML filename stable when heading changes in single-file dev mode", async () => {
+      const filePath = join(tempDir, "lesson.md");
+      await writeFile(filePath, "# Old Heading\n\nContent");
+      
+      const devProc = Bun.spawn(["bun", "run", CLI_PATH, "dev", "lesson.md"], {
+        cwd: tempDir,
+        env: { ...process.env, PORT: "4010" }
+      });
+
+      try {
+        await waitForServer("http://localhost:4010");
+        expect(existsSync(join(tempDir, "out", "lesson.html"))).toBe(true);
+        const oldHtml = await Bun.file(join(tempDir, "out", "lesson.html")).text();
+        expect(oldHtml).toContain("Old Heading");
+
+        // Update the file with a new heading
+        await writeFile(filePath, "# New Heading\n\nContent");
+        
+        // Wait for watcher debounce and rebuild
+        await new Promise(r => setTimeout(r, 1000));
+
+        expect(existsSync(join(tempDir, "out", "lesson.html"))).toBe(true);
+        const newHtml = await Bun.file(join(tempDir, "out", "lesson.html")).text();
+        expect(newHtml).toContain("New Heading");
+      } finally {
+        devProc.kill();
+      }
+    }, 15000);
   });
 });

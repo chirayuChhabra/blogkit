@@ -22,3 +22,6 @@ chapters/
 lessons/
 update-*.py
 
+playground/
+
+.idea/
