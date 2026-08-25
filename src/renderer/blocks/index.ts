@@ -33,6 +33,7 @@ export function renderBlockInner(
 		case "warning":
 		case "tip":
 		case "note":
+		case "caution":
 			return renderCallout(block, idx, options);
 		case "simulation":
 			return renderSimulation(block, idx, options);

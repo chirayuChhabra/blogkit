@@ -1,55 +1,16 @@
 import katex from "katex";
 import { marked, type Tokens } from "marked";
-import { createHighlighter, type Highlighter } from "shiki";
-import { logger } from "../../cli/logger.js";
 import { blockChrome } from "./chrome.js";
 
-export let shiki: Highlighter;
-
-export async function initHighlighter() {
-	if (!shiki) {
-		shiki = await createHighlighter({
-			themes: ["github-dark", "github-light"],
-			langs: [
-				"javascript",
-				"typescript",
-				"json",
-				"html",
-				"css",
-				"bash",
-				"rust",
-				"markdown",
-				"yaml",
-			],
-		});
-	}
-}
-
-const renderer = {
-	code({ text, lang }: Tokens.Code) {
-		const language = lang || "text";
-		if (!shiki) {
-			logger.warn(
-				"Shiki highlighter not initialized. Code block will not be highlighted.",
-			);
-			return `<pre><code>${text}</code></pre>`;
-		}
-
-		try {
-			return shiki.codeToHtml(text, {
-				lang: language,
-				themes: {
-					light: "github-light",
-					dark: "github-dark",
-				},
-			});
-		} catch (_e) {
-			return `<pre><code>${text}</code></pre>`;
-		}
-	},
-};
-
-marked.use({ renderer });
+export {
+	COMMON_LANGUAGES,
+	ensureLanguageLoaded,
+	initHighlighter,
+	LANGUAGE_ALIASES,
+	normalizeLanguage,
+	preloadLanguagesFromMarkdown,
+	shiki,
+} from "./highlighter.js";
 
 const blockMathExtension = {
 	name: "blockMath",

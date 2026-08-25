@@ -922,6 +922,20 @@ hr.bk-divider,
 	color: var(--amber);
 }
 
+.bk-callout--caution {
+	background: color-mix(in srgb, var(--rose) 12%, var(--paper));
+	border-color: color-mix(in srgb, var(--rose) 32%, var(--line));
+}
+.bk-callout--caution .bk-callout-icon {
+	background: var(--rose);
+}
+.bk-callout--caution .bk-callout-icon::after {
+	content: "!";
+}
+.bk-callout--caution .bk-callout-label {
+	color: var(--rose);
+}
+
 .bk-code-block {
 	position: relative;
 	margin: 32px 0;
@@ -994,6 +1008,9 @@ hr.bk-divider,
 	line-height: 1.6;
 	font-variant-ligatures: contextual;
 	-webkit-font-smoothing: antialiased;
+}
+.bk-code-block pre.shiki {
+	background-color: transparent !important;
 }
 .bk-code-block code {
 	border: none;
@@ -2342,10 +2359,25 @@ html[data-ui="playful"] ol > li::before {
 
 /* Shiki Dual Theme Support */
 html[data-theme='dark'] .shiki,
-html[data-theme='dark'] .shiki span {
+html[data-theme='dark'] .shiki span,
+.bk-shell[data-theme='dark'] .shiki,
+.bk-shell[data-theme='dark'] .shiki span {
   color: var(--shiki-dark) !important;
-  background-color: var(--shiki-dark-bg) !important;
+  background-color: transparent !important;
   font-style: var(--shiki-dark-font-style) !important;
   font-weight: var(--shiki-dark-font-weight) !important;
   text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme='light']) .shiki,
+  html:not([data-theme='light']) .shiki span,
+  .bk-shell:not([data-theme='light']) .shiki,
+  .bk-shell:not([data-theme='light']) .shiki span {
+    color: var(--shiki-dark) !important;
+    background-color: transparent !important;
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
+  }
 }

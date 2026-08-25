@@ -8,7 +8,7 @@ import * as path from "path";
 import { logger } from "./logger.js";
 import { getOriginalCwd } from "./utils.js";
 
-function buildFile(filePath: string) {
+async function buildFile(filePath: string) {
 	logger.startSpinner(`Building file: ${filePath}`);
 	const outDir = path.resolve(getOriginalCwd(), path.dirname(filePath), "out");
 	const contentBase = path.dirname(filePath);
@@ -20,7 +20,11 @@ function buildFile(filePath: string) {
 			buildChapter,
 			buildLesson,
 		} = require("../parser/mdx.js");
+		const {
+			preloadLanguagesFromMarkdown,
+		} = require("../renderer/markdown/index.js");
 		const content = fs.readFileSync(filePath, "utf-8");
+		await preloadLanguagesFromMarkdown(content);
 		const parsed = matter(content);
 
 		const isChapter =
@@ -34,7 +38,13 @@ function buildFile(filePath: string) {
 			);
 			buildChapter(chapter, { outDir, contentBase });
 		} else {
-			const lesson = parseLesson(content, { outDir, contentBase }, contentBase);
+			const lesson = parseLesson(
+				content,
+				{ outDir, contentBase },
+				contentBase,
+				undefined,
+				path.basename(filePath),
+			);
 			buildLesson(lesson, { outDir, contentBase });
 		}
 		logger.succeedSpinner(`Build successful for ${filePath}.`);
@@ -48,7 +58,10 @@ function buildFile(filePath: string) {
 }
 
 export async function runBuild(args: string[]) {
-	const { initHighlighter } = require("../renderer/markdown/math.js");
+	const {
+		initHighlighter,
+		preloadLanguagesFromMarkdown,
+	} = require("../renderer/markdown/index.js");
 	await initHighlighter();
 	process.env.NODE_ENV = "production";
 	const target = args[0];
@@ -69,6 +82,7 @@ export async function runBuild(args: string[]) {
 		try {
 			const { generateChapterContent } = require("./chapter.js");
 			const chapterContent = generateChapterContent(targetPath);
+			await preloadLanguagesFromMarkdown(chapterContent);
 
 			const outDir = path.resolve(getOriginalCwd(), targetPath, "out");
 			const contentBase = targetPath;
@@ -93,6 +107,6 @@ export async function runBuild(args: string[]) {
 			logger.error("Unsupported file type. Must be a .md file.");
 			process.exit(1);
 		}
-		buildFile(targetPath);
+		await buildFile(targetPath);
 	}
 }

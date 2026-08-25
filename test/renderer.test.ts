@@ -66,14 +66,59 @@ describe("Renderer", () => {
 			expect(html).toContain('Be careful!');
 		});
 
-		test("Renders Columns", () => {
-			const mdContent = "<columns>\n<column markdown='Col 1' />\n<column markdown='Col 2' />\n</columns>";
+		test("Renders Caution Callout", () => {
+			const mdContent = "> [!CAUTION]\n> Danger zone!";
+			const l = parseLesson(mdContent, { contentBase: testDir });
+			const html = render(l, { strict: true });
+
+			expect(html).toContain('bk-callout');
+			expect(html).toContain('bk-callout--caution');
+			expect(html).toContain('Danger zone!');
+			expect(html).toContain('Caution');
+		});
+
+		test("Renders Columns with markdown and code", () => {
+			const mdContent = `<columns>
+<column markdown='Col 1' />
+<column code='const answer = 42;' />
+</columns>`;
 			const l = parseLesson(mdContent, { contentBase: testDir });
 			const html = render(l, { strict: true });
 
 			expect(html).toContain('class="bk-columns"');
 			expect(html).toContain('Col 1');
-			expect(html).toContain('Col 2');
+			expect(html).toContain('const answer = 42;');
+		});
+
+		test("Escapes unhighlighted and fallback code blocks properly", () => {
+			const mdContent = "```\n#include <stdio.h>\nint main() { if (a < b && b > c) return 0; }\n```";
+			const l = parseLesson(mdContent, { contentBase: testDir });
+			const html = render(l, { strict: true });
+
+			expect(html).toContain("&lt;stdio.h&gt;");
+			expect(html).toContain("a &lt; b &amp;&amp; b &gt; c");
+		});
+
+		test("Renders and highlights code blocks with Shiki (e.g., Cpp, Python, TypeScript)", async () => {
+			const { initHighlighter, normalizeLanguage } = await import("../src/renderer/markdown/index.js");
+			await initHighlighter();
+
+			expect(normalizeLanguage("Cpp")).toBe("cpp");
+			expect(normalizeLanguage("c++")).toBe("cpp");
+			expect(normalizeLanguage("Python")).toBe("python");
+			expect(normalizeLanguage("py")).toBe("python");
+			expect(normalizeLanguage("TS")).toBe("typescript");
+			expect(normalizeLanguage("typescript {1-3}")).toBe("typescript");
+
+			const mdContent = "```Cpp\nint x{34};\n```";
+			const l = parseLesson(mdContent, { contentBase: testDir });
+			const html = render(l, { strict: true });
+
+			expect(html).toContain('class="bk-code-block"');
+			expect(html).toContain('<span class="bk-code-lang">Cpp</span>');
+			expect(html).toContain('class="shiki');
+			expect(html).toContain('int');
+			expect(html).toContain('34');
 		});
 
 		test("Renders YouTube Videos", () => {

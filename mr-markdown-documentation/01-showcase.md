@@ -42,6 +42,9 @@ Version 3 uses native GitHub-flavored blockquotes for callouts:
 > [!important]
 > Critical alerts use the important format.
 
+> [!caution]
+> Proceed with caution when performing irreversible actions.
+
 ## Math
 
 KaTeX is built-in. Inline math looks like this: $E = mc^2$.

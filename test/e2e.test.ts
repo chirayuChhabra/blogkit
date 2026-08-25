@@ -94,7 +94,7 @@ This tests custom v3 markdown parsing capabilities.
   // Verify out directory and HTML files exist
   const outDir = join(tempDir, "out");
   expect(existsSync(outDir)).toBe(true);
-  expect(existsSync(join(outDir, "first-lesson.html"))).toBe(true);
+  expect(existsSync(join(outDir, "01-first-lesson.html"))).toBe(true);
 
   // 6. Start Dev Server
   devProc = Bun.spawn(["bun", "run", CLI_PATH, "dev", "01-first-chapter.md"], {
@@ -122,7 +122,7 @@ This tests custom v3 markdown parsing capabilities.
   const page = await browser.newPage();
   
   // Navigate to the built lesson page (the server serves it statically from /out/ or directly via JIT)
-  await page.goto(`http://localhost:${PORT}/first-lesson.html`, { waitUntil: 'networkidle0' });
+  await page.goto(`http://localhost:${PORT}/01-first-lesson.html`, { waitUntil: 'networkidle0' });
 
   const pageContent = await page.content();
   expect(pageContent).toContain("Welcome to your first lesson!");

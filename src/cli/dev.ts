@@ -64,8 +64,9 @@ export async function runDev(args: string[]) {
 
 	let server: BunServer | undefined;
 	let singleFileSlug = "";
+	let previousFileSlug = "";
 
-	const rebuild = () => {
+	const rebuild = async () => {
 		logger.startSpinner("Rebuilding...");
 		try {
 			const {
@@ -74,10 +75,14 @@ export async function runDev(args: string[]) {
 				buildChapter,
 				buildLesson,
 			} = require("../parser/mdx.js");
+			const {
+				preloadLanguagesFromMarkdown,
+			} = require("../renderer/markdown/index.js");
 
 			if (isDirectory) {
 				const { generateChapterContent } = require("./chapter.js");
 				const chapterContent = generateChapterContent(targetPath);
+				await preloadLanguagesFromMarkdown(chapterContent);
 				const chapter = parseChapter(
 					chapterContent,
 					{ outDir, contentBase },
@@ -86,6 +91,7 @@ export async function runDev(args: string[]) {
 				buildChapter(chapter, { outDir, contentBase });
 			} else {
 				const content = fs.readFileSync(filePath, "utf-8");
+				await preloadLanguagesFromMarkdown(content);
 				const parsed = require("@11ty/gray-matter")(content);
 				const isChapter =
 					parsed.data.chapter === true || parsed.data.type === "chapter";
@@ -102,13 +108,25 @@ export async function runDev(args: string[]) {
 						content,
 						{ outDir, contentBase },
 						contentBase,
+						undefined,
+						path.basename(filePath),
 					);
-					singleFileSlug = lesson.meta.slug;
+					const newSlug = lesson.meta.slug;
+					if (previousFileSlug && previousFileSlug !== newSlug) {
+						const staleFile = path.join(outDir, `${previousFileSlug}.html`);
+						if (fs.existsSync(staleFile)) fs.unlinkSync(staleFile);
+					}
+					singleFileSlug = newSlug;
 					buildLesson(lesson, { outDir, contentBase });
 				}
 			}
 			logger.succeedSpinner(`Build successful for ${targetPath}.`);
-			server?.publish("livereload", "reload");
+			if (previousFileSlug && previousFileSlug !== singleFileSlug) {
+				server?.publish("livereload", `redirect:/${singleFileSlug}.html`);
+			} else {
+				server?.publish("livereload", "reload");
+			}
+			previousFileSlug = singleFileSlug;
 		} catch (err: unknown) {
 			logger.failSpinner(`Build failed`);
 			const msg = err instanceof Error ? err.message : String(err);
@@ -117,7 +135,7 @@ export async function runDev(args: string[]) {
 		}
 	};
 
-	rebuild();
+	await rebuild();
 
 	let timeout: NodeJS.Timeout;
 	const watcher = fs.watch(
@@ -153,14 +171,19 @@ export async function runDev(args: string[]) {
 		const method = req.method;
 		const decodedPath = decodeURIComponent(url.pathname);
 
-		if (!srv.upgrade(req)) {
+		const isUpgrade = srv.upgrade(req);
+		if (!isUpgrade) {
 			logger.httpReq(clientIp, method, decodedPath);
 		}
 
 		const handle = async () => {
-			if (srv.upgrade(req)) return null;
+			if (isUpgrade) return null;
 
-			if (!isDirectory && decodedPath === "/" && singleFileSlug) {
+			if (
+				!isDirectory &&
+				(decodedPath === "/" || decodedPath === "/index.html") &&
+				singleFileSlug
+			) {
 				return new Response(null, {
 					status: 302,
 					headers: { Location: `/${singleFileSlug}.html` },
@@ -193,7 +216,9 @@ export async function runDev(args: string[]) {
 					const script = `<script>
 						const ws = new WebSocket(\`ws://\${location.host}/\`);
 						ws.onmessage = async (e) => { 
-							if (e.data === "reload") {
+							if (typeof e.data === "string" && e.data.startsWith("redirect:")) {
+								window.location.href = e.data.slice(9);
+							} else if (e.data === "reload") {
 								try {
 									const res = await fetch(location.href);
 									const text = await res.text();
