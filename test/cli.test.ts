@@ -66,7 +66,7 @@ describe("CLI Deep Tests", () => {
       const result = await $`bun run ${CLI_PATH} build 01-test.md`.cwd(tempDir).quiet();
       expect(result.exitCode).toBe(0);
       
-      const outPath = join(tempDir, "out", "test.html");
+      const outPath = join(tempDir, "out", "01-test.html");
       expect(existsSync(outPath)).toBe(true);
     });
 
