@@ -64,6 +64,7 @@ export async function runDev(args: string[]) {
 
 	let server: BunServer | undefined;
 	let singleFileSlug = "";
+	let previousFileSlug = "";
 
 	const rebuild = () => {
 		logger.startSpinner("Rebuilding...");
@@ -102,13 +103,25 @@ export async function runDev(args: string[]) {
 						content,
 						{ outDir, contentBase },
 						contentBase,
+						undefined,
+						path.basename(filePath),
 					);
-					singleFileSlug = lesson.meta.slug;
+					const newSlug = lesson.meta.slug;
+					if (previousFileSlug && previousFileSlug !== newSlug) {
+						const staleFile = path.join(outDir, `${previousFileSlug}.html`);
+						if (fs.existsSync(staleFile)) fs.unlinkSync(staleFile);
+					}
+					singleFileSlug = newSlug;
 					buildLesson(lesson, { outDir, contentBase });
 				}
 			}
 			logger.succeedSpinner(`Build successful for ${targetPath}.`);
-			server?.publish("livereload", "reload");
+			if (previousFileSlug && previousFileSlug !== singleFileSlug) {
+				server?.publish("livereload", `redirect:/${singleFileSlug}.html`);
+			} else {
+				server?.publish("livereload", "reload");
+			}
+			previousFileSlug = singleFileSlug;
 		} catch (err: unknown) {
 			logger.failSpinner(`Build failed`);
 			const msg = err instanceof Error ? err.message : String(err);
@@ -194,7 +207,9 @@ export async function runDev(args: string[]) {
 					const script = `<script>
 						const ws = new WebSocket(\`ws://\${location.host}/\`);
 						ws.onmessage = async (e) => { 
-							if (e.data === "reload") {
+							if (typeof e.data === "string" && e.data.startsWith("redirect:")) {
+								window.location.href = e.data.slice(9);
+							} else if (e.data === "reload") {
 								try {
 									const res = await fetch(location.href);
 									const text = await res.text();

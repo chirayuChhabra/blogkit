@@ -34,7 +34,13 @@ function buildFile(filePath: string) {
 			);
 			buildChapter(chapter, { outDir, contentBase });
 		} else {
-			const lesson = parseLesson(content, { outDir, contentBase }, contentBase);
+			const lesson = parseLesson(
+				content,
+				{ outDir, contentBase },
+				contentBase,
+				undefined,
+				path.basename(filePath),
+			);
 			buildLesson(lesson, { outDir, contentBase });
 		}
 		logger.succeedSpinner(`Build successful for ${filePath}.`);
