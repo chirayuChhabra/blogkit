@@ -9,6 +9,7 @@ import {
 export let shiki: Highlighter | undefined;
 
 export const COMMON_LANGUAGES: BundledLanguage[] = [
+	"asm",
 	"javascript",
 	"typescript",
 	"jsx",
@@ -69,6 +70,9 @@ export const COMMON_LANGUAGES: BundledLanguage[] = [
 ];
 
 export const LANGUAGE_ALIASES: Record<string, string> = {
+	assembly: "asm",
+	x86: "asm",
+	nasm: "asm",
 	"c++": "cpp",
 	cpp: "cpp",
 	"c#": "csharp",
