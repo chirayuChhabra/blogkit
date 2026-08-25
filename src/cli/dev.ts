@@ -66,7 +66,7 @@ export async function runDev(args: string[]) {
 	let singleFileSlug = "";
 	let previousFileSlug = "";
 
-	const rebuild = () => {
+	const rebuild = async () => {
 		logger.startSpinner("Rebuilding...");
 		try {
 			const {
@@ -75,10 +75,14 @@ export async function runDev(args: string[]) {
 				buildChapter,
 				buildLesson,
 			} = require("../parser/mdx.js");
+			const {
+				preloadLanguagesFromMarkdown,
+			} = require("../renderer/markdown/index.js");
 
 			if (isDirectory) {
 				const { generateChapterContent } = require("./chapter.js");
 				const chapterContent = generateChapterContent(targetPath);
+				await preloadLanguagesFromMarkdown(chapterContent);
 				const chapter = parseChapter(
 					chapterContent,
 					{ outDir, contentBase },
@@ -87,6 +91,7 @@ export async function runDev(args: string[]) {
 				buildChapter(chapter, { outDir, contentBase });
 			} else {
 				const content = fs.readFileSync(filePath, "utf-8");
+				await preloadLanguagesFromMarkdown(content);
 				const parsed = require("@11ty/gray-matter")(content);
 				const isChapter =
 					parsed.data.chapter === true || parsed.data.type === "chapter";
@@ -130,7 +135,7 @@ export async function runDev(args: string[]) {
 		}
 	};
 
-	rebuild();
+	await rebuild();
 
 	let timeout: NodeJS.Timeout;
 	const watcher = fs.watch(

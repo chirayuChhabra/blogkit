@@ -2,7 +2,8 @@ import DOMPurify from "isomorphic-dompurify";
 import { logger } from "../../cli/logger.js";
 import { escHtml } from "../blocks.js";
 import { resolveAssetSrc } from "../utils.js";
-import { marked, shiki } from "./math.js";
+import { normalizeLanguage, shiki } from "./highlighter.js";
+import { marked } from "./math.js";
 
 const domPurifyConfig = {
 	USE_PROFILES: { html: true, mathMl: true, svg: true },
@@ -56,14 +57,16 @@ export function mdToHtml(
 	};
 
 	renderer.code = ({ text, lang }) => {
-		const safeLang = lang || "text";
+		const rawLang = lang ? lang.trim().split(/\s+/)[0] : "";
+		const safeLang = rawLang || "text";
+		const normalizedLang = normalizeLanguage(rawLang);
 
 		let highlightedHtml = `<pre><code>${escHtml(text)}</code></pre>`;
 
-		if (shiki) {
+		if (shiki && normalizedLang !== "text") {
 			try {
 				highlightedHtml = shiki.codeToHtml(text, {
-					lang: safeLang,
+					lang: normalizedLang,
 					themes: { light: "github-light", dark: "github-dark" },
 				});
 			} catch (_e) {
@@ -72,7 +75,7 @@ export function mdToHtml(
 		}
 
 		return `<div class="bk-code-block">
-          ${safeLang !== "text" ? `<div class="bk-code-header"><span class="bk-code-lang">${safeLang}</span></div>` : ""}
+          ${safeLang !== "text" ? `<div class="bk-code-header"><span class="bk-code-lang">${escHtml(safeLang)}</span></div>` : ""}
           <div class="bk-code-scroll">
             ${highlightedHtml}
           </div>

@@ -99,6 +99,28 @@ describe("Renderer", () => {
 			expect(html).toContain("a &lt; b &amp;&amp; b &gt; c");
 		});
 
+		test("Renders and highlights code blocks with Shiki (e.g., Cpp, Python, TypeScript)", async () => {
+			const { initHighlighter, normalizeLanguage } = await import("../src/renderer/markdown/index.js");
+			await initHighlighter();
+
+			expect(normalizeLanguage("Cpp")).toBe("cpp");
+			expect(normalizeLanguage("c++")).toBe("cpp");
+			expect(normalizeLanguage("Python")).toBe("python");
+			expect(normalizeLanguage("py")).toBe("python");
+			expect(normalizeLanguage("TS")).toBe("typescript");
+			expect(normalizeLanguage("typescript {1-3}")).toBe("typescript");
+
+			const mdContent = "```Cpp\nint x{34};\n```";
+			const l = parseLesson(mdContent, { contentBase: testDir });
+			const html = render(l, { strict: true });
+
+			expect(html).toContain('class="bk-code-block"');
+			expect(html).toContain('<span class="bk-code-lang">Cpp</span>');
+			expect(html).toContain('class="shiki');
+			expect(html).toContain('int');
+			expect(html).toContain('34');
+		});
+
 		test("Renders YouTube Videos", () => {
 			const mdContent = "![](https://www.youtube.com/watch?v=dQw4w9WgXcQ)";
 			const l = parseLesson(mdContent, { contentBase: testDir });
