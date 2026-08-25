@@ -922,6 +922,20 @@ hr.bk-divider,
 	color: var(--amber);
 }
 
+.bk-callout--caution {
+	background: color-mix(in srgb, var(--rose) 12%, var(--paper));
+	border-color: color-mix(in srgb, var(--rose) 32%, var(--line));
+}
+.bk-callout--caution .bk-callout-icon {
+	background: var(--rose);
+}
+.bk-callout--caution .bk-callout-icon::after {
+	content: "!";
+}
+.bk-callout--caution .bk-callout-label {
+	color: var(--rose);
+}
+
 .bk-code-block {
 	position: relative;
 	margin: 32px 0;

@@ -25,9 +25,9 @@ Create a new file called `mysim.js` (or `.ts`) in your project. We'll use the `m
 
 ```javascript
 // mysim.js
-window.bkSetup(800, 500, function(ctx, fit) {
+window.bkSetup(800, 500, function(ctx, width, height) {
   // Clear the canvas every frame
-  ctx.clearRect(0, 0, fit.width, fit.height);
+  ctx.clearRect(0, 0, width, height);
   
   // Use dynamically synced theme colors!
   ctx.fillStyle = window.bkColor("primary");
@@ -85,7 +85,7 @@ If you place a JSON file next to your script with the same name (e.g., `mysim.co
 Inside your simulation script, you can access these values—which update in real-time as the user interacts with the UI—via the `window.__simProps` object:
 
 ```javascript
-window.bkSetup(800, 500, function(ctx, fit) {
+window.bkSetup(800, 500, function(ctx, width, height) {
   const density = window.__simProps.mazeDensity;
   const allowDiag = window.__simProps.diagonal;
   
@@ -104,7 +104,7 @@ Bootstraps a 2D canvas simulation.
 - It automatically creates an internal canvas.
 - It sets up DPI scaling for retina displays.
 - It handles window resizing dynamically.
-- It invokes your `loopFn(ctx, fit)` on every animation frame.
+- It invokes your `loopFn(ctx, width, height)` on every animation frame.
 
 > **Tip:** You don't need to write a `requestAnimationFrame` loop. `bkSetup` handles the run loop for you automatically!
 

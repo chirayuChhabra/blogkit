@@ -174,7 +174,11 @@ export async function runDev(args: string[]) {
 		const handle = async () => {
 			if (isUpgrade) return null;
 
-			if (!isDirectory && decodedPath === "/" && singleFileSlug) {
+			if (
+				!isDirectory &&
+				(decodedPath === "/" || decodedPath === "/index.html") &&
+				singleFileSlug
+			) {
 				return new Response(null, {
 					status: 302,
 					headers: { Location: `/${singleFileSlug}.html` },

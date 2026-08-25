@@ -19,13 +19,15 @@ export function renderColumns(
 								const content =
 									column.latex != null
 										? `<div class="bk-latex-block">${sanitizeHtml(katex.renderToString(column.latex, { throwOnError: false, displayMode: true }))}</div>`
-										: mdToHtml(
-												column.markdown ??
-													(column.src
-														? resolveContent(column.src, options, "md")
-														: ""),
-												options,
-											).html;
+										: column.code != null
+											? mdToHtml(`\`\`\`\n${column.code}\n\`\`\``, options).html
+											: mdToHtml(
+													column.markdown ??
+														(column.src
+															? resolveContent(column.src, options, "md")
+															: ""),
+													options,
+												).html;
 								return `<div class="bk-column">${content}</div>`;
 							})
 							.join("")}
