@@ -5,6 +5,12 @@ export {
 	parseLesson,
 } from "./parser/mdx.js";
 export { render } from "./renderer/index.js";
+export {
+	ensureLanguageLoaded,
+	initHighlighter,
+	normalizeLanguage,
+	preloadLanguagesFromMarkdown,
+} from "./renderer/markdown/index.js";
 export type {
 	AnimationBlock,
 	AnimationOptions,
