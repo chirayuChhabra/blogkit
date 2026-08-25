@@ -2,6 +2,7 @@ import katex from "katex";
 import { marked, type Tokens } from "marked";
 import { createHighlighter, type Highlighter } from "shiki";
 import { logger } from "../../cli/logger.js";
+import { escHtml } from "../blocks.js";
 import { blockChrome } from "./chrome.js";
 
 export let shiki: Highlighter;
@@ -32,7 +33,7 @@ const renderer = {
 			logger.warn(
 				"Shiki highlighter not initialized. Code block will not be highlighted.",
 			);
-			return `<pre><code>${text}</code></pre>`;
+			return `<pre><code>${escHtml(text)}</code></pre>`;
 		}
 
 		try {
@@ -44,7 +45,7 @@ const renderer = {
 				},
 			});
 		} catch (_e) {
-			return `<pre><code>${text}</code></pre>`;
+			return `<pre><code>${escHtml(text)}</code></pre>`;
 		}
 	},
 };

@@ -50,9 +50,11 @@ window.bkCanvasPoint = function(event, canvas) {
   const rect = c.getBoundingClientRect();
   const logicalW = c.__bkLogicalW || 800;
   const logicalH = c.__bkLogicalH || 500;
+  const clientX = event.clientX !== undefined ? event.clientX : (event.touches?.[0]?.clientX ?? event.changedTouches?.[0]?.clientX ?? 0);
+  const clientY = event.clientY !== undefined ? event.clientY : (event.touches?.[0]?.clientY ?? event.changedTouches?.[0]?.clientY ?? 0);
   return {
-    x: (event.clientX - rect.left) * logicalW / rect.width,
-    y: (event.clientY - rect.top) * logicalH / rect.height
+    x: rect.width ? ((clientX - rect.left) * logicalW) / rect.width : 0,
+    y: rect.height ? ((clientY - rect.top) * logicalH) / rect.height : 0
   };
 };
 window.bkFitCanvas = function(c, requestedW, requestedH, options) {

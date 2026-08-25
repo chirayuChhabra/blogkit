@@ -1,5 +1,6 @@
 import DOMPurify from "isomorphic-dompurify";
 import { logger } from "../../cli/logger.js";
+import { escHtml } from "../blocks.js";
 import { resolveAssetSrc } from "../utils.js";
 import { marked, shiki } from "./math.js";
 
@@ -57,7 +58,7 @@ export function mdToHtml(
 	renderer.code = ({ text, lang }) => {
 		const safeLang = lang || "text";
 
-		let highlightedHtml = `<pre><code>${text}</code></pre>`;
+		let highlightedHtml = `<pre><code>${escHtml(text)}</code></pre>`;
 
 		if (shiki) {
 			try {
@@ -66,7 +67,7 @@ export function mdToHtml(
 					themes: { light: "github-light", dark: "github-dark" },
 				});
 			} catch (_e) {
-				// Fallback to raw text
+				highlightedHtml = `<pre><code>${escHtml(text)}</code></pre>`;
 			}
 		}
 

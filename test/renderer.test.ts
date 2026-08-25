@@ -66,14 +66,37 @@ describe("Renderer", () => {
 			expect(html).toContain('Be careful!');
 		});
 
-		test("Renders Columns", () => {
-			const mdContent = "<columns>\n<column markdown='Col 1' />\n<column markdown='Col 2' />\n</columns>";
+		test("Renders Caution Callout", () => {
+			const mdContent = "> [!CAUTION]\n> Danger zone!";
+			const l = parseLesson(mdContent, { contentBase: testDir });
+			const html = render(l, { strict: true });
+
+			expect(html).toContain('bk-callout');
+			expect(html).toContain('bk-callout--caution');
+			expect(html).toContain('Danger zone!');
+			expect(html).toContain('Caution');
+		});
+
+		test("Renders Columns with markdown and code", () => {
+			const mdContent = `<columns>
+<column markdown='Col 1' />
+<column code='const answer = 42;' />
+</columns>`;
 			const l = parseLesson(mdContent, { contentBase: testDir });
 			const html = render(l, { strict: true });
 
 			expect(html).toContain('class="bk-columns"');
 			expect(html).toContain('Col 1');
-			expect(html).toContain('Col 2');
+			expect(html).toContain('const answer = 42;');
+		});
+
+		test("Escapes unhighlighted and fallback code blocks properly", () => {
+			const mdContent = "```\n#include <stdio.h>\nint main() { if (a < b && b > c) return 0; }\n```";
+			const l = parseLesson(mdContent, { contentBase: testDir });
+			const html = render(l, { strict: true });
+
+			expect(html).toContain("&lt;stdio.h&gt;");
+			expect(html).toContain("a &lt; b &amp;&amp; b &gt; c");
 		});
 
 		test("Renders YouTube Videos", () => {

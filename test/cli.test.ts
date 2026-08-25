@@ -162,6 +162,15 @@ describe("CLI Deep Tests", () => {
         expect(existsSync(join(tempDir, "out", "lesson.html"))).toBe(true);
         const newHtml = await Bun.file(join(tempDir, "out", "lesson.html")).text();
         expect(newHtml).toContain("New Heading");
+
+        // Verify root and index.html redirect in single file mode
+        const rootRes = await fetch("http://localhost:4010/", { redirect: "manual" });
+        expect(rootRes.status).toBe(302);
+        expect(rootRes.headers.get("Location")).toBe("/lesson.html");
+
+        const indexRes = await fetch("http://localhost:4010/index.html", { redirect: "manual" });
+        expect(indexRes.status).toBe(302);
+        expect(indexRes.headers.get("Location")).toBe("/lesson.html");
       } finally {
         devProc.kill();
       }

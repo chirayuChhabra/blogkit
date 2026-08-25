@@ -37,7 +37,7 @@ Use GitHub-flavored blockquotes to render beautiful callouts.
 > This is a warning.
 
 > [!note]
-> Supported types include: `note`, `tip`, `important`, and `warning`. You can use them to draw attention to crucial information!
+> Supported types include: `note`, `tip`, `important`, `warning`, and `caution`. You can use them to draw attention to crucial information!
 
 ---
 
