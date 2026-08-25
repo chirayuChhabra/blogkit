@@ -1,3 +1,4 @@
+import { marked } from "marked";
 import {
 	type BundledLanguage,
 	bundledLanguages,
@@ -183,10 +184,16 @@ export async function ensureLanguageLoaded(lang?: string): Promise<void> {
 export async function preloadLanguagesFromMarkdown(
 	markdown: string,
 ): Promise<void> {
-	const codeBlockRegex = /```\s*([a-zA-Z0-9_#+-]+)/g;
-	const matches = markdown.matchAll(codeBlockRegex);
-	for (const match of matches) {
-		const lang = match[1];
+	const tokens = marked.lexer(markdown);
+	const langsToLoad = new Set<string>();
+
+	marked.walkTokens(tokens, (token) => {
+		if (token.type === "code" && token.lang) {
+			langsToLoad.add(token.lang);
+		}
+	});
+
+	for (const lang of langsToLoad) {
 		await ensureLanguageLoaded(lang);
 	}
 }
